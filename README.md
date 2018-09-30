@@ -21,7 +21,7 @@
 #### Step 2. Add the dependency
 	
  	dependencies {
-	        implementation 'com.github.eajon:RxHttp:0.1.1'
+	        implementation 'com.github.eajon:RxHttp:0.2.0'
 	}
 
 	
