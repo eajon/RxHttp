@@ -1,13 +1,14 @@
 # RxHttp
-本框架 是对 RXJAVA2 + Retrofit + RxBus + OkHttp 的架构的封装 
-达成目标：链式调用，简单明了
-支持 主流的Http 请求 
-支持 多文件上传 同时用RXBUS  监听进度
-支持 大文件下载 同时用RXBUS  监听进度
+         本框架 是对 RXJAVA2 + Retrofit + RxBus + OkHttp 的架构的封装 
+         达成目标：链式调用，简单明了
+         1.支持 主流的Http 请求 
+         2.支持 多文件上传 监听进度
+         3.支持 大文件下载 监听进度
 
 
 # Future 
-Http 请求RxBus 发射
+          1.Http 请求支持RxBus 发射
+          2.请求增加阻塞Dialog
 
 
 # 导入
