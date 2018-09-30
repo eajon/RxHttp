@@ -132,7 +132,7 @@
     DownloadTask downloadTask;
              new RxHttp
                 .Builder()
-                .lifecycle(MainActivity.this)
+                .lifecycle(this)
                 .downloadTask(downloadTask)
                 .build()
                 .download(new DownloadObserver() {
