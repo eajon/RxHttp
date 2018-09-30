@@ -142,12 +142,15 @@ public class MainActivity extends BaseActivity {
         LogUtils.e(RxHttp.getConfig().getLogTag(), response.getTag() + "1");
         LogUtils.e(RxHttp.getConfig().getLogTag(), uploadTasks.get(0).getTag() + "2");
 
-        if (response.getTag().equals("muilt")) {
-            MultipartUploadTask uploadTask = (MultipartUploadTask) response.getData();
-            content.setText("总进度：" + uploadTask.getProgress() + "%" + uploadTask.getState().toString());
-            content1.setText("第一个：" + uploadTask.getUploadTasks().get(0).getProgress() + "%" + uploadTask.getUploadTasks().get(0).getState().toString());
-            content2.setText("第二个：" + uploadTask.getUploadTasks().get(1).getProgress() + "%" + uploadTask.getUploadTasks().get(1).getState().toString());
-            content3.setText("第三个：" + uploadTask.getUploadTasks().get(2).getProgress() + "%" + uploadTask.getUploadTasks().get(2).getState().toString());
+        if (response.getTag().equals("mulitTag")) {
+
+            MultipartUploadTask multipartUploadTask = (MultipartUploadTask) response.getData();
+            content.setText("总进度：" + multipartUploadTask.getProgress() + "%" + multipartUploadTask.getState().toString());
+            if (multipartUploadTask.getUploadTasks().size() == 3) {
+                content1.setText("第一个：" + multipartUploadTask.getUploadTasks().get(0).getProgress() + "%" + multipartUploadTask.getUploadTasks().get(0).getState().toString());
+                content2.setText("第二个：" + multipartUploadTask.getUploadTasks().get(1).getProgress() + "%" + multipartUploadTask.getUploadTasks().get(1).getState().toString());
+                content3.setText("第三个：" + multipartUploadTask.getUploadTasks().get(2).getProgress() + "%" + multipartUploadTask.getUploadTasks().get(2).getState().toString());
+            }
         }
     }
 
@@ -161,13 +164,15 @@ public class MainActivity extends BaseActivity {
 
     private void upload(ArrayList <UploadTask> uploadTasks) {
 
+
+        MultipartUploadTask multipartUploadTask = new MultipartUploadTask("mulitTag", uploadTasks);
         /**
          * 发送请求
          */
         new RxHttp.Builder()
                 .baseUrl("https://shop.cxwos.com/admin/File/")
                 .apiUrl("UploadFile?tentantId=16")
-                .multipartUploadTask(new MultipartUploadTask("muilt", uploadTasks))
+                .multipartUploadTask(multipartUploadTask)
                 .lifecycle(this)
                 .build()
                 .upload(new UploadObserver() {
@@ -248,7 +253,7 @@ public class MainActivity extends BaseActivity {
                 String key;
                 String path;
                 for (int i = 0; i < images.size(); i++) {
-                    UploadTask uploadTask = new UploadTask(images.get(i).name, new File(images.get(i).path), i, images.size());
+                    UploadTask uploadTask = new UploadTask(images.get(i).name, new File(images.get(i).path));
                     uploadTasks.add(uploadTask);
                 }
                 try {

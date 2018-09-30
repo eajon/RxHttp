@@ -13,8 +13,6 @@ public class UploadTask {
     private File file;
     private long currentSize;
     private long totalSize;
-    private int index;
-    private int total;
 
     private State state = State.NONE;//上传状态
 
@@ -38,11 +36,9 @@ public class UploadTask {
 
 
 
-    public UploadTask(String tag, File file, int index, int total) {
+    public UploadTask(String tag, File file) {
         this.tag = tag;
         this.file = file;
-        this.index = index;
-        this.total = total;
         this.totalSize=file.length();
     }
 
@@ -78,21 +74,6 @@ public class UploadTask {
         this.totalSize = totalSize;
     }
 
-    public int getIndex() {
-        return index;
-    }
-
-    public void setIndex(int index) {
-        this.index = index;
-    }
-
-    public int getTotal() {
-        return total;
-    }
-
-    public void setTotal(int total) {
-        this.total = total;
-    }
 
 
 

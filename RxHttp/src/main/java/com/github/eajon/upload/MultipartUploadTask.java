@@ -42,13 +42,13 @@ public class MultipartUploadTask {
     }
 
     public int getProgress() {
-        long totalSize = 0;
+        long totalSize = 0L;
         for (int i = 0; i < uploadTasks.size(); i++) {
-            totalSize = totalSize + uploadTasks.get(i).getTotalSize();
+            totalSize += uploadTasks.get(i).getTotalSize();
         }
-        long currentSize = 0;
+        long currentSize = 0L;
         for (int i = 0; i < uploadTasks.size(); i++) {
-            currentSize = currentSize + uploadTasks.get(i).getCurrentSize();
+            currentSize += uploadTasks.get(i).getCurrentSize();
         }
         if (totalSize != 0) {
             float progress = (float) currentSize / (float) totalSize;
