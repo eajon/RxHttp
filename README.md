@@ -11,6 +11,6 @@
 		}
 	}
   
-  dependencies {
+ 	dependencies {
 	        implementation 'com.github.eajon:RxHttp:0.1.0'
 	}
