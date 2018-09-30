@@ -114,10 +114,7 @@ public class RxConfig {
     }
 
     public OkHttpClient getOkHttpClient() {
-        if (okHttpClient == null) {
-            return OkHttpUtils.httpClient;
-        }
-        return okHttpClient;
+        return this.okHttpClient == null ? OkHttpUtils.httpClient : this.okHttpClient;
     }
 
 
