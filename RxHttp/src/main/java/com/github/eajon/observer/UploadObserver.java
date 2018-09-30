@@ -35,7 +35,7 @@ public abstract class UploadObserver<T> extends BaseObserver <T> {
 
         if (multipartUploadTask != null) {
             multipartUploadTask.setState(MultipartUploadTask.State.LOADING);
-            multipartUploadTask.sendProgress();
+            multipartUploadTask.sendBus();
         }
     }
 
@@ -51,7 +51,7 @@ public abstract class UploadObserver<T> extends BaseObserver <T> {
 
         if (multipartUploadTask != null) {
             multipartUploadTask.setState(MultipartUploadTask.State.FINISH);
-            multipartUploadTask.sendProgress();
+            multipartUploadTask.sendBus();
         }
 
     }
@@ -66,7 +66,7 @@ public abstract class UploadObserver<T> extends BaseObserver <T> {
         }
         if (multipartUploadTask != null) {
             multipartUploadTask.setState(MultipartUploadTask.State.ERROR);
-            multipartUploadTask.sendProgress();
+            multipartUploadTask.sendBus();
         }
         dispose();
     }

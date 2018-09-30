@@ -1,7 +1,6 @@
 package com.github.eajon.upload;
 
 
-
 import com.github.eajon.RxHttp;
 import com.github.eajon.util.LogUtils;
 
@@ -109,7 +108,7 @@ public class UploadRequestBody extends RequestBody {
 //                LogUtils.e(RxHttp.getConfig().getLogTag(),"upload"+ uploadTask.getProgress());
                 uploadTask.sendBus();
                 if (multipartUploadTask != null) {
-                    multipartUploadTask.sendProgress();
+                    multipartUploadTask.sendBus();
                 }
             }
         };

@@ -3,9 +3,9 @@ package com.github.eajon;
 import android.text.TextUtils;
 
 
-import com.github.eajon.Function.DownloadResponseFunction;
-import com.github.eajon.Function.ErrorResponseFunction;
-import com.github.eajon.Function.HttpResponseFunction;
+import com.github.eajon.function.DownloadResponseFunction;
+import com.github.eajon.function.ErrorResponseFunction;
+import com.github.eajon.function.HttpResponseFunction;
 import com.github.eajon.download.DownloadInterceptor;
 import com.github.eajon.download.DownloadTask;
 import com.github.eajon.observer.DownloadObserver;

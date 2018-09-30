@@ -30,24 +30,7 @@ public class MultipartUploadTask {
         this.state = state;
     }
 
-    public String getStateText() {
-        String stateText = "上传";
-        switch (state) {
-            case NONE:
-                stateText = "上传";
-                break;
-            case LOADING:
-                stateText = "上传中";
-                break;
-            case ERROR:
-                stateText = "错误";
-                break;
-            case FINISH:
-                stateText = "完成";
-                break;
-        }
-        return stateText;
-    }
+
 
     public MultipartUploadTask(String tag, ArrayList <UploadTask> uploadTasks) {
         this.tag = tag;
@@ -75,9 +58,10 @@ public class MultipartUploadTask {
         }
     }
 
-    public void sendProgress() {
+    public void sendBus() {
         RxResponse rxResponse = new RxResponse(tag);
         rxResponse.setData(this);
         RxBusRelay.get().post(rxResponse);
     }
+
 }

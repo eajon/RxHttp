@@ -36,24 +36,7 @@ public class UploadTask {
         this.state = state;
     }
 
-    public String getStateText() {
-        String stateText = "上传";
-        switch (state) {
-            case NONE:
-                stateText = "上传";
-                break;
-            case LOADING:
-                stateText = "上传中";
-                break;
-            case ERROR:
-                stateText = "错误";
-                break;
-            case FINISH:
-                stateText = "完成";
-                break;
-        }
-        return stateText;
-    }
+
 
     public UploadTask(String tag, File file, int index, int total) {
         this.tag = tag;

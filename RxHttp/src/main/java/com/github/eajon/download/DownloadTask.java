@@ -98,30 +98,6 @@ public class DownloadTask implements Serializable {
         this.state = state;
     }
 
-    public String getStateText() {
-        String stateText = "下载";
-        switch (state) {
-            case NONE:
-                stateText = "下载";
-                break;
-            case WAITING:
-                stateText = "等待中";
-                break;
-            case LOADING:
-                stateText = "下载中";
-                break;
-            case PAUSE:
-                stateText = "暂停中";
-                break;
-            case ERROR:
-                stateText = "错误";
-                break;
-            case FINISH:
-                stateText = "完成";
-                break;
-        }
-        return stateText;
-    }
 
     public int getProgress() {
         if (totalSize != 0) {

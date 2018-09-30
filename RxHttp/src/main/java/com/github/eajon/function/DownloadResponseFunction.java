@@ -1,4 +1,4 @@
-package com.github.eajon.Function;
+package com.github.eajon.function;
 
 import com.github.eajon.download.DownloadTask;
 import com.github.eajon.util.FileUtils;

@@ -1,4 +1,4 @@
-package com.github.eajon.Function;
+package com.github.eajon.function;
 
 import com.github.eajon.RxHttp;
 import com.github.eajon.util.LogUtils;

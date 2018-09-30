@@ -136,37 +136,18 @@ public class MainActivity extends BaseActivity {
     public void onResponse(RxResponse response) {
         if (response.getTag().equals(file1.getName())) {
             DownloadTask downloadTask = (DownloadTask) response.getData();
-            download.setText(downloadTask.getStateText() + downloadTask.getProgress() + "%");
-
+            download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%");
         }
 
         LogUtils.e(RxHttp.getConfig().getLogTag(), response.getTag() + "1");
         LogUtils.e(RxHttp.getConfig().getLogTag(), uploadTasks.get(0).getTag() + "2");
 
-//        if (response.getTag().equals(uploadTasks.get(0).getTag())) {
-//            UploadTask uploadTask = (UploadTask) response.getData();
-//            LogUtils.e(RxHttp.getConfig().getLogTag(), uploadTask.getProgress() + "%");
-//            content1.setText("第一个："+uploadTask.getProgress() + "%"+uploadTask.getStateText());
-//        }
-//
-//        if (response.getTag().equals(uploadTasks.get(1).getTag())) {
-//            UploadTask uploadTask = (UploadTask) response.getData();
-//            LogUtils.e(RxHttp.getConfig().getLogTag(), uploadTask.getProgress() + "%");
-//            content2.setText("第二个："+uploadTask.getProgress() + "%"+uploadTask.getStateText());
-//        }
-//
-//        if (response.getTag().equals(uploadTasks.get(2).getTag())) {
-//            UploadTask uploadTask = (UploadTask) response.getData();
-//            LogUtils.e(RxHttp.getConfig().getLogTag(), uploadTask.getProgress() + "%");
-//            content3.setText("第三个："+uploadTask.getProgress() + "%"+uploadTask.getStateText());
-//        }
-
         if (response.getTag().equals("muilt")) {
             MultipartUploadTask uploadTask = (MultipartUploadTask) response.getData();
-            content.setText("总进度："+uploadTask.getProgress() + "%"+uploadTask.getStateText());
-            content1.setText("第一个："+uploadTask.getUploadTasks().get(0).getProgress() + "%"+uploadTask.getUploadTasks().get(0).getStateText());
-            content2.setText("第二个："+uploadTask.getUploadTasks().get(1).getProgress() + "%"+uploadTask.getUploadTasks().get(1).getStateText());
-            content3.setText("第三个："+uploadTask.getUploadTasks().get(2).getProgress() + "%"+uploadTask.getUploadTasks().get(2).getStateText());
+            content.setText("总进度：" + uploadTask.getProgress() + "%" + uploadTask.getState().toString());
+            content1.setText("第一个：" + uploadTask.getUploadTasks().get(0).getProgress() + "%" + uploadTask.getUploadTasks().get(0).getState().toString());
+            content2.setText("第二个：" + uploadTask.getUploadTasks().get(1).getProgress() + "%" + uploadTask.getUploadTasks().get(1).getState().toString());
+            content3.setText("第三个：" + uploadTask.getUploadTasks().get(2).getProgress() + "%" + uploadTask.getUploadTasks().get(2).getState().toString());
         }
     }
 
@@ -215,7 +196,7 @@ public class MainActivity extends BaseActivity {
                                 if (permission.granted) {
                                     if (downloadTask.getState() == DownloadTask.State.LOADING) {
                                         downloadTask.setState(DownloadTask.State.PAUSE);
-                                        download.setText(downloadTask.getStateText() + downloadTask.getProgress() + "%");
+                                        download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%");
                                         observer.dispose();
                                     } else {
                                         RxHttp rxHttp = new RxHttp.Builder().lifecycle(MainActivity.this).downloadTask(downloadTask).build();
