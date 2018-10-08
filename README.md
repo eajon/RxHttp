@@ -142,7 +142,7 @@
     DownloadTask downloadTask;
              new RxHttp
                 .Builder()
-                .lifecycle(this)
+                .lifecycle(this)/*下载按需配置lifecycle*/
                 .downloadTask(downloadTask)
                 .build()
                 .download(new DownloadObserver() {
@@ -161,27 +161,30 @@
            File file1 = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "WEIXIN" + ".apk")
            String url1 = "http://imtt.dd.qq.com/16891/50CC095EFBE6059601C6FB652547D737.apk?fsname=com.tencent.mm_6.6.7_1321.apk&csr=1bbd";
            DownloadTask downloadTask = new DownloadTask(file1.getName(), file1.getAbsolutePath(), url1);
-           RxHttp rxHttp = new RxHttp.Builder().lifecycle(this).downloadTask(downloadTask).build();
-                                        DownloadObserver downloadObserver = new DownloadObserver() {
-                                            @Override
-                                            protected void onSuccess(DownloadTask downloadTask) {
-                                                LogUtils.e(RxHttp.getConfig().getLogTag(), downloadTask.getState());
-                                            }
+           RxHttp rxHttp = new RxHttp.Builder()
+           .lifecycle(this)/*下载按需配置lifecycle*/
+           .downloadTask(downloadTask)
+           .build();
+                                        
+            DownloadObserver downloadObserver = new DownloadObserver() {
+                @Override
+                protected void onSuccess(DownloadTask downloadTask) {
+                         LogUtils.e(RxHttp.getConfig().getLogTag(), downloadTask.getState());
+                         }
 
-                                            @Override
-                                            protected void onError(String t) {
+                @Override
+                protected void onError(String t) {
 
-                                            }
+                         }
 
-                                        };
-                                        rxHttp.download(downloadObserver);
+                };
+            rxHttp.download(downloadObserver);
   
                 
                 
                 //暂停OnClick
                 downloadTask.setState(DownloadTask.State.PAUSE);//设置暂停状态
-                textView.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%");//显示进度
-                downloadObserver.dispose();//取消发射，暂停
+                downloadObserver.dispose();//取消发射，暂停下载
                 
                 //实时获取进度  通过RXbus实现 Activity需要继承BaseMvpActivity 
                   @Override
@@ -202,7 +205,7 @@
                 .baseUrl("https://shop.cxwos.com/admin/File/")
                 .apiUrl("UploadFile?tentantId=16")
                 .uploadTask(uploadTask)/* 单文件必填*/
-                .lifecycle(this)
+                .lifecycle(this)/*上传按需配置lifecycle*/
                 .build()
                 .upload(new UploadObserver() {
                     @Override
@@ -228,7 +231,7 @@
                 .baseUrl("https://shop.cxwos.com/admin/File/")
                 .apiUrl("UploadFile?tentantId=16")
                 .multipartUploadTask(multipartUploadTask)
-                .lifecycle(this)
+                .lifecycle(this)/*上传按需配置lifecycle*/
                 .build()
                 .upload(new UploadObserver() {
                     @Override
