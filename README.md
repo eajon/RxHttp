@@ -188,8 +188,8 @@
                   public void onResponse(RxResponse response) {
                         if (response.getTag().equals(downloadTask.getTag())) {//判断tag Tag相同表示是当前任务 注：在多线程下载的过程中，确保Tag唯一
                           DownloadTask downloadTask = (DownloadTask) response.getData();//获取当前下载任务
-                          download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%");//获取进度
-
+                          downloadTask.getState();//下载状态
+                          downloadTask.getProgress();//下载进度
                        }
                    }
                    
@@ -249,14 +249,18 @@
                   public void onResponse(RxResponse response) {
                         if (response.getTag().equals(uploadTask.getTag())) {//单文件 
                            UploadTask uploadTask = (UploadTask)response.getData();
-                           textView.setText(uploadTask.getState().toString()+uploadTask.getProgress()+"%");
+                           uploadTask.getState(); //文件状态
+                           uploadTask.getProgress();//文件进度
                        }
                        
                        if (response.getTag().equals(multipartUploadTask.getTag()) {//多文件
                           MultipartUploadTask multipartUploadTask = (MultipartUploadTask) response.getData();
-                          content.setText("总进度：" + multipartUploadTask.getProgress() + "%" + multipartUploadTask.getState().toString());//总进度
-                          //单个文件进度 
-                          multipartUploadTask.getUploadTasks().get(0).getProgress();
+                          multipartUploadTask.getProgress();总进度
+                          multipartUploadTask.getState();//总状态
+                          //其中某个文件进度 
+                          multipartUploadTask.getProgress(0);
+                          //其中某个文件状态
+                          multipartUploadTask.getState(0);
                           
                        }
                    }
