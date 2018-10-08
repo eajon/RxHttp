@@ -10,26 +10,25 @@ public class MultipartUploadTask {
     private String tag;
     private ArrayList <UploadTask> uploadTasks;
 
-    private State state = State.NONE;//上传状态
+    private UploadTask.State state = UploadTask.State.NONE;//上传状态
 
-    /**
-     * 枚举下载状态
-     */
-    public enum State {
-        NONE,           //无状态
-        LOADING,        //上传中
-        ERROR,          //错误
-        FINISH,         //完成
-    }
 
-    public State getState() {
+
+    public UploadTask.State getState() {
         return state;
     }
 
-    public void setState(State state) {
-        this.state = state;
+    public UploadTask.State getState(int position) {
+        if (uploadTasks.size() > position) {
+            return this.getUploadTasks().get(position).getState();
+        } else {
+            return UploadTask.State.NONE;
+        }
     }
 
+    public void setState(UploadTask.State state) {
+        this.state = state;
+    }
 
 
     public MultipartUploadTask(String tag, ArrayList <UploadTask> uploadTasks) {
@@ -57,6 +56,16 @@ public class MultipartUploadTask {
             return 0;
         }
     }
+
+    public int getProgress(int position) {
+        if (uploadTasks.size() > position) {
+            return this.getUploadTasks().get(position).getProgress();
+        } else {
+            return 0;
+        }
+    }
+
+
 
     public void sendBus() {
         RxResponse rxResponse = new RxResponse(tag);

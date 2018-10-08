@@ -252,7 +252,7 @@
                            textView.setText(uploadTask.getState().toString()+uploadTask.getProgress()+"%");
                        }
                        
-                       if (response.getTag().equals(multipartUploadTask。getTag()) {//多文件 
+                       if (response.getTag().equals(multipartUploadTask.getTag()) {//多文件
                           MultipartUploadTask multipartUploadTask = (MultipartUploadTask) response.getData();
                           content.setText("总进度：" + multipartUploadTask.getProgress() + "%" + multipartUploadTask.getState().toString());//总进度
                           //单个文件进度 

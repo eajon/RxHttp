@@ -147,9 +147,9 @@ public class MainActivity extends BaseActivity {
             MultipartUploadTask multipartUploadTask = (MultipartUploadTask) response.getData();
             content.setText("总进度：" + multipartUploadTask.getProgress() + "%" + multipartUploadTask.getState().toString());
             if (multipartUploadTask.getUploadTasks().size() == 3) {
-                content1.setText("第一个：" + multipartUploadTask.getUploadTasks().get(0).getProgress() + "%" + multipartUploadTask.getUploadTasks().get(0).getState().toString());
-                content2.setText("第二个：" + multipartUploadTask.getUploadTasks().get(1).getProgress() + "%" + multipartUploadTask.getUploadTasks().get(1).getState().toString());
-                content3.setText("第三个：" + multipartUploadTask.getUploadTasks().get(2).getProgress() + "%" + multipartUploadTask.getUploadTasks().get(2).getState().toString());
+                content1.setText("第一个：" + multipartUploadTask.getProgress(0) + "%" + multipartUploadTask.getState(0).toString());
+                content2.setText("第二个：" + multipartUploadTask.getProgress(1) + "%" + multipartUploadTask.getState(1).toString());
+                content3.setText("第三个：" + multipartUploadTask.getProgress(2) + "%" + multipartUploadTask.getState(2).toString());
             }
         }
     }
