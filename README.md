@@ -178,6 +178,7 @@
                          }
 
                 };
+                
             rxHttp.download(downloadObserver);
   
                 
