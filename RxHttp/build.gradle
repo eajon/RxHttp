@@ -40,10 +40,7 @@ dependencies {
 
 
     // rxbus
-    api group: 'io.reactivex.rxjava2', name: 'rxjava', version: '2.2.2'
-    api('com.jakewharton.rxrelay2:rxrelay:2.0.0'){
-        exclude group: 'io.reactivex.rxjava2',module: 'rxjava'
-    }
+
     api 'com.github.wind0ws:rxbus2:1.1.1'
 
 
