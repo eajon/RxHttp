@@ -8,6 +8,7 @@ import com.github.eajon.function.ErrorResponseFunction;
 import com.github.eajon.function.HttpResponseFunction;
 import com.github.eajon.download.DownloadInterceptor;
 import com.github.eajon.download.DownloadTask;
+import com.github.eajon.observer.BaseObserver;
 import com.github.eajon.observer.DownloadObserver;
 import com.github.eajon.observer.HttpObserver;
 import com.github.eajon.observer.UploadObserver;
@@ -73,7 +74,7 @@ public class RxHttp {
     /*entity*/
     private Class <?> clazz;
     /*HTTP回调*/
-    private HttpObserver httpObserver;
+    private BaseObserver baseObserver;
     /*下载文件回调*/
     private DownloadObserver downloadObserver;
     /*上传文件回调*/
@@ -101,10 +102,10 @@ public class RxHttp {
     }
 
     /*普通Http请求*/
-    public void request(HttpObserver httpObserver) {
-        this.httpObserver = httpObserver;
-        if (httpObserver == null) {
-            throw new NullPointerException("HttpObserver must not null!");
+    public void request(BaseObserver baseObserver) {
+        this.baseObserver = baseObserver;
+        if (baseObserver == null) {
+            throw new NullPointerException("Observer must not null!");
         } else {
             doRequest();
         }
@@ -173,7 +174,7 @@ public class RxHttp {
                 apiObservable = RetrofitUtils.get().getRetrofit(getBaseUrl()).post(disposeApiUrl(), parameter, header);
                 break;
         }
-        observe().subscribe(httpObserver);
+        observe().subscribe(baseObserver);
     }
 
     /*执行文件上传*/
@@ -260,8 +261,9 @@ public class RxHttp {
         return compose().doOnDispose(new Action() {
             @Override
             public void run() throws Exception {
-                if (httpObserver != null) {
-                    httpObserver.onCancel();
+                if (baseObserver != null) {
+                    if (baseObserver instanceof HttpObserver)
+                        ((HttpObserver) baseObserver).onCancel();
                 } else if (uploadObserver != null) {
                     if (uploadTask != null) {
                         uploadTask.setState(UploadTask.State.CANCEL);

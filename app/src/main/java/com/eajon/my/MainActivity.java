@@ -20,6 +20,7 @@ import com.eajon.my.glide.GlideUtils;
 
 import com.github.eajon.RxHttp;
 import com.github.eajon.download.DownloadTask;
+import com.github.eajon.observer.BaseObserver;
 import com.github.eajon.observer.DownloadObserver;
 import com.github.eajon.observer.HttpObserver;
 import com.github.eajon.observer.UploadObserver;
@@ -109,6 +110,7 @@ public class MainActivity extends BaseActivity {
         String requestBody = new Gson().toJson(new RequestUid("d967b31e-4b8e-42e3-8634-1f9ee8422287"));
         RequestBody body = RequestBody.create(MediaType.parse("application/json"), requestBody);
         new RxHttp.Builder().baseUrl("http://139.224.61.120:8086/api/").apiUrl("getSceneList").setRequestBody(body).build().request(new HttpObserver() {
+
             @Override
             public void onSuccess(Object o) {
 

@@ -309,8 +309,5 @@
                    }
 
 
-#### 具体用例可参看DEMO,发现BUG，可邮件eajon@outlook.com,感谢关注
-
-
-RxHttp/app/src/main/res/drawable/wx.png 
+#### 具体用例可参看DEMO,发现BUG，可联系eajon@outlook.com,感谢关注
 
