@@ -2,6 +2,8 @@ package com.github.eajon.observer;
 
 
 import com.github.eajon.RxHttp;
+import com.github.eajon.exception.ApiException;
+import com.github.eajon.exception.ExceptionEngine;
 import com.github.eajon.util.LogUtils;
 
 import io.reactivex.Observer;
@@ -12,7 +14,7 @@ public abstract class BaseObserver<T> implements Observer <T> {
 
     public abstract void onSuccess(T t);
 
-    public abstract void onError(String t);
+    public abstract void onError(ApiException t);
 
     private Disposable disposable;
 
@@ -37,8 +39,8 @@ public abstract class BaseObserver<T> implements Observer <T> {
 
     @Override
     public void onError(Throwable e) {
-        LogUtils.e(RxHttp.getConfig().getLogTag(), "error:" + e.toString());
-        onError(e.toString());
+        LogUtils.e(RxHttp.getConfig().getLogTag(), "error:" + e.getMessage());
+        onError(ExceptionEngine.handleException(e));
         dispose();
     }
 

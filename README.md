@@ -1,14 +1,16 @@
 # RxHttp
-         本框架 是对 RXJAVA2 + Retrofit + RxBus + OkHttp 的架构的封装 
+         本框架 是对 RXJAVA2 + Retrofit + RxBus2 + OkHttp3 的架构的封装 
          达成目标：链式调用，简单明了
          1.支持 主流的Http 请求 
          2.支持 多文件上传 监听进度
          3.支持 大文件下载 监听进度
+         4.所有请求支持RXBUS获取返回数据
 
 
 # Future 
-          1.Http 请求支持RxBus 发射
-          2.请求增加阻塞Dialog
+          1.请求增加阻塞Dialog
+          2.增加rxchche
+          3.增加自动重试
 
 
 # 导入
@@ -66,7 +68,7 @@
                 .entity(Login.class)/* 按需配置 返回的数据类型，默认string*/
                 .addHeader(null)/* 按需配置 */
                 .addParameter(null)/* 按需配置 */
-                .lifecycle(this)/* 关联生命周期，可以指定到Activity具体动作，使用生命周期当前Activity需要继承RxAppCompatActivity 或者BaseMvpActivity */
+                .lifecycle(this)/* 关联生命周期，可以指定到Activity具体动作，使用生命周期当前Activity需要继承RxAppCompatActivity 或者RxBusActivity */
                 .build()
                 .request(new HttpObserver<Login>() {
              @Override
@@ -75,7 +77,7 @@
              }
             
              @Override
-             public void onError(String t) {
+             public void onError(ApiException t) {
             
              }
                         
@@ -102,7 +104,7 @@
             }
            
             @Override
-            public void onError(String t) {
+            public void onError(ApiException t) {
            
             }
                        
@@ -111,9 +113,32 @@
                        
             }
         });
+        
+        
+ #### RxBus 方式
+        HashMap map = new HashMap();
+               map.put("city", "常熟");
+               new RxHttp.Builder()
+                       .get()
+                       .baseUrl("http://wthrcdn.etouch.cn/")
+                       .apiUrl("weather_mini")
+                       .addParameter(map)
+                       .entity(Weather.class)
+                       .build()
+                       .request();
+                       
+        @RxSubscribe(observeOnThread = EventThread.MAIN)
+        public void weatherCallBack(Weather weather) {//entity 设置为哪个对象，RxbSubscribe哪个对象
+                  content.setText(new Gson().toJson(weather));
+        }
+                       
+         @RxSubscribe(observeOnThread = EventThread.MAIN)//异常捕获
+         public void weatherCallBack(ApiException e) {
+              content.setText(new Gson().toJson(e));
+         }
                 
                 
- ####  Post   JSON对象  
+ ####  Post   对象  例如JSON
  
  
         String requestBody = new Gson().toJson(new Login("username","password"));
@@ -134,7 +159,7 @@
             }
 
             @Override
-            public void onError(String t) {
+            public void onError(ApiException t) {
 
             }
             
@@ -151,7 +176,7 @@
         
 ## 下载
 
-####  普通下载 
+####  普通下载  支持RXBUS方式
 
 
     File file1 = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "WEIXIN" + ".apk")
@@ -170,7 +195,7 @@
             }
 
             @Override
-            public void onError(String s) {
+            public void onError(ApiException s) {
 
             }
             
@@ -221,7 +246,7 @@
                    
  ## 上传
  
- ####  单文件 
+ ####  单文件 支持RXBUS方式
               UploadTask uploadTask = new UploadTask("SingleTag", new File(path));
               new RxHttp.Builder()
                 .baseUrl("https://shop.cxwos.com/admin/File/")
@@ -236,7 +261,7 @@
                     }
 
                     @Override
-                    public void onError(String t) {
+                    public void onError(ApiException t) {
 
                     }
                     
@@ -246,7 +271,7 @@
                     }
                 });
                 
- ####  多文件        
+ ####  多文件        支持RXBUS方式
  
               ArrayList <UploadTask> uploadTasks = new ArrayList <>();
               UploadTask uploadTask = new UploadTask("SingleTag", new File(path));
@@ -267,7 +292,7 @@
                     }
 
                     @Override
-                    public void onError(String t) {
+                    public void onError(ApiException t) {
 
                     }
                     

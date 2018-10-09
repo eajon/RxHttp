@@ -1,12 +1,7 @@
 package com.github.eajon.observer;
 
-
-
-import com.github.eajon.RxHttp;
 import com.github.eajon.upload.MultipartUploadTask;
 import com.github.eajon.upload.UploadTask;
-import com.github.eajon.util.LogUtils;
-
 import io.reactivex.disposables.Disposable;
 
 public abstract class UploadObserver<T> extends BaseObserver <T> {

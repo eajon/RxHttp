@@ -16,10 +16,9 @@ import android.widget.Toast;
 
 import com.eajon.my.base.BaseActivity;
 import com.eajon.my.glide.GlideUtils;
-
 import com.github.eajon.RxHttp;
 import com.github.eajon.download.DownloadTask;
-
+import com.github.eajon.exception.ApiException;
 import com.github.eajon.observer.DownloadObserver;
 import com.github.eajon.observer.HttpObserver;
 import com.github.eajon.observer.UploadObserver;
@@ -38,6 +37,8 @@ import com.threshold.rxbus2.util.EventThread;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -56,6 +57,8 @@ public class MainActivity extends BaseActivity {
     String url2 = "http://imtt.dd.qq.com/16891/FC92B1B4471DE5AAD0D009DF9BF1AD01.apk?fsname=com.tencent.mobileqq_7.7.5_896.apk&csr=1bbd";
     DownloadTask downloadTask;
     DownloadObserver observer;
+    @BindView(R.id.request)
+    Button request;
     @BindView(R.id.download)
     Button download;
     @BindView(R.id.upload)
@@ -106,59 +109,53 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void initLogic() {
 
-
-        String requestBody = new Gson().toJson(new RequestUid("d967b31e-4b8e-42e3-8634-1f9ee8422287"));
-        RequestBody body = RequestBody.create(MediaType.parse("application/json"), requestBody);
-        new RxHttp.Builder().baseUrl("http://139.224.61.120:8086/api/").apiUrl("getSceneList").setRequestBody(body).build().request(new HttpObserver() {
-
-            @Override
-            public void onSuccess(Object o) {
-
-            }
-
-            @Override
-            public void onError(String t) {
-
-            }
-
-            @Override
-            public void onCancel() {
-
-            }
-        });
+        doRequest();
 
     }
 
+    private void doRequest() {
+        HashMap map = new HashMap();
+        map.put("city", "常熟");
+        new RxHttp.Builder()
+                .get()
+                .baseUrl("http://wthrcdn.etouch.cn/")
+                .apiUrl("weather_mini")
+                .addParameter(map)
+                .entity(Weather.class)
+                .build()
+                .request();
+    }
+
+
     @RxSubscribe(observeOnThread = EventThread.MAIN)
-    public void downloadProgress(DownloadTask downloadTask)
-    {
+    public void weatherCallBack(Weather weather) {
+        content.setText(new Gson().toJson(weather));
+    }
+
+    @RxSubscribe(observeOnThread = EventThread.MAIN)//异常捕获
+    public void weatherCallBack(ApiException e) {
+        content.setText(new Gson().toJson(e));
+    }
+    //下载监听
+    @RxSubscribe(observeOnThread = EventThread.MAIN)
+    public void downloadProgress(DownloadTask downloadTask) {
         download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%");
     }
 
+
+    //上传监听
     @RxSubscribe(observeOnThread = EventThread.MAIN)
-    public void uploadProgress(UploadTask uploadTask)
-    {
+    public void uploadProgress(UploadTask uploadTask) {
         upload.setText(uploadTask.getState().toString() + uploadTask.getProgress() + "%");
     }
 
     @RxSubscribe(observeOnThread = EventThread.MAIN)
-    public void uploadProgress(MultipartUploadTask multipartUploadTask)
-    {
+    public void uploadProgress(MultipartUploadTask multipartUploadTask) {
         content.setText("总进度：" + multipartUploadTask.getProgress() + "%" + multipartUploadTask.getState().toString());
         if (multipartUploadTask.getUploadTasks().size() == 3) {
             content1.setText("第一个：" + multipartUploadTask.getProgress(0) + "%" + multipartUploadTask.getState(0).toString());
             content2.setText("第二个：" + multipartUploadTask.getProgress(1) + "%" + multipartUploadTask.getState(1).toString());
             content3.setText("第三个：" + multipartUploadTask.getProgress(2) + "%" + multipartUploadTask.getState(2).toString());
-        }
-    }
-
-
-    public class RequestUid {
-
-        String user_id;
-
-        public RequestUid(String user_id) {
-            this.user_id = user_id;
         }
     }
 
@@ -186,26 +183,11 @@ public class MainActivity extends BaseActivity {
                 .multipartUploadTask(multipartUploadTask)
                 .lifecycle(this)
                 .build()
-                .upload(new UploadObserver() {
-                    @Override
-                    public void onSuccess(Object o) {
-
-                    }
-
-                    @Override
-                    public void onError(String t) {
-
-                    }
-
-                    @Override
-                    public void onCancel() {
-
-                    }
-                });
+                .upload();
 
     }
 
-    @OnClick({R.id.download, R.id.upload})
+    @OnClick({R.id.download, R.id.upload, R.id.request})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.download:
@@ -235,7 +217,7 @@ public class MainActivity extends BaseActivity {
                                             }
 
                                             @Override
-                                            public void onError(String t) {
+                                            public void onError(ApiException t) {
 
                                             }
 
@@ -257,6 +239,34 @@ public class MainActivity extends BaseActivity {
             case R.id.upload:
                 Intent intent = new Intent(this, ImageGridActivity.class);
                 startActivityForResult(intent, 1000);
+                break;
+            case R.id.request:
+
+                HashMap map = new HashMap();
+                map.put("city", "苏州");
+                new RxHttp.Builder()
+                        .get()
+                        .baseUrl("http://wthrcdn.etouch.cn/")
+                        .apiUrl("weather_mini")
+                        .addParameter(map)
+                        .entity(Weather.class)
+                        .build()
+                        .request(new HttpObserver<Weather>() {
+                            @Override
+                            public void onCancel() {
+
+                            }
+
+                            @Override
+                            public void onSuccess(Weather weather) {
+                                content.setText(new Gson().toJson(weather));
+                            }
+
+                            @Override
+                            public void onError(ApiException t) {
+
+                            }
+                        });
                 break;
         }
     }

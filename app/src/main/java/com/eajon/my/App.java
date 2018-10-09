@@ -14,7 +14,7 @@ public class App extends Application {
         super.onCreate();
         instance = this;
 
-        RxConfig.init(this).baseUrl("http://pdaapi.chinacloudsites.cn/api/").logTag("RxHttps");
+        RxConfig.init(this).logTag("RxHttps");
 
 
     }

@@ -3,6 +3,7 @@ package com.github.eajon;
 import android.text.TextUtils;
 
 
+import com.github.eajon.exception.ApiException;
 import com.github.eajon.function.DownloadResponseFunction;
 import com.github.eajon.function.ErrorResponseFunction;
 import com.github.eajon.function.HttpResponseFunction;
@@ -18,6 +19,7 @@ import com.github.eajon.upload.MultipartUploadTask;
 import com.github.eajon.upload.UploadRequestBody;
 import com.github.eajon.upload.UploadTask;
 import com.github.eajon.util.RetrofitUtils;
+import com.threshold.rxbus2.RxBus;
 import com.trello.rxlifecycle2.LifecycleProvider;
 import com.trello.rxlifecycle2.android.ActivityEvent;
 import com.trello.rxlifecycle2.android.FragmentEvent;
@@ -35,7 +37,9 @@ import java.util.TreeMap;
 
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
+import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.MediaType;
@@ -87,7 +91,6 @@ public class RxHttp {
     Observable observable;
 
 
-
     /*构造函数*/
     private RxHttp(Builder builder) {
         this.parameter = builder.parameter;
@@ -116,6 +119,11 @@ public class RxHttp {
         }
     }
 
+    /*普通Http请求*/
+    public void request() {
+        doRequest();
+    }
+
     /*上传文件请求*/
     public void upload(UploadObserver uploadObserver) {
         this.uploadObserver = uploadObserver;
@@ -131,6 +139,10 @@ public class RxHttp {
         }
     }
 
+    public void upload() {
+        doUpload();
+    }
+
     /*下载文件请求*/
     public void download(DownloadObserver downloadObserver) {
         this.downloadObserver = downloadObserver;
@@ -143,6 +155,10 @@ public class RxHttp {
                 doDownload();
             }
         }
+    }
+
+    public void download() {
+        doDownload();
     }
 
 
@@ -179,7 +195,21 @@ public class RxHttp {
                 observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).post(disposeApiUrl(), parameter, header);
                 break;
         }
-        observe().subscribe(baseObserver);
+        if (baseObserver != null) {
+            observe().subscribe(baseObserver);
+        } else {
+            observe().subscribe(new BaseObserver() {
+                @Override
+                public void onSuccess(Object o) {
+                    RxBus.getDefault().post(o);
+                }
+
+                @Override
+                public void onError(ApiException e) {
+                    RxBus.getDefault().post(e);
+                }
+            });
+        }
     }
 
     /*执行文件上传*/
@@ -199,7 +229,7 @@ public class RxHttp {
             requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
             MultipartBody.Part part = MultipartBody.Part.createFormData(uploadTask.getTag(), file.getName(), new UploadRequestBody(requestBody, uploadTask));
             fileList.add(part);
-            uploadObserver.setUploadTask(uploadTask);
+
         } else {
             for (int i = 0; i < multipartUploadTask.getUploadTasks().size(); i++) {
                 UploadTask task = multipartUploadTask.getUploadTasks().get(i);
@@ -208,21 +238,74 @@ public class RxHttp {
                 MultipartBody.Part part = MultipartBody.Part.createFormData(task.getTag(), file.getName(), new UploadRequestBody(requestBody, task, multipartUploadTask));
                 fileList.add(part);
             }
-            uploadObserver.setMultipartUploadTask(multipartUploadTask);
+
         }
 
         /*请求处理*/
         observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).upload(disposeApiUrl(), parameter, header, fileList);
-        observe().subscribe(uploadObserver);
+        if (uploadObserver != null) {
+            if (uploadTask != null) {
+                uploadObserver.setUploadTask(uploadTask);
+            } else {
+                uploadObserver.setMultipartUploadTask(multipartUploadTask);
+            }
+            observe().subscribe(uploadObserver);
+        } else {
+            UploadObserver uploadObserver = new UploadObserver() {
+                @Override
+                public void onCancel() {
+
+                }
+
+                @Override
+                public void onSuccess(Object o) {
+                    RxBus.getDefault().post(o);
+                }
+
+                @Override
+                public void onError(ApiException t) {
+                    RxBus.getDefault().post(t);
+                }
+            };
+            if (uploadTask != null) {
+                uploadObserver.setUploadTask(uploadTask);
+            } else {
+                uploadObserver.setMultipartUploadTask(multipartUploadTask);
+            }
+
+            observe().subscribe(uploadObserver);
+        }
 
     }
 
     private void doDownload() {
-        /*下载任务关联observer用于改变状态*/
-        downloadObserver.setDownloadTask(downloadTask);
+
         /*请求处理*/
         observable = RetrofitUtils.get().getRetrofit(getBasUrl(downloadTask.getServerUrl()), new DownloadInterceptor(downloadTask)).download(downloadTask.getServerUrl(), "bytes=" + downloadTask.getCurrentSize() + "-");
-        observe().subscribe(downloadObserver);
+        if (downloadObserver != null) {
+            /*下载任务关联observer用于改变状态*/
+            downloadObserver.setDownloadTask(downloadTask);
+            observe().subscribe(downloadObserver);
+        } else {
+            DownloadObserver downloadObserver = new DownloadObserver <DownloadTask>() {
+                @Override
+                public void onPause() {
+
+                }
+
+                @Override
+                public void onSuccess(DownloadTask o) {
+                    RxBus.getDefault().post(o);
+                }
+
+                @Override
+                public void onError(ApiException t) {
+                    RxBus.getDefault().post(t);
+                }
+            };
+            downloadObserver.setDownloadTask(downloadTask);
+            observe().subscribe(downloadObserver);
+        }
 
 
     }
@@ -285,9 +368,6 @@ public class RxHttp {
         }).onErrorResumeNext(new ErrorResponseFunction <>()).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
     }
-
-
-
 
 
     /*获取基础URL*/
