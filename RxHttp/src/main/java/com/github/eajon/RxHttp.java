@@ -8,7 +8,6 @@ import com.github.eajon.function.ErrorResponseFunction;
 import com.github.eajon.function.HttpResponseFunction;
 import com.github.eajon.download.DownloadInterceptor;
 import com.github.eajon.download.DownloadTask;
-import com.github.eajon.observer.BaseObserver;
 import com.github.eajon.observer.DownloadObserver;
 import com.github.eajon.observer.HttpObserver;
 import com.github.eajon.observer.UploadObserver;
@@ -51,44 +50,35 @@ public class RxHttp {
     private Map <String, Object> parameter;
     /*header*/
     private Map <String, Object> header;
-
     /*json参数*/
     private RequestBody requestBody;
-
     /*LifecycleProvider*/
     private LifecycleProvider lifecycle;
     /*ActivityEvent*/
     private ActivityEvent activityEvent;
     /*FragmentEvent*/
     private FragmentEvent fragmentEvent;
-
     /*标识请求的TAG*/
     private String tag;
-
     /*上传任务列表*/
     private UploadTask uploadTask;
     /*上传任务列表*/
     private MultipartUploadTask multipartUploadTask;
-
     /*entity*/
     private DownloadTask downloadTask;
-
     /*基础URL*/
     private String baseUrl;
     /*apiUrl*/
     private String apiUrl;
     /*entity*/
     private Class <?> clazz;
-
     /*HTTP回调*/
     private HttpObserver httpObserver;
-
     /*下载文件回调*/
     private DownloadObserver downloadObserver;
-
     /*上传文件回调*/
     private UploadObserver uploadObserver;
-
+    /*Retrofit observable */
     Observable apiObservable;
 
 
@@ -353,10 +343,8 @@ public class RxHttp {
         Map <String, Object> parameter;
         /*header*/
         Map <String, Object> header;
-
         /*json参数*/
         RequestBody requestBody;
-
         /*LifecycleProvider*/
         LifecycleProvider lifecycle;
         /*ActivityEvent*/
@@ -373,11 +361,8 @@ public class RxHttp {
         String baseUrl;
         /*apiUrl*/
         String apiUrl;
-
         /*下载任务*/
         DownloadTask downloadTask;
-
-
         /*entity*/
         Class <?> clazz;
 
