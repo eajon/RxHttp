@@ -216,7 +216,7 @@
                 downloadTask.getState();//此时获取状态是暂停
                 downloadTask.getProgress();//获取进度
                 
-                //实时获取进度  通过RXbus实现 Activity需要继承BaseMvpActivity 
+                //实时获取进度  通过RXbus实现 当前Activity需要继承BaseMvpActivity，onResponse()中获取 
                   @Override
                   public void onResponse(RxResponse response) {
                         if (response.getTag().equals(downloadTask.getTag())) {//判断tag Tag相同表示是当前任务 注：在多线程下载的过程中，确保Tag唯一
@@ -287,7 +287,7 @@
                   
                   
  ####  上传进度 和下载一样                   
-                  //实时获取进度  通过RXbus实现 Activity需要继承BaseMvpActivity 
+                  //实时获取进度  通过RXbus实现 当前Activity需要继承BaseMvpActivity，onResponse()中获取 
                   @Override
                   public void onResponse(RxResponse response) {
                         if (response.getTag().equals(uploadTask.getTag())) {//单文件 
@@ -307,3 +307,6 @@
                           
                        }
                    }
+
+
+#### 具体用例可参看DEMO,发现BUG，可邮件eajon@outlook.com,感谢关注
