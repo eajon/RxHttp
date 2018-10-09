@@ -71,7 +71,7 @@ public class DownloadResponseBody extends ResponseBody {
                 long bytesRead = super.read(sink, byteCount);
                 // read() returns the number of bytes read, or -1 if this source is exhausted.
                 readBytesCount += bytesRead != -1 ? bytesRead : 0;
-                LogUtils.e(RxHttp.getConfig().getLogTag(),readBytesCount);
+//                LogUtils.e(RxHttp.getConfig().getLogTag(),readBytesCount);
                 if (totalBytesCount == 0) {
                     totalBytesCount = contentLength();
                 }

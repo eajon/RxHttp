@@ -14,17 +14,15 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
 import com.eajon.my.base.BaseActivity;
 import com.eajon.my.glide.GlideUtils;
 
 import com.github.eajon.RxHttp;
 import com.github.eajon.download.DownloadTask;
-import com.github.eajon.observer.BaseObserver;
+
 import com.github.eajon.observer.DownloadObserver;
 import com.github.eajon.observer.HttpObserver;
 import com.github.eajon.observer.UploadObserver;
-import com.github.eajon.rxbus.RxResponse;
 import com.github.eajon.upload.MultipartUploadTask;
 import com.github.eajon.upload.UploadTask;
 import com.github.eajon.util.LogUtils;
@@ -35,6 +33,8 @@ import com.lzy.imagepicker.loader.ImageLoader;
 import com.lzy.imagepicker.ui.ImageGridActivity;
 import com.tbruyelle.rxpermissions2.Permission;
 import com.tbruyelle.rxpermissions2.RxPermissions;
+import com.threshold.rxbus2.annotation.RxSubscribe;
+import com.threshold.rxbus2.util.EventThread;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -129,6 +129,30 @@ public class MainActivity extends BaseActivity {
 
     }
 
+    @RxSubscribe(observeOnThread = EventThread.MAIN)
+    public void downloadProgress(DownloadTask downloadTask)
+    {
+        download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%");
+    }
+
+    @RxSubscribe(observeOnThread = EventThread.MAIN)
+    public void uploadProgress(UploadTask uploadTask)
+    {
+        upload.setText(uploadTask.getState().toString() + uploadTask.getProgress() + "%");
+    }
+
+    @RxSubscribe(observeOnThread = EventThread.MAIN)
+    public void uploadProgress(MultipartUploadTask multipartUploadTask)
+    {
+        content.setText("总进度：" + multipartUploadTask.getProgress() + "%" + multipartUploadTask.getState().toString());
+        if (multipartUploadTask.getUploadTasks().size() == 3) {
+            content1.setText("第一个：" + multipartUploadTask.getProgress(0) + "%" + multipartUploadTask.getState(0).toString());
+            content2.setText("第二个：" + multipartUploadTask.getProgress(1) + "%" + multipartUploadTask.getState(1).toString());
+            content3.setText("第三个：" + multipartUploadTask.getProgress(2) + "%" + multipartUploadTask.getState(2).toString());
+        }
+    }
+
+
     public class RequestUid {
 
         String user_id;
@@ -139,23 +163,7 @@ public class MainActivity extends BaseActivity {
     }
 
 
-    @Override
-    public void onResponse(RxResponse response) {
-        if (response.getTag().equals(file1.getName())) {
-            DownloadTask downloadTask = (DownloadTask) response.getData();
-            download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%");
-        }
 
-        if (response.getTag().equals("mulitTag")) {
-            MultipartUploadTask multipartUploadTask = (MultipartUploadTask) response.getData();
-            content.setText("总进度：" + multipartUploadTask.getProgress() + "%" + multipartUploadTask.getState().toString());
-            if (multipartUploadTask.getUploadTasks().size() == 3) {
-                content1.setText("第一个：" + multipartUploadTask.getProgress(0) + "%" + multipartUploadTask.getState(0).toString());
-                content2.setText("第二个：" + multipartUploadTask.getProgress(1) + "%" + multipartUploadTask.getState(1).toString());
-                content3.setText("第三个：" + multipartUploadTask.getProgress(2) + "%" + multipartUploadTask.getState(2).toString());
-            }
-        }
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

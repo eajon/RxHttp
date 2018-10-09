@@ -3,8 +3,10 @@ package com.github.eajon.download;
 
 
 
-import com.github.eajon.rxbus.RxBusRelay;
-import com.github.eajon.rxbus.RxResponse;
+
+
+import com.threshold.rxbus2.ReplayBus;
+import com.threshold.rxbus2.RxBus;
 
 import java.io.Serializable;
 
@@ -109,9 +111,10 @@ public class DownloadTask implements Serializable {
     }
 
     public void sendBus() {
-        RxResponse rxResponse = new RxResponse(this.tag);
-        rxResponse.setData(this);
-        RxBusRelay.get().post(rxResponse);
+//        RxResponse rxResponse = new RxResponse(this.tag);
+//        rxResponse.setData(this);
+//        RxBusRelay.get().post(rxResponse);
+        RxBus.getDefault().post(this);
     }
 
     @Override

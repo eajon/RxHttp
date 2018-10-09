@@ -22,6 +22,9 @@ import com.trello.rxlifecycle2.LifecycleProvider;
 import com.trello.rxlifecycle2.android.ActivityEvent;
 import com.trello.rxlifecycle2.android.FragmentEvent;
 
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
+
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -30,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Action;
@@ -80,7 +84,8 @@ public class RxHttp {
     /*上传文件回调*/
     private UploadObserver uploadObserver;
     /*Retrofit observable */
-    Observable apiObservable;
+    Observable observable;
+
 
 
     /*构造函数*/
@@ -155,23 +160,23 @@ public class RxHttp {
         }
         switch (method) {
             case GET:
-                apiObservable = RetrofitUtils.get().getRetrofit(getBaseUrl()).get(disposeApiUrl(), parameter, header);
+                observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).get(disposeApiUrl(), parameter, header);
                 break;
             case POST:
                 if (requestBody != null) {
-                    apiObservable = RetrofitUtils.get().getRetrofit(getBaseUrl()).post(disposeApiUrl(), requestBody, header);
+                    observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).post(disposeApiUrl(), requestBody, header);
                 } else {
-                    apiObservable = RetrofitUtils.get().getRetrofit(getBaseUrl()).post(disposeApiUrl(), parameter, header);
+                    observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).post(disposeApiUrl(), parameter, header);
                 }
                 break;
             case DELETE:
-                apiObservable = RetrofitUtils.get().getRetrofit(getBaseUrl()).delete(disposeApiUrl(), parameter, header);
+                observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).delete(disposeApiUrl(), parameter, header);
                 break;
             case PUT:
-                apiObservable = RetrofitUtils.get().getRetrofit(getBaseUrl()).put(disposeApiUrl(), parameter, header);
+                observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).put(disposeApiUrl(), parameter, header);
                 break;
             default:
-                apiObservable = RetrofitUtils.get().getRetrofit(getBaseUrl()).post(disposeApiUrl(), parameter, header);
+                observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).post(disposeApiUrl(), parameter, header);
                 break;
         }
         observe().subscribe(baseObserver);
@@ -190,12 +195,10 @@ public class RxHttp {
         File file;
         RequestBody requestBody;
         if (uploadTask != null) {
-
             file = uploadTask.getFile();
             requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
             MultipartBody.Part part = MultipartBody.Part.createFormData(uploadTask.getTag(), file.getName(), new UploadRequestBody(requestBody, uploadTask));
             fileList.add(part);
-
             uploadObserver.setUploadTask(uploadTask);
         } else {
             for (int i = 0; i < multipartUploadTask.getUploadTasks().size(); i++) {
@@ -209,7 +212,7 @@ public class RxHttp {
         }
 
         /*请求处理*/
-        apiObservable = RetrofitUtils.get().getRetrofit(getBaseUrl()).upload(disposeApiUrl(), parameter, header, fileList);
+        observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).upload(disposeApiUrl(), parameter, header, fileList);
         observe().subscribe(uploadObserver);
 
     }
@@ -218,7 +221,7 @@ public class RxHttp {
         /*下载任务关联observer用于改变状态*/
         downloadObserver.setDownloadTask(downloadTask);
         /*请求处理*/
-        apiObservable = RetrofitUtils.get().getRetrofit(getBasUrl(downloadTask.getServerUrl()), new DownloadInterceptor(downloadTask)).download(downloadTask.getServerUrl(), "bytes=" + downloadTask.getCurrentSize() + "-");
+        observable = RetrofitUtils.get().getRetrofit(getBasUrl(downloadTask.getServerUrl()), new DownloadInterceptor(downloadTask)).download(downloadTask.getServerUrl(), "bytes=" + downloadTask.getCurrentSize() + "-");
         observe().subscribe(downloadObserver);
 
 
@@ -249,9 +252,9 @@ public class RxHttp {
 
     private Observable map() {
         if (downloadTask != null) {
-            return apiObservable.map(new DownloadResponseFunction(downloadTask));
+            return observable.map(new DownloadResponseFunction(downloadTask));
         } else {
-            return apiObservable.map(new HttpResponseFunction(clazz));
+            return observable.map(new HttpResponseFunction(clazz));
         }
     }
 
@@ -282,6 +285,9 @@ public class RxHttp {
         }).onErrorResumeNext(new ErrorResponseFunction <>()).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
     }
+
+
+
 
 
     /*获取基础URL*/

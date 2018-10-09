@@ -7,12 +7,12 @@ import android.support.annotation.LayoutRes;
 import android.util.DisplayMetrics;
 
 
-import com.github.eajon.base.BaseMvpActivity;
+import com.github.eajon.base.RxBusActivity;
 
 import butterknife.ButterKnife;
 
 
-public abstract class BaseActivity extends BaseMvpActivity {
+public abstract class BaseActivity extends RxBusActivity {
     protected Activity self;
 
     @LayoutRes

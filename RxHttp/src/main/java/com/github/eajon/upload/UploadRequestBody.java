@@ -106,9 +106,10 @@ public class UploadRequestBody extends RequestBody {
                     uploadTask.setState(UploadTask.State.LOADING);
                 }
 //                LogUtils.e(RxHttp.getConfig().getLogTag(),"upload"+ uploadTask.getProgress());
-                uploadTask.sendBus();
                 if (multipartUploadTask != null) {
                     multipartUploadTask.sendBus();
+                } else {
+                    uploadTask.sendBus();
                 }
             }
         };

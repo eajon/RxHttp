@@ -1,7 +1,6 @@
 package com.github.eajon.upload;
 
-import com.github.eajon.rxbus.RxBusRelay;
-import com.github.eajon.rxbus.RxResponse;
+import com.threshold.rxbus2.RxBus;
 
 import java.util.ArrayList;
 
@@ -11,7 +10,6 @@ public class MultipartUploadTask {
     private ArrayList <UploadTask> uploadTasks;
 
     private UploadTask.State state = UploadTask.State.NONE;//上传状态
-
 
 
     public UploadTask.State getState() {
@@ -68,9 +66,7 @@ public class MultipartUploadTask {
 
 
     public void sendBus() {
-        RxResponse rxResponse = new RxResponse(tag);
-        rxResponse.setData(this);
-        RxBusRelay.get().post(rxResponse);
+        RxBus.getDefault().post(this);
     }
 
     @Override

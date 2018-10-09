@@ -1,9 +1,6 @@
 package com.github.eajon.upload;
 
-
-
-import com.github.eajon.rxbus.RxBusRelay;
-import com.github.eajon.rxbus.RxResponse;
+import com.threshold.rxbus2.RxBus;
 
 import java.io.File;
 
@@ -90,9 +87,7 @@ public class UploadTask {
 
 
     public void sendBus() {
-        RxResponse rxResponse = new RxResponse(tag);
-        rxResponse.setData(this);
-        RxBusRelay.get().post(rxResponse);
+        RxBus.getDefault().post(this);
     }
 
     @Override

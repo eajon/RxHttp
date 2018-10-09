@@ -1,8 +1,6 @@
 package com.eajon.my.base;
 
-import com.github.eajon.base.BaseMvpFragment;
-import com.trello.rxlifecycle2.LifecycleProvider;
-import com.trello.rxlifecycle2.components.support.RxFragment;
+import com.github.eajon.base.RxBusFragment;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -21,7 +19,7 @@ import butterknife.ButterKnife;
  * Created by newbiechen on 17-3-31.
  */
 
-public abstract class BaseFragment extends BaseMvpFragment {
+public abstract class BaseFragment extends RxBusFragment {
 
 
     protected Activity self;

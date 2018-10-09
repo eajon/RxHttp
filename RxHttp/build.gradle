@@ -35,10 +35,16 @@ dependencies {
 
     //lifecycle
     api 'com.trello.rxlifecycle2:rxlifecycle:2.2.2'
+    api 'com.trello.rxlifecycle2:rxlifecycle-android:2.2.2'
     api 'com.trello.rxlifecycle2:rxlifecycle-components:2.2.2'
 
-    //rx
-    api 'io.reactivex.rxjava2:rxjava:2.2.2'
-    api 'io.reactivex.rxjava2:rxandroid:2.0.2'
-    api 'com.jakewharton.rxrelay2:rxrelay:2.0.0'
+
+    // rxbus
+    api group: 'io.reactivex.rxjava2', name: 'rxjava', version: '2.2.2'
+    api('com.jakewharton.rxrelay2:rxrelay:2.0.0'){
+        exclude group: 'io.reactivex.rxjava2',module: 'rxjava'
+    }
+    api 'com.github.wind0ws:rxbus2:1.1.1'
+
+
 }

@@ -180,7 +180,7 @@
             }
         });
         
-#### 下载 暂停 继续 支持断点续传 并监听进度
+#### 下载 暂停 继续 支持断点续传 并可以监听进度（监听进度在最下面）
            File file1 = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "WEIXIN" + ".apk")
            String url1 = "http://imtt.dd.qq.com/16891/50CC095EFBE6059601C6FB652547D737.apk?fsname=com.tencent.mm_6.6.7_1321.apk&csr=1bbd";
            DownloadTask downloadTask = new DownloadTask(file1.getName(), file1.getAbsolutePath(), url1);
@@ -212,20 +212,12 @@
                 
                 
                 //暂停OnClick
-                downloadObserver.dispose();//取消发射，暂停下载 注：调用dispose 下载由于支持断点续传为暂停onPause(),上传和请求均为取消onCancel()
+                downloadObserver.dispose();//取消发射，暂停下载 注：调用dispose 下载由于支持断点续传为会进入onPause(),上传和请求均为进入onCancel()
                 downloadTask.getState();//此时获取状态是暂停
                 downloadTask.getProgress();//获取进度
                 
-                //实时获取进度  通过RXbus实现 当前Activity需要继承BaseMvpActivity，onResponse()中获取 
-                  @Override
-                  public void onResponse(RxResponse response) {
-                        if (response.getTag().equals(downloadTask.getTag())) {//判断tag Tag相同表示是当前任务 注：在多线程下载的过程中，确保Tag唯一
-                          DownloadTask downloadTask = (DownloadTask) response.getData();//获取当前下载任务
-                          downloadTask.getState();//下载状态
-                          downloadTask.getProgress();//下载进度
-                       }
-                   }
-                   
+              
+                 
                    
  ## 上传
  
@@ -286,27 +278,29 @@
                 });
                   
                   
- ####  上传进度 和下载一样                   
-                  //实时获取进度  通过RXbus实现 当前Activity需要继承BaseMvpActivity，onResponse()中获取 
-                  @Override
-                  public void onResponse(RxResponse response) {
-                        if (response.getTag().equals(uploadTask.getTag())) {//单文件 
-                           UploadTask uploadTask = (UploadTask)response.getData();
-                           uploadTask.getState(); //文件状态
-                           uploadTask.getProgress();//文件进度
-                       }
-                       
-                       if (response.getTag().equals(multipartUploadTask.getTag()) {//多文件
-                          MultipartUploadTask multipartUploadTask = (MultipartUploadTask) response.getData();
-                          multipartUploadTask.getProgress();总进度
-                          multipartUploadTask.getState();//总状态
-                          //其中某个文件进度 
-                          multipartUploadTask.getProgress(0);
-                          //其中某个文件状态
-                          multipartUploadTask.getState(0);
-                          
-                       }
-                   }
+ ####  关于进度  上传进度 和下载一样 通过继承RxBusActivity实现  同时开启多个任务的时候 可以通过任务中的tag区分                
+                     @RxSubscribe(observeOnThread = EventThread.MAIN) //监听下载进度 
+                     public void downloadProgress(DownloadTask downloadTask)
+                     {
+                         download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%");
+                     }
+                 
+                     @RxSubscribe(observeOnThread = EventThread.MAIN) //单文件上传
+                     public void uploadProgress(UploadTask uploadTask)
+                     {
+                         upload.setText(uploadTask.getState().toString() + uploadTask.getProgress() + "%");
+                     }
+                 
+                     @RxSubscribe(observeOnThread = EventThread.MAIN)//多文件上传
+                     public void uploadProgress(MultipartUploadTask multipartUploadTask)
+                     {
+                         content.setText("总进度：" + multipartUploadTask.getProgress() + "%" + multipartUploadTask.getState().toString());
+                         if (multipartUploadTask.getUploadTasks().size() == 3) {//上传3个文件
+                             content1.setText("第一个：" + multipartUploadTask.getProgress(0) + "%" + multipartUploadTask.getState(0).toString());
+                             content2.setText("第二个：" + multipartUploadTask.getProgress(1) + "%" + multipartUploadTask.getState(1).toString());
+                             content3.setText("第三个：" + multipartUploadTask.getProgress(2) + "%" + multipartUploadTask.getState(2).toString());
+                         }
+                     }
 
 
 #### 具体用例可参看DEMO,发现BUG，可联系eajon@outlook.com,感谢关注
