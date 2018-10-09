@@ -110,12 +110,17 @@ public class MainActivity extends BaseActivity {
         RequestBody body = RequestBody.create(MediaType.parse("application/json"), requestBody);
         new RxHttp.Builder().baseUrl("http://139.224.61.120:8086/api/").apiUrl("getSceneList").setRequestBody(body).build().request(new HttpObserver() {
             @Override
-            protected void onSuccess(Object o) {
+            public void onSuccess(Object o) {
 
             }
 
             @Override
-            protected void onError(String t) {
+            public void onError(String t) {
+
+            }
+
+            @Override
+            public void onCancel() {
 
             }
         });
@@ -139,11 +144,7 @@ public class MainActivity extends BaseActivity {
             download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%");
         }
 
-        LogUtils.e(RxHttp.getConfig().getLogTag(), response.getTag() + "1");
-        LogUtils.e(RxHttp.getConfig().getLogTag(), uploadTasks.get(0).getTag() + "2");
-
         if (response.getTag().equals("mulitTag")) {
-
             MultipartUploadTask multipartUploadTask = (MultipartUploadTask) response.getData();
             content.setText("总进度：" + multipartUploadTask.getProgress() + "%" + multipartUploadTask.getState().toString());
             if (multipartUploadTask.getUploadTasks().size() == 3) {
@@ -177,12 +178,17 @@ public class MainActivity extends BaseActivity {
                 .build()
                 .upload(new UploadObserver() {
                     @Override
-                    protected void onSuccess(Object o) {
+                    public void onSuccess(Object o) {
 
                     }
 
                     @Override
-                    protected void onError(String t) {
+                    public void onError(String t) {
+
+                    }
+
+                    @Override
+                    public void onCancel() {
 
                     }
                 });
@@ -200,19 +206,26 @@ public class MainActivity extends BaseActivity {
                             public void accept(Permission permission) throws Exception {
                                 if (permission.granted) {
                                     if (downloadTask.getState() == DownloadTask.State.LOADING) {
-                                        downloadTask.setState(DownloadTask.State.PAUSE);
-                                        download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%");
                                         observer.dispose();
+                                        download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%");
                                     } else {
-                                        RxHttp rxHttp = new RxHttp.Builder().lifecycle(MainActivity.this).downloadTask(downloadTask).build();
-                                        observer = new DownloadObserver() {
+                                        RxHttp rxHttp = new RxHttp.Builder().downloadTask(downloadTask).build();
+                                        observer = new DownloadObserver <DownloadTask>() {
+
                                             @Override
-                                            protected void onSuccess(DownloadTask downloadTask) {
+                                            public void onPause() {
+                                                download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%");
+//                                              LogUtils.e(RxHttp.getConfig().getLogTag(), downloadTask.getState());
+                                            }
+
+
+                                            @Override
+                                            public void onSuccess(DownloadTask downloadTask) {
                                                 LogUtils.e(RxHttp.getConfig().getLogTag(), downloadTask.getState());
                                             }
 
                                             @Override
-                                            protected void onError(String t) {
+                                            public void onError(String t) {
 
                                             }
 
@@ -252,6 +265,7 @@ public class MainActivity extends BaseActivity {
 
                 String key;
                 String path;
+                uploadTasks.clear();
                 for (int i = 0; i < images.size(); i++) {
                     UploadTask uploadTask = new UploadTask(images.get(i).name, new File(images.get(i).path));
                     uploadTasks.add(uploadTask);

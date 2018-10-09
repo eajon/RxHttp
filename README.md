@@ -69,15 +69,20 @@
                 .lifecycle(this)/* 关联生命周期，可以指定到Activity具体动作，使用生命周期当前Activity需要继承RxAppCompatActivity 或者BaseMvpActivity */
                 .build()
                 .request(new HttpObserver<Login>() {
-            @Override
-            protected void onSuccess(Login o) {
-
-            }
-
-            @Override
-            protected void onError(String t) {
-
-            }
+             @Override
+             public void onSuccess(Response o) {
+            
+             }
+            
+             @Override
+             public void onError(String t) {
+            
+             }
+                        
+             @Override
+             public void onCancel(String t) {
+                        
+             }
         });
         
           //返回string数据
@@ -92,13 +97,18 @@
                 .build()
                 .request(new HttpObserver() {
             @Override
-            protected void onSuccess(Object o) {
-
+            public void onSuccess(Response o) {
+           
             }
-
+           
             @Override
-            protected void onError(String t) {
-
+            public void onError(String t) {
+           
+            }
+                       
+            @Override
+            public void onCancel(String t) {
+                       
             }
         });
                 
@@ -119,17 +129,25 @@
                 .build()
                 .request(new HttpObserver<Response>() {
             @Override
-            protected void onSuccess(Response o) {
+            public void onSuccess(Response o) {
 
             }
 
             @Override
-            protected void onError(String t) {
+            public void onError(String t) {
 
             }
+            
+             @Override
+            public void onCancel(String t) {
+            
+            }
+            
+            
         });
         
         
+        /* 不需要关心cancel，可以使用BaseObserver   */
         
 ## 下载
 
@@ -147,13 +165,18 @@
                 .build()
                 .download(new DownloadObserver() {
             @Override
-            protected void onSuccess(DownloadTask downloadTask) {
+            public void onSuccess(DownloadTask downloadTask) {
 
             }
 
             @Override
-            protected void onError(String s) {
+            public void onError(String s) {
 
+            }
+            
+             @Override
+            public void onCancel(String t) {
+                                
             }
         });
         
@@ -168,24 +191,30 @@
                                         
             DownloadObserver downloadObserver = new DownloadObserver() {
                 @Override
-                protected void onSuccess(DownloadTask downloadTask) {
-                         LogUtils.e(RxHttp.getConfig().getLogTag(), downloadTask.getState());
-                         }
+                public void onSuccess(DownloadTask downloadTask) {
+                       LogUtils.e(RxHttp.getConfig().getLogTag(), downloadTask.getState());
+                }
 
                 @Override
-                protected void onError(String t) {
+                public void onError(String t) {
 
-                         }
+                }
+                         
+                @Override
+                public void onPause(String t) {
+                         
+                }
 
-                };
+            };
                 
             rxHttp.download(downloadObserver);
   
                 
                 
                 //暂停OnClick
-                downloadTask.setState(DownloadTask.State.PAUSE);//设置暂停状态
-                downloadObserver.dispose();//取消发射，暂停下载
+                downloadObserver.dispose();//取消发射，暂停下载 注：调用dispose 下载由于支持断点续传为暂停onPause(),上传和请求均为取消onCancel()
+                downloadTask.getState();//此时获取状态是暂停
+                downloadTask.getProgress();//获取进度
                 
                 //实时获取进度  通过RXbus实现 Activity需要继承BaseMvpActivity 
                   @Override
@@ -210,13 +239,18 @@
                 .build()
                 .upload(new UploadObserver() {
                     @Override
-                    protected void onSuccess(Object o) {
+                    public void onSuccess(Object o) {
 
                     }
 
                     @Override
-                    protected void onError(String t) {
+                    public void onError(String t) {
 
+                    }
+                    
+                    @Override
+                    public void onCancel(String t) {
+                    
                     }
                 });
                 
@@ -236,13 +270,18 @@
                 .build()
                 .upload(new UploadObserver() {
                     @Override
-                    protected void onSuccess(Object o) {
+                    public void onSuccess(Object o) {
 
                     }
 
                     @Override
-                    protected void onError(String t) {
+                    public void onError(String t) {
 
+                    }
+                    
+                    @Override
+                    public void onCancel(String t) {
+                                        
                     }
                 });
                   

@@ -73,4 +73,12 @@ public class MultipartUploadTask {
         RxBusRelay.get().post(rxResponse);
     }
 
+    @Override
+    public String toString() {
+        return "MultipartUploadTask{" +
+                "tag='" + tag + '\'' +
+                ", uploadTasks=" + uploadTasks +
+                ", state=" + state +
+                '}';
+    }
 }

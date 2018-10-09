@@ -12,6 +12,8 @@ public abstract class DownloadObserver<T extends DownloadTask> extends BaseObser
     DownloadTask downloadTask;
     Disposable disposable;
 
+    public abstract void onPause();
+
     public void setDownloadTask(DownloadTask downloadTask) {
         this.downloadTask = downloadTask;
     }
@@ -25,28 +27,16 @@ public abstract class DownloadObserver<T extends DownloadTask> extends BaseObser
 
     @Override
     public void onNext(T t) {
+        super.onNext(t);
         downloadTask.setState(DownloadTask.State.FINISH);
         downloadTask.sendBus();
-        onSuccess(t);
     }
 
     @Override
     public void onError(Throwable e) {
+        super.onError(e);
         downloadTask.setState(DownloadTask.State.ERROR);
         downloadTask.sendBus();
-        dispose();
-        LogUtils.e(RxHttp.getConfig().getLogTag(), "error:" + e.toString());
-        onError(e.toString());
+
     }
-
-    @Override
-    public void onComplete() {
-        LogUtils.d(RxHttp.getConfig().getLogTag(), "onComplete");
-        dispose();
-    }
-
-
-    protected abstract void onSuccess(T t);
-
-    protected abstract void onError(String t);
 }

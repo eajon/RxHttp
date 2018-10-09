@@ -114,5 +114,15 @@ public class DownloadTask implements Serializable {
         RxBusRelay.get().post(rxResponse);
     }
 
-
+    @Override
+    public String toString() {
+        return "DownloadTask{" +
+                "tag='" + tag + '\'' +
+                ", localUrl='" + localUrl + '\'' +
+                ", serverUrl='" + serverUrl + '\'' +
+                ", totalSize=" + totalSize +
+                ", currentSize=" + currentSize +
+                ", state=" + state +
+                '}';
+    }
 }

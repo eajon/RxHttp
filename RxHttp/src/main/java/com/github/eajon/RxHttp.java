@@ -8,6 +8,7 @@ import com.github.eajon.function.ErrorResponseFunction;
 import com.github.eajon.function.HttpResponseFunction;
 import com.github.eajon.download.DownloadInterceptor;
 import com.github.eajon.download.DownloadTask;
+import com.github.eajon.observer.BaseObserver;
 import com.github.eajon.observer.DownloadObserver;
 import com.github.eajon.observer.HttpObserver;
 import com.github.eajon.observer.UploadObserver;
@@ -31,6 +32,7 @@ import java.util.TreeMap;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.functions.Action;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -86,6 +88,8 @@ public class RxHttp {
 
     /*上传文件回调*/
     private UploadObserver uploadObserver;
+
+    Observable apiObservable;
 
 
     /*构造函数*/
@@ -155,7 +159,6 @@ public class RxHttp {
         disposeParameter();
 
         /*请求方式处理*/
-        Observable apiObservable;
         if (method == null) {
             method = Method.POST;
         }
@@ -180,9 +183,7 @@ public class RxHttp {
                 apiObservable = RetrofitUtils.get().getRetrofit(getBaseUrl()).post(disposeApiUrl(), parameter, header);
                 break;
         }
-
-        subscribe(apiObservable);
-
+        observe().subscribe(httpObserver);
     }
 
     /*执行文件上传*/
@@ -206,7 +207,6 @@ public class RxHttp {
 
             uploadObserver.setUploadTask(uploadTask);
         } else {
-
             for (int i = 0; i < multipartUploadTask.getUploadTasks().size(); i++) {
                 UploadTask task = multipartUploadTask.getUploadTasks().get(i);
                 file = task.getFile();
@@ -214,116 +214,81 @@ public class RxHttp {
                 MultipartBody.Part part = MultipartBody.Part.createFormData(task.getTag(), file.getName(), new UploadRequestBody(requestBody, task, multipartUploadTask));
                 fileList.add(part);
             }
-
             uploadObserver.setMultipartUploadTask(multipartUploadTask);
         }
 
-
-
         /*请求处理*/
-        Observable apiObservable = RetrofitUtils.get().getRetrofit(getBaseUrl()).upload(disposeApiUrl(), parameter, header, fileList);
-        uploadSubscribe(apiObservable);
+        apiObservable = RetrofitUtils.get().getRetrofit(getBaseUrl()).upload(disposeApiUrl(), parameter, header, fileList);
+        observe().subscribe(uploadObserver);
 
     }
 
     private void doDownload() {
-
-
         /*下载任务关联observer用于改变状态*/
         downloadObserver.setDownloadTask(downloadTask);
-
-
         /*请求处理*/
-        Observable apiObservable = RetrofitUtils.get().getRetrofit(getBasUrl(downloadTask.getServerUrl()), new DownloadInterceptor(downloadTask)).download(downloadTask.getServerUrl(), "bytes=" + downloadTask.getCurrentSize() + "-");
-        downloadSubscribe(apiObservable);
+        apiObservable = RetrofitUtils.get().getRetrofit(getBasUrl(downloadTask.getServerUrl()), new DownloadInterceptor(downloadTask)).download(downloadTask.getServerUrl(), "bytes=" + downloadTask.getCurrentSize() + "-");
+        observe().subscribe(downloadObserver);
 
 
     }
 
 
-    private void subscribe(Observable observable) {
-        /* compose 操作符 介于 map onErrorResumeNext */
+    /* compose 操作符 介于 map onErrorResumeNext */
+    private Observable compose() {
         if (lifecycle != null) {
             if (activityEvent != null || fragmentEvent != null) {
                 //两个同时存在,以 activity 为准
                 if (activityEvent != null && fragmentEvent != null) {
-                    observable.map(new HttpResponseFunction(clazz)).compose(lifecycle.bindUntilEvent(activityEvent)).onErrorResumeNext(new ErrorResponseFunction<>()).subscribeOn(Schedulers.io())
-                            .observeOn(AndroidSchedulers.mainThread()).subscribe(httpObserver);
+                    return map().compose(lifecycle.bindUntilEvent(activityEvent));
                 }
                 if (activityEvent != null) {
-                    observable.map(new HttpResponseFunction(clazz)).compose(lifecycle.bindUntilEvent(activityEvent)).onErrorResumeNext(new ErrorResponseFunction <>()).subscribeOn(Schedulers.io())
-                            .observeOn(AndroidSchedulers.mainThread()).subscribe(httpObserver);
+                    return map().compose(lifecycle.bindUntilEvent(activityEvent));
                 }
                 if (fragmentEvent != null) {
-                    observable.map(new HttpResponseFunction(clazz)).compose(lifecycle.bindUntilEvent(fragmentEvent)).onErrorResumeNext(new ErrorResponseFunction <>()).subscribeOn(Schedulers.io())
-                            .observeOn(AndroidSchedulers.mainThread()).subscribe(httpObserver);
+                    return map().compose(lifecycle.bindUntilEvent(fragmentEvent));
                 }
             } else {
-                observable.map(new HttpResponseFunction(clazz)).compose(lifecycle.bindToLifecycle()).onErrorResumeNext(new ErrorResponseFunction <>()).subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread()).subscribe(httpObserver);
+                return map().compose(lifecycle.bindToLifecycle());
             }
-        } else {
-            observable.map(new HttpResponseFunction(clazz)).onErrorResumeNext(new ErrorResponseFunction <>()).subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread()).subscribe(httpObserver);
         }
-
+        return map();
     }
 
 
-    private void downloadSubscribe(Observable observable) {
-        /* compose 操作符 介于 map onErrorResumeNext */
-        if (lifecycle != null) {
-            if (activityEvent != null || fragmentEvent != null) {
-                //两个同时存在,以 activity 为准
-                if (activityEvent != null && fragmentEvent != null) {
-                    observable.map(new DownloadResponseFunction(downloadTask)).compose(lifecycle.bindUntilEvent(activityEvent)).onErrorResumeNext(new ErrorResponseFunction <>()).subscribeOn(Schedulers.io())
-                            .observeOn(AndroidSchedulers.mainThread()).subscribe(downloadObserver);
-                }
-                if (activityEvent != null) {
-                    observable.map(new DownloadResponseFunction(downloadTask)).compose(lifecycle.bindUntilEvent(activityEvent)).onErrorResumeNext(new ErrorResponseFunction <>()).subscribeOn(Schedulers.io())
-                            .observeOn(AndroidSchedulers.mainThread()).subscribe(downloadObserver);
-                }
-                if (fragmentEvent != null) {
-                    observable.map(new DownloadResponseFunction(downloadTask)).compose(lifecycle.bindUntilEvent(fragmentEvent)).onErrorResumeNext(new ErrorResponseFunction <>()).subscribeOn(Schedulers.io())
-                            .observeOn(AndroidSchedulers.mainThread()).subscribe(downloadObserver);
-                }
-            } else {
-                observable.map(new DownloadResponseFunction(downloadTask)).compose(lifecycle.bindToLifecycle()).onErrorResumeNext(new ErrorResponseFunction <>()).subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread()).subscribe(downloadObserver);
-            }
+    private Observable map() {
+        if (downloadTask != null) {
+            return apiObservable.map(new DownloadResponseFunction(downloadTask));
         } else {
-            observable.map(new DownloadResponseFunction(downloadTask)).onErrorResumeNext(new ErrorResponseFunction <>()).subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread()).subscribe(downloadObserver);
+            return apiObservable.map(new HttpResponseFunction(clazz));
         }
-
     }
 
-    private void uploadSubscribe(Observable observable) {
-        /* compose 操作符 介于 map onErrorResumeNext */
-        if (lifecycle != null) {
-            if (activityEvent != null || fragmentEvent != null) {
-                //两个同时存在,以 activity 为准
-                if (activityEvent != null && fragmentEvent != null) {
-                    observable.map(new HttpResponseFunction(clazz)).compose(lifecycle.bindUntilEvent(activityEvent)).onErrorResumeNext(new ErrorResponseFunction <>()).subscribeOn(Schedulers.io())
-                            .observeOn(AndroidSchedulers.mainThread()).subscribe(uploadObserver);
-                }
-                if (activityEvent != null) {
-                    observable.map(new HttpResponseFunction(clazz)).compose(lifecycle.bindUntilEvent(activityEvent)).onErrorResumeNext(new ErrorResponseFunction <>()).subscribeOn(Schedulers.io())
-                            .observeOn(AndroidSchedulers.mainThread()).subscribe(uploadObserver);
-                }
-                if (fragmentEvent != null) {
-                    observable.map(new HttpResponseFunction(clazz)).compose(lifecycle.bindUntilEvent(fragmentEvent)).onErrorResumeNext(new ErrorResponseFunction <>()).subscribeOn(Schedulers.io())
-                            .observeOn(AndroidSchedulers.mainThread()).subscribe(uploadObserver);
-                }
-            } else {
-                observable.map(new HttpResponseFunction(clazz)).compose(lifecycle.bindToLifecycle()).onErrorResumeNext(new ErrorResponseFunction <>()).subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread()).subscribe(uploadObserver);
-            }
-        } else {
-            observable.map(new HttpResponseFunction(clazz)).onErrorResumeNext(new ErrorResponseFunction <>()).subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread()).subscribe(uploadObserver);
-        }
 
+    //    /*线程设置*/
+    public Observable observe() {
+        return compose().doOnDispose(new Action() {
+            @Override
+            public void run() throws Exception {
+                if (httpObserver != null) {
+                    httpObserver.onCancel();
+                } else if (uploadObserver != null) {
+                    if (uploadTask != null) {
+                        uploadTask.setState(UploadTask.State.CANCEL);
+                    } else {
+                        multipartUploadTask.setState(UploadTask.State.CANCEL);
+                        for (UploadTask uploadTask : multipartUploadTask.getUploadTasks()) {
+                            uploadTask.setState(UploadTask.State.CANCEL);
+                        }
+                    }
+                    uploadObserver.onCancel();
+                } else if (downloadObserver != null) {
+                    downloadTask.setState(DownloadTask.State.PAUSE);
+                    downloadObserver.onPause();
+                }
+            }
+        }).onErrorResumeNext(new ErrorResponseFunction <>()).subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
     }
 
 

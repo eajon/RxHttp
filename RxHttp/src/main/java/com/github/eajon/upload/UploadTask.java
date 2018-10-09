@@ -24,6 +24,7 @@ public class UploadTask {
         LOADING,        //上传中
         ERROR,          //错误
         FINISH,         //完成
+        CANCEL,         //取消
     }
 
     public State getState() {
@@ -92,5 +93,16 @@ public class UploadTask {
         RxResponse rxResponse = new RxResponse(tag);
         rxResponse.setData(this);
         RxBusRelay.get().post(rxResponse);
+    }
+
+    @Override
+    public String toString() {
+        return "UploadTask{" +
+                "tag='" + tag + '\'' +
+                ", file=" + file +
+                ", currentSize=" + currentSize +
+                ", totalSize=" + totalSize +
+                ", state=" + state +
+                '}';
     }
 }

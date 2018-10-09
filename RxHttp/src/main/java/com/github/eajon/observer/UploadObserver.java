@@ -13,6 +13,9 @@ public abstract class UploadObserver<T> extends BaseObserver <T> {
 
     private static final String TAG = "UploadObserver";
 
+    public abstract void onCancel();
+
+
     private UploadTask uploadTask;
 
     private MultipartUploadTask multipartUploadTask;
@@ -34,7 +37,7 @@ public abstract class UploadObserver<T> extends BaseObserver <T> {
         }
 
         if (multipartUploadTask != null) {
-            multipartUploadTask.setState(MultipartUploadTask.State.LOADING);
+            multipartUploadTask.setState(UploadTask.State.LOADING);
             multipartUploadTask.sendBus();
         }
     }
@@ -42,15 +45,13 @@ public abstract class UploadObserver<T> extends BaseObserver <T> {
 
     @Override
     public void onNext(T value) {
-        onSuccess(value);
+        super.onNext(value);
         if (uploadTask != null) {
             uploadTask.setState(UploadTask.State.FINISH);
             uploadTask.sendBus();
         }
-
-
         if (multipartUploadTask != null) {
-            multipartUploadTask.setState(MultipartUploadTask.State.FINISH);
+            multipartUploadTask.setState(UploadTask.State.FINISH);
             multipartUploadTask.sendBus();
         }
 
@@ -58,27 +59,15 @@ public abstract class UploadObserver<T> extends BaseObserver <T> {
 
     @Override
     public void onError(Throwable e) {
-        LogUtils.e(RxHttp.getConfig().getLogTag(), "error:" + e.toString());
-        onError(e.toString());
+        super.onError(e);
         if (uploadTask != null) {
             uploadTask.setState(UploadTask.State.ERROR);
             uploadTask.sendBus();
         }
         if (multipartUploadTask != null) {
-            multipartUploadTask.setState(MultipartUploadTask.State.ERROR);
+            multipartUploadTask.setState(UploadTask.State.ERROR);
             multipartUploadTask.sendBus();
         }
-        dispose();
     }
 
-    @Override
-    public void onComplete() {
-        LogUtils.d(RxHttp.getConfig().getLogTag(), "onComplete");
-        dispose();
-
-    }
-
-    protected abstract void onSuccess(T t);
-
-    protected abstract void onError(String t);
 }
