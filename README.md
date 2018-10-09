@@ -33,7 +33,7 @@
 #### Step 2. Add the dependency
 	
  	dependencies {
-	        implementation 'com.github.eajon:RxHttp:0.2.0'
+	        implementation 'com.github.eajon:RxHttp:0.3.0'
 	}
 
 	
@@ -95,7 +95,7 @@
                 .apiUrl("login")/* 按需配置 具体接口名称*/
                 .addHeader(null)/* 按需配置 */
                 .addParameter(null)/* 按需配置 */
-                .lifecycle(this)/* 关联生命周期，可以指定到Activity具体动作，使用生命周期当前Activity需要继承RxAppCompatActivity 或者BaseMvpActivity */
+                .lifecycle(this)/* 关联生命周期，可以指定到Activity具体动作，使用生命周期当前Activity需要继承RxAppCompatActivity 或者RxBusActivity */
                 .build()
                 .request(new HttpObserver() {
             @Override
@@ -149,7 +149,7 @@
                 .apiUrl("login")
                 .entity(Response.class)
                 .addHeader(null)
-                .lifecycle(this)/* 关联生命周期，可以指定到Activity具体动作，使用生命周期当前Activity需要继承RxAppCompatActivity 或者BaseMvpActivity */
+                .lifecycle(this)/* 关联生命周期，可以指定到Activity具体动作，使用生命周期当前Activity需要继承RxAppCompatActivity 或者RxBusActivity */
                 .setRequestBody(body)/*必填参数 */
                 .build()
                 .request(new HttpObserver<Response>() {
@@ -185,7 +185,7 @@
     DownloadTask downloadTask;
              new RxHttp
                 .Builder()
-                .lifecycle(this)/*下载按需配置lifecycle*/
+                .lifecycle(this)/*下载按需配置lifecycle 一般不配置*/
                 .downloadTask(downloadTask)
                 .build()
                 .download(new DownloadObserver() {
@@ -210,7 +210,7 @@
            String url1 = "http://imtt.dd.qq.com/16891/50CC095EFBE6059601C6FB652547D737.apk?fsname=com.tencent.mm_6.6.7_1321.apk&csr=1bbd";
            DownloadTask downloadTask = new DownloadTask(file1.getName(), file1.getAbsolutePath(), url1);
            RxHttp rxHttp = new RxHttp.Builder()
-           .lifecycle(this)/*下载按需配置lifecycle*/
+           .lifecycle(this)/*下载按需配置lifecycle 一般不配置*/
            .downloadTask(downloadTask)
            .build();
                                         
