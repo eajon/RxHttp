@@ -128,7 +128,7 @@
                        .request();
                        
         @RxSubscribe(observeOnThread = EventThread.MAIN)
-        public void weatherCallBack(Weather weather) {//entity 设置为哪个对象，RxbSubscribe哪个对象
+        public void weatherCallBack(Weather weather) {//entity 设置为哪个对象，RxbSubscribe那个对象即可
                   content.setText(new Gson().toJson(weather));
         }
                        
