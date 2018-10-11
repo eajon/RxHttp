@@ -1,5 +1,5 @@
 
-![image](https://github.com/zhengwenming/WMPlayer/blob/master/WMPlayer/Resource/WMPlayer.gif)  
+![image](https://github.com/eajon/RxHttp/blob/master/app/src/main/res/drawable/demo.gif)  
 
 # RxHttp
          本框架 是对 RXJAVA2 + Retrofit + RxBus2 + OkHttp3 的架构的封装 
