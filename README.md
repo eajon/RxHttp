@@ -33,7 +33,7 @@
 #### Step 2. Add the dependency
 	
  	dependencies {
-	        implementation 'com.github.eajon:RxHttp:0.3.0'
+	        implementation 'com.github.eajon:RxHttp:0.4.0'
 	}
 
 	
@@ -153,7 +153,7 @@
                        .request();
                        
         @RxSubscribe(observeOnThread = EventThread.MAIN)
-        public void weatherCallBack(Weather weather) {//entity 设置为哪个对象，RxbSubscribe哪个对象
+        public void weatherCallBack(Weather weather) {//entity 设置为哪个对象，RxbSubscribe那个对象即可
                   content.setText(new Gson().toJson(weather));
         }
                        
