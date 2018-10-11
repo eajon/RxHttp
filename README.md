@@ -8,7 +8,7 @@
 
 
 # Future 
-          1.请求增加阻塞Dialog
+          1.请求增加阻塞Dialog(已完成)
           2.增加rxchche
           3.增加自动重试
 
@@ -38,7 +38,32 @@
 
 	
 		
- 
+ # 最新更新
+                  1.请求的时候不传observer默认使用rxbus发射，返回结果可以@RxSubscribe 标签获取
+                  2.增加阻塞对话框,调用withDialog 就可以增加阻塞dialog,如果使用lifecycle对话框取消也会跟随生命周期，同时对话框消失任务会暂停或者取消
+                    /*阻塞对话框*/
+                          public RxHttp.Builder withDialog(Context context) {
+                              this.context = context;
+                              this.message = "";
+                              this.cancelable = true;
+                              return this;
+                          }
+                  
+                          /*阻塞对话框*/
+                          public RxHttp.Builder withDialog(Context context, String message) {
+                              this.context = context;
+                              this.message = message;
+                              this.cancelable = true;
+                              return this;
+                          }
+                  
+                          /*阻塞对话框*/
+                          public RxHttp.Builder withDialog(Context context, String message, boolean cancelable) {
+                              this.context = context;
+                              this.message = message;
+                              this.cancelable = cancelable;
+                              return this;
+                          }
         
  # 如何使用他    
 
@@ -82,7 +107,7 @@
              }
                         
              @Override
-             public void onCancel(String t) {
+             public void onCancelOrPause() {
                         
              }
         });
@@ -108,9 +133,9 @@
            
             }
                        
-            @Override
-            public void onCancel(String t) {
-                       
+             @Override
+            public void onCancelOrPause() {
+                                    
             }
         });
         
@@ -164,8 +189,8 @@
             }
             
              @Override
-            public void onCancel(String t) {
-            
+            public void onCancelOrPause() {
+                                    
             }
             
             
@@ -174,7 +199,7 @@
         
         /* 不需要关心cancel，可以使用BaseObserver   */
         
-## 下载
+## 下载（设置entity无效,成功返回数据必须是DownloadTask）
 
 ####  普通下载  支持RXBUS方式
 
@@ -188,7 +213,7 @@
                 .lifecycle(this)/*下载按需配置lifecycle 一般不配置*/
                 .downloadTask(downloadTask)
                 .build()
-                .download(new DownloadObserver() {
+                .download(new HttpObserver() {
             @Override
             public void onSuccess(DownloadTask downloadTask) {
 
@@ -200,8 +225,8 @@
             }
             
              @Override
-            public void onCancel(String t) {
-                                
+            public void onCancelOrPause() {
+                                    
             }
         });
         
@@ -214,7 +239,7 @@
            .downloadTask(downloadTask)
            .build();
                                         
-            DownloadObserver downloadObserver = new DownloadObserver() {
+            HttpObserver downloadObserver = new HttpObserver() {
                 @Override
                 public void onSuccess(DownloadTask downloadTask) {
                        LogUtils.e(RxHttp.getConfig().getLogTag(), downloadTask.getState());
@@ -225,10 +250,10 @@
 
                 }
                          
-                @Override
-                public void onPause(String t) {
-                         
-                }
+                 @Override
+                 public void onCancelOrPause() {
+                                        
+                 }
 
             };
                 
@@ -237,7 +262,7 @@
                 
                 
                 //暂停OnClick
-                downloadObserver.dispose();//取消发射，暂停下载 注：调用dispose 下载由于支持断点续传为会进入onPause(),上传和请求均为进入onCancel()
+                downloadObserver.dispose();//取消发射，暂停下载 注：调用dispose 下载由于支持断点续传为暂停,上传和请求均为进入取消请求
                 downloadTask.getState();//此时获取状态是暂停
                 downloadTask.getProgress();//获取进度
                 
@@ -254,7 +279,7 @@
                 .uploadTask(uploadTask)/* 单文件必填*/
                 .lifecycle(this)/*上传按需配置lifecycle*/
                 .build()
-                .upload(new UploadObserver() {
+                .upload(new HttpObserver() {
                     @Override
                     public void onSuccess(Object o) {
 
@@ -265,10 +290,10 @@
 
                     }
                     
-                    @Override
-                    public void onCancel(String t) {
-                    
-                    }
+                     @Override
+                     public void onCancelOrPause() {
+                                            
+                     }
                 });
                 
  ####  多文件        支持RXBUS方式
@@ -297,8 +322,8 @@
                     }
                     
                     @Override
-                    public void onCancel(String t) {
-                                        
+                    public void onCancelOrPause() {
+                                           
                     }
                 });
                   

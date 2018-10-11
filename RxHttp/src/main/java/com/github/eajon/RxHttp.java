@@ -1,5 +1,8 @@
 package com.github.eajon;
 
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.text.TextUtils;
 
 
@@ -9,23 +12,18 @@ import com.github.eajon.function.ErrorResponseFunction;
 import com.github.eajon.function.HttpResponseFunction;
 import com.github.eajon.download.DownloadInterceptor;
 import com.github.eajon.download.DownloadTask;
-import com.github.eajon.observer.BaseObserver;
-import com.github.eajon.observer.DownloadObserver;
 import com.github.eajon.observer.HttpObserver;
-import com.github.eajon.observer.UploadObserver;
 import com.github.eajon.retrofit.Method;
 import com.github.eajon.retrofit.RxConfig;
 import com.github.eajon.upload.MultipartUploadTask;
 import com.github.eajon.upload.UploadRequestBody;
 import com.github.eajon.upload.UploadTask;
+import com.github.eajon.util.LogUtils;
 import com.github.eajon.util.RetrofitUtils;
 import com.threshold.rxbus2.RxBus;
 import com.trello.rxlifecycle2.LifecycleProvider;
 import com.trello.rxlifecycle2.android.ActivityEvent;
 import com.trello.rxlifecycle2.android.FragmentEvent;
-
-import org.reactivestreams.Subscriber;
-import org.reactivestreams.Subscription;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
@@ -34,13 +32,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.concurrent.Callable;
 
-import io.reactivex.Flowable;
 import io.reactivex.Observable;
-import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
+import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -82,13 +81,16 @@ public class RxHttp {
     /*entity*/
     private Class <?> clazz;
     /*HTTP回调*/
-    private BaseObserver baseObserver;
-    /*下载文件回调*/
-    private DownloadObserver downloadObserver;
-    /*上传文件回调*/
-    private UploadObserver uploadObserver;
+    private HttpObserver httpObserver;
+    /*RxDialog提供Context*/
+    private Context context;
+    /*dialog提示*/
+    private String message;
+    /*dialog是否默认可以取消*/
+    private boolean cancelable;
     /*Retrofit observable */
     Observable observable;
+
 
 
     /*构造函数*/
@@ -107,12 +109,15 @@ public class RxHttp {
         this.clazz = builder.clazz;
         this.requestBody = builder.requestBody;
         this.downloadTask = builder.downloadTask;
+        this.context = builder.context;
+        this.message = builder.message;
+        this.cancelable = builder.cancelable;
     }
 
     /*普通Http请求*/
-    public void request(BaseObserver baseObserver) {
-        this.baseObserver = baseObserver;
-        if (baseObserver == null) {
+    public void request(HttpObserver httpObserver) {
+        this.httpObserver = httpObserver;
+        if (httpObserver == null) {
             throw new NullPointerException("Observer must not null!");
         } else {
             doRequest();
@@ -125,9 +130,9 @@ public class RxHttp {
     }
 
     /*上传文件请求*/
-    public void upload(UploadObserver uploadObserver) {
-        this.uploadObserver = uploadObserver;
-        if (uploadObserver == null) {
+    public void upload(HttpObserver httpObserver) {
+        this.httpObserver = httpObserver;
+        if (httpObserver == null) {
             throw new NullPointerException("UploadObserve must not null!");
         } else {
             if (uploadTask == null && multipartUploadTask == null) {
@@ -144,9 +149,9 @@ public class RxHttp {
     }
 
     /*下载文件请求*/
-    public void download(DownloadObserver downloadObserver) {
-        this.downloadObserver = downloadObserver;
-        if (downloadObserver == null) {
+    public void download(HttpObserver httpObserver) {
+        this.httpObserver = httpObserver;
+        if (httpObserver == null) {
             throw new NullPointerException("DownloadObserver must not null!");
         } else {
             if (downloadTask == null) {
@@ -195,21 +200,7 @@ public class RxHttp {
                 observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).post(disposeApiUrl(), parameter, header);
                 break;
         }
-        if (baseObserver != null) {
-            observe().subscribe(baseObserver);
-        } else {
-            observe().subscribe(new BaseObserver() {
-                @Override
-                public void onSuccess(Object o) {
-                    RxBus.getDefault().post(o);
-                }
-
-                @Override
-                public void onError(ApiException e) {
-                    RxBus.getDefault().post(e);
-                }
-            });
-        }
+       subscribe();
     }
 
     /*执行文件上传*/
@@ -243,20 +234,29 @@ public class RxHttp {
 
         /*请求处理*/
         observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).upload(disposeApiUrl(), parameter, header, fileList);
-        if (uploadObserver != null) {
-            if (uploadTask != null) {
-                uploadObserver.setUploadTask(uploadTask);
+        subscribe();
+    }
+
+    private void doDownload() {
+
+        /*请求处理*/
+        observable = RetrofitUtils.get().getRetrofit(getBasUrl(downloadTask.getServerUrl()), new DownloadInterceptor(downloadTask)).download(downloadTask.getServerUrl(), "bytes=" + downloadTask.getCurrentSize() + "-");
+        subscribe();
+
+
+    }
+
+    private void subscribe()
+    {
+        if (httpObserver != null) {
+            if (context != null) {
+                dialogObserver().subscribe(httpObserver);
             } else {
-                uploadObserver.setMultipartUploadTask(multipartUploadTask);
+                observe().subscribe(httpObserver);
             }
-            observe().subscribe(uploadObserver);
+
         } else {
-            UploadObserver uploadObserver = new UploadObserver() {
-                @Override
-                public void onCancel() {
-
-                }
-
+            observe().subscribe(new HttpObserver() {
                 @Override
                 public void onSuccess(Object o) {
                     RxBus.getDefault().post(o);
@@ -266,48 +266,13 @@ public class RxHttp {
                 public void onError(ApiException t) {
                     RxBus.getDefault().post(t);
                 }
-            };
-            if (uploadTask != null) {
-                uploadObserver.setUploadTask(uploadTask);
-            } else {
-                uploadObserver.setMultipartUploadTask(multipartUploadTask);
-            }
 
-            observe().subscribe(uploadObserver);
+                @Override
+                public void onCancelOrPause() {
+
+                }
+            });
         }
-
-    }
-
-    private void doDownload() {
-
-        /*请求处理*/
-        observable = RetrofitUtils.get().getRetrofit(getBasUrl(downloadTask.getServerUrl()), new DownloadInterceptor(downloadTask)).download(downloadTask.getServerUrl(), "bytes=" + downloadTask.getCurrentSize() + "-");
-        if (downloadObserver != null) {
-            /*下载任务关联observer用于改变状态*/
-            downloadObserver.setDownloadTask(downloadTask);
-            observe().subscribe(downloadObserver);
-        } else {
-            DownloadObserver downloadObserver = new DownloadObserver <DownloadTask>() {
-                @Override
-                public void onPause() {
-
-                }
-
-                @Override
-                public void onSuccess(DownloadTask o) {
-                    RxBus.getDefault().post(o);
-                }
-
-                @Override
-                public void onError(ApiException t) {
-                    RxBus.getDefault().post(t);
-                }
-            };
-            downloadObserver.setDownloadTask(downloadTask);
-            observe().subscribe(downloadObserver);
-        }
-
-
     }
 
 
@@ -342,30 +307,158 @@ public class RxHttp {
     }
 
 
+    private Observable dialogObserver() {
+
+        return Observable.using(new Callable <ProgressDialog>() {
+            @Override
+            public ProgressDialog call() {
+                return ProgressDialog.show(context, null, message, true, cancelable);
+            }
+        }, new Function <ProgressDialog, Observable <? extends Object>>() {
+            @Override
+            public Observable <? extends Object> apply(final ProgressDialog progressDialog) throws Exception {
+                return observe().doOnSubscribe(new Consumer <Disposable>() {
+                    @Override
+                    public void accept(final Disposable disposable) throws Exception {
+                        progressDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                            @Override
+                            public void onDismiss(DialogInterface dialog) {
+                                LogUtils.e("dialog", "dismiss");
+                                disposable.dispose();
+                            }
+                        });
+                    }
+                });
+            }
+        }, new Consumer <ProgressDialog>() {
+            @Override
+            public void accept(ProgressDialog progressDialog) throws Exception {
+                LogUtils.e("dialog", "accept");
+                progressDialog.dismiss();
+            }
+        });
+    }
+
+
     //    /*线程设置*/
     public Observable observe() {
-        return compose().doOnDispose(new Action() {
-            @Override
-            public void run() throws Exception {
-                if (baseObserver != null) {
-                    if (baseObserver instanceof HttpObserver)
-                        ((HttpObserver) baseObserver).onCancel();
-                } else if (uploadObserver != null) {
-                    if (uploadTask != null) {
-                        uploadTask.setState(UploadTask.State.CANCEL);
-                    } else {
-                        multipartUploadTask.setState(UploadTask.State.CANCEL);
-                        for (UploadTask uploadTask : multipartUploadTask.getUploadTasks()) {
-                            uploadTask.setState(UploadTask.State.CANCEL);
+
+        return compose().onErrorResumeNext(new ErrorResponseFunction <>())
+                .doOnDispose(new Action() {
+                    @Override
+                    public void run() throws Exception {
+//                        LogUtils.e("dialog", "doOnDispose");
+                    }
+                }).doOnLifecycle(new Consumer <Disposable>() {
+                    @Override
+                    public void accept(Disposable disposable) throws Exception {
+                        LogUtils.e("dialog", "doOnLifecycle");
+                        if (downloadTask != null) {
+                            downloadTask.setState(DownloadTask.State.LOADING);
+                            downloadTask.sendBus();
+                        }
+                        if (uploadTask != null) {
+                            uploadTask.setState(UploadTask.State.LOADING);
+                            uploadTask.sendBus();
+                        }
+                        if (multipartUploadTask != null) {
+                            multipartUploadTask.setState(UploadTask.State.LOADING);
+                            multipartUploadTask.sendBus();
+
                         }
                     }
-                    uploadObserver.onCancel();
-                } else if (downloadObserver != null) {
-                    downloadTask.setState(DownloadTask.State.PAUSE);
-                    downloadObserver.onPause();
-                }
-            }
-        }).onErrorResumeNext(new ErrorResponseFunction <>()).subscribeOn(Schedulers.io())
+                }, new Action() {
+                    @Override
+                    public void run() throws Exception {
+                        LogUtils.e("dialog", "doOnLifecycle action");
+                    }
+                }).doOnTerminate(new Action() {
+                    @Override
+                    public void run() throws Exception {
+                        LogUtils.e("dialog", "doOnTerminate");
+                        if (downloadTask != null) {
+                            if (downloadTask.isFinish()) {
+                                downloadTask.setState(DownloadTask.State.FINISH);
+                                downloadTask.sendBus();
+                            } else {
+                                downloadTask.setState(DownloadTask.State.PAUSE);
+                                downloadTask.sendBus();
+                                httpObserver.onCancelOrPause();
+                            }
+                        }
+                        if (uploadTask != null) {
+                            if (uploadTask.isFinish()) {
+                                uploadTask.setState(UploadTask.State.FINISH);
+                                uploadTask.sendBus();
+                            } else {
+                                uploadTask.setState(UploadTask.State.CANCEL);
+                                uploadTask.sendBus();
+                                httpObserver.onCancelOrPause();
+                            }
+                        }
+                        if (multipartUploadTask != null) {
+                            if (multipartUploadTask.isFinish()) {
+                                multipartUploadTask.setState(UploadTask.State.FINISH);
+                                multipartUploadTask.sendBus();
+                            } else {
+                                multipartUploadTask.setState(UploadTask.State.CANCEL);
+                                multipartUploadTask.sendBus();
+                                httpObserver.onCancelOrPause();
+                            }
+                        }
+                    }
+                }).doOnError(new Consumer <Throwable>() {
+                    @Override
+                    public void accept(Throwable throwable) throws Exception {
+                        LogUtils.e("dialog", "doOnError");
+                        //由于手动取消RXJAVA2会进入异常 防止两次判断造成状态错误
+                        if (downloadTask != null) {
+                            if (downloadTask.getState() != DownloadTask.State.PAUSE) {
+                                downloadTask.setState(DownloadTask.State.ERROR);
+                                downloadTask.sendBus();
+                            }
+                        }
+                        if (uploadTask != null) {
+                            if (uploadTask.getState() != UploadTask.State.CANCEL) {
+                                uploadTask.setState(UploadTask.State.ERROR);
+                                uploadTask.sendBus();
+                            }
+                        }
+                        if (multipartUploadTask != null) {
+                            if (multipartUploadTask.getState() != UploadTask.State.CANCEL) {
+                                multipartUploadTask.setState(UploadTask.State.ERROR);
+                                multipartUploadTask.sendBus();
+                            }
+                        }
+                    }
+                }).doOnNext(new Consumer() {
+                    @Override
+                    public void accept(Object o) throws Exception {
+//                        LogUtils.e("dialog", "doOnNext");
+
+                    }
+                }).doAfterNext(new Consumer() {
+                    @Override
+                    public void accept(Object o) throws Exception {
+//                        LogUtils.e("dialog", "doAfterNext");
+                    }
+                }).doFinally(new Action() {
+                    @Override
+                    public void run() throws Exception {
+//                        LogUtils.e("dialog", "doFinally");
+                    }
+                }).doAfterTerminate(new Action() {
+                    @Override
+                    public void run() throws Exception {
+//                        LogUtils.e("dialog", "doAfterTerminate");
+                    }
+                }).doOnComplete(new Action() {
+                    @Override
+                    public void run() throws Exception {
+//                        LogUtils.e("dialog", "doOnComplete");
+
+                    }
+                }).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
     }
 
@@ -453,6 +546,13 @@ public class RxHttp {
         DownloadTask downloadTask;
         /*entity*/
         Class <?> clazz;
+
+        /*RxDialog提供Context*/
+        Context context;
+        /*dialog提示*/
+        String message;
+        /*dialog是否默认可以取消*/
+        boolean cancelable;
 
         public Builder() {
         }
@@ -573,6 +673,30 @@ public class RxHttp {
         /*下载任务*/
         public RxHttp.Builder downloadTask(DownloadTask downloadTask) {
             this.downloadTask = downloadTask;
+            return this;
+        }
+
+        /*阻塞对话框*/
+        public RxHttp.Builder withDialog(Context context) {
+            this.context = context;
+            this.message = "";
+            this.cancelable = true;
+            return this;
+        }
+
+        /*阻塞对话框*/
+        public RxHttp.Builder withDialog(Context context, String message) {
+            this.context = context;
+            this.message = message;
+            this.cancelable = true;
+            return this;
+        }
+
+        /*阻塞对话框*/
+        public RxHttp.Builder withDialog(Context context, String message, boolean cancelable) {
+            this.context = context;
+            this.message = message;
+            this.cancelable = cancelable;
             return this;
         }
 

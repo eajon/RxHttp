@@ -14,11 +14,8 @@ public class DownloadResponseFunction implements Function<ResponseBody, Object> 
         this.downloadTask = downloadTask;
     }
 
-
-
     @Override
     public Object apply(ResponseBody responseBody) throws Exception {
-        downloadTask.setState(DownloadTask.State.LOADING);
         FileUtils.writeFile(responseBody, downloadTask);
         return downloadTask;
     }

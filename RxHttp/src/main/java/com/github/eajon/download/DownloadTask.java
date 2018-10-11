@@ -110,6 +110,10 @@ public class DownloadTask implements Serializable {
         }
     }
 
+    public boolean isFinish() {
+        return currentSize == totalSize;
+    }
+
     public void sendBus() {
 //        RxResponse rxResponse = new RxResponse(this.tag);
 //        rxResponse.setData(this);

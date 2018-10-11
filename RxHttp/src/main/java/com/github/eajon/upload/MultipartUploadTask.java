@@ -55,6 +55,10 @@ public class MultipartUploadTask {
         }
     }
 
+    public boolean isFinish() {
+        return getProgress() == 100;
+    }
+
     public int getProgress(int position) {
         if (uploadTasks.size() > position) {
             return this.getUploadTasks().get(position).getProgress();
@@ -62,7 +66,6 @@ public class MultipartUploadTask {
             return 0;
         }
     }
-
 
 
     public void sendBus() {

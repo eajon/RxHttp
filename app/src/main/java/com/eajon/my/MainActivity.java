@@ -19,9 +19,7 @@ import com.eajon.my.glide.GlideUtils;
 import com.github.eajon.RxHttp;
 import com.github.eajon.download.DownloadTask;
 import com.github.eajon.exception.ApiException;
-import com.github.eajon.observer.DownloadObserver;
 import com.github.eajon.observer.HttpObserver;
-import com.github.eajon.observer.UploadObserver;
 import com.github.eajon.upload.MultipartUploadTask;
 import com.github.eajon.upload.UploadTask;
 import com.github.eajon.util.LogUtils;
@@ -38,14 +36,11 @@ import com.threshold.rxbus2.util.EventThread;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.reactivex.functions.Consumer;
-import okhttp3.MediaType;
-import okhttp3.RequestBody;
 
 
 public class MainActivity extends BaseActivity {
@@ -56,7 +51,7 @@ public class MainActivity extends BaseActivity {
     String url1 = "http://imtt.dd.qq.com/16891/50CC095EFBE6059601C6FB652547D737.apk?fsname=com.tencent.mm_6.6.7_1321.apk&csr=1bbd";
     String url2 = "http://imtt.dd.qq.com/16891/FC92B1B4471DE5AAD0D009DF9BF1AD01.apk?fsname=com.tencent.mobileqq_7.7.5_896.apk&csr=1bbd";
     DownloadTask downloadTask;
-    DownloadObserver observer;
+    HttpObserver observer;
     @BindView(R.id.request)
     Button request;
     @BindView(R.id.download)
@@ -114,16 +109,16 @@ public class MainActivity extends BaseActivity {
     }
 
     private void doRequest() {
-        HashMap map = new HashMap();
-        map.put("city", "常熟");
-        new RxHttp.Builder()
-                .get()
-                .baseUrl("http://wthrcdn.etouch.cn/")
-                .apiUrl("weather_mini")
-                .addParameter(map)
-                .entity(Weather.class)
-                .build()
-                .request();
+//        HashMap map = new HashMap();
+//        map.put("city", "常熟");
+//        new RxHttp.Builder()
+//                .get()
+//                .baseUrl("http://wthrcdn.etouch.cn/")
+//                .apiUrl("weather_mini")
+//                .addParameter(map)
+//                .entity(Weather.class)
+//                .build()
+//                .request();
     }
 
 
@@ -136,6 +131,7 @@ public class MainActivity extends BaseActivity {
     public void weatherCallBack(ApiException e) {
         content.setText(new Gson().toJson(e));
     }
+
     //下载监听
     @RxSubscribe(observeOnThread = EventThread.MAIN)
     public void downloadProgress(DownloadTask downloadTask) {
@@ -158,8 +154,6 @@ public class MainActivity extends BaseActivity {
             content3.setText("第三个：" + multipartUploadTask.getProgress(2) + "%" + multipartUploadTask.getState(2).toString());
         }
     }
-
-
 
 
     @Override
@@ -201,13 +195,13 @@ public class MainActivity extends BaseActivity {
                                         observer.dispose();
                                         download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%");
                                     } else {
-                                        RxHttp rxHttp = new RxHttp.Builder().downloadTask(downloadTask).build();
-                                        observer = new DownloadObserver <DownloadTask>() {
+                                        RxHttp rxHttp = new RxHttp.Builder().lifecycle(MainActivity.this).withDialog(MainActivity.this,"下载").downloadTask(downloadTask).build();
+                                        observer = new HttpObserver<DownloadTask>() {
 
                                             @Override
-                                            public void onPause() {
+                                            public void onCancelOrPause() {
+                                                LogUtils.e("dialog", "onpause");
                                                 download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%");
-//                                              LogUtils.e(RxHttp.getConfig().getLogTag(), downloadTask.getState());
                                             }
 
 
@@ -218,7 +212,8 @@ public class MainActivity extends BaseActivity {
 
                                             @Override
                                             public void onError(ApiException t) {
-
+                                                LogUtils.e("dialog", "onError");
+                                                LogUtils.e(RxHttp.getConfig().getLogTag(), downloadTask.getState());
                                             }
 
                                         };
@@ -249,11 +244,12 @@ public class MainActivity extends BaseActivity {
                         .baseUrl("http://wthrcdn.etouch.cn/")
                         .apiUrl("weather_mini")
                         .addParameter(map)
+                        .withDialog(MainActivity.this)
                         .entity(Weather.class)
                         .build()
                         .request(new HttpObserver<Weather>() {
                             @Override
-                            public void onCancel() {
+                            public void onCancelOrPause() {
 
                             }
 

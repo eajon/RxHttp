@@ -85,6 +85,10 @@ public class UploadTask {
         }
     }
 
+    public boolean isFinish() {
+        return currentSize == totalSize;
+    }
+
 
     public void sendBus() {
         RxBus.getDefault().post(this);
