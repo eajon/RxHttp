@@ -1,3 +1,6 @@
+
+![image](https://github.com/zhengwenming/WMPlayer/blob/master/WMPlayer/Resource/WMPlayer.gif)  
+
 # RxHttp
          本框架 是对 RXJAVA2 + Retrofit + RxBus2 + OkHttp3 的架构的封装 
          达成目标：链式调用，简单明了
