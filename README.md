@@ -324,7 +324,7 @@
                      public void uploadProgress(MultipartUploadTask multipartUploadTask)
                      {
                          content.setText("总进度：" + multipartUploadTask.getProgress() + "%" + multipartUploadTask.getState().toString());
-                         if (multipartUploadTask.getUploadTasks().size() == 3) {//上传3个文件
+                         if (multipartUploadTask.getUploadTasks().size() == 3) {//假设上传3个文件
                              content1.setText("第一个：" + multipartUploadTask.getProgress(0) + "%" + multipartUploadTask.getState(0).toString());
                              content2.setText("第二个：" + multipartUploadTask.getProgress(1) + "%" + multipartUploadTask.getState(1).toString());
                              content3.setText("第三个：" + multipartUploadTask.getProgress(2) + "%" + multipartUploadTask.getState(2).toString());
