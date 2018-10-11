@@ -90,7 +90,8 @@ public class RxHttp {
     private boolean cancelable;
     /*Retrofit observable */
     Observable observable;
-
+    /*自定义对话框*/
+    private ProgressDialog progressDialog;
 
 
     /*构造函数*/
@@ -112,6 +113,7 @@ public class RxHttp {
         this.context = builder.context;
         this.message = builder.message;
         this.cancelable = builder.cancelable;
+        this.progressDialog = builder.progressDialog;
     }
 
     /*普通Http请求*/
@@ -200,7 +202,7 @@ public class RxHttp {
                 observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).post(disposeApiUrl(), parameter, header);
                 break;
         }
-       subscribe();
+        subscribe();
     }
 
     /*执行文件上传*/
@@ -246,15 +248,13 @@ public class RxHttp {
 
     }
 
-    private void subscribe()
-    {
+    private void subscribe() {
         if (httpObserver != null) {
-            if (context != null) {
+            if (progressDialog != null || context != null) {
                 dialogObserver().subscribe(httpObserver);
             } else {
                 observe().subscribe(httpObserver);
             }
-
         } else {
             observe().subscribe(new HttpObserver() {
                 @Override
@@ -312,6 +312,10 @@ public class RxHttp {
         return Observable.using(new Callable <ProgressDialog>() {
             @Override
             public ProgressDialog call() {
+                if (progressDialog != null) {
+                    progressDialog.show();
+                    return progressDialog;
+                }
                 return ProgressDialog.show(context, null, message, true, cancelable);
             }
         }, new Function <ProgressDialog, Observable <? extends Object>>() {
@@ -546,13 +550,14 @@ public class RxHttp {
         DownloadTask downloadTask;
         /*entity*/
         Class <?> clazz;
-
         /*RxDialog提供Context*/
         Context context;
         /*dialog提示*/
         String message;
         /*dialog是否默认可以取消*/
         boolean cancelable;
+        /*自定义progressDialog*/
+        ProgressDialog progressDialog;
 
         public Builder() {
         }
@@ -697,6 +702,12 @@ public class RxHttp {
             this.context = context;
             this.message = message;
             this.cancelable = cancelable;
+            return this;
+        }
+
+        /*阻塞对话框*/
+        public RxHttp.Builder withDialog(ProgressDialog progressDialog) {
+            this.progressDialog = progressDialog;
             return this;
         }
 
