@@ -1,3 +1,6 @@
+
+![image](https://github.com/eajon/RxHttp/blob/master/app/src/main/res/drawable/demo.gif)  
+
 # RxHttp
          本框架 是对 RXJAVA2 + Retrofit + RxBus2 + OkHttp3 的架构的封装 
          达成目标：链式调用，简单明了
@@ -8,9 +11,10 @@
 
 
 # Future 
-          1.请求增加阻塞Dialog(已完成)
+          1.增加发送粘性消息
           2.增加rxchche
           3.增加自动重试
+	  
 
 
 # 导入
@@ -84,13 +88,13 @@
                
 ####  Get Post Delete Put
            
-           //返回对象
+          
          new RxHttp
                 .Builder()
                 .get()/*post() put() delete() 按需配置默认POST*/
                 .baseUrl("http://192.168.0.1/api/")/* 按需配置 RxConfig已配置，可不配*/
                 .apiUrl("login")/* 按需配置 具体接口名称*/
-                .entity(Login.class)/* 按需配置 返回的数据类型，默认string*/
+                .entity(Login.class)/* 按需配置 设置返回的数据类型，默认string*/
                 .addHeader(null)/* 按需配置 */
                 .addParameter(null)/* 按需配置 */
                 .lifecycle(this)/* 关联生命周期，可以指定到Activity具体动作，使用生命周期当前Activity需要继承RxAppCompatActivity 或者RxBusActivity */
@@ -112,32 +116,7 @@
              }
         });
         
-          //返回string数据
-          new RxHttp
-                .Builder()
-                .get()/*post() put() delete() 按需配置默认POST*/
-                .baseUrl("http://192.168.0.1/api/")/* 按需配置 RxConfig已配置，可不配*/
-                .apiUrl("login")/* 按需配置 具体接口名称*/
-                .addHeader(null)/* 按需配置 */
-                .addParameter(null)/* 按需配置 */
-                .lifecycle(this)/* 关联生命周期，可以指定到Activity具体动作，使用生命周期当前Activity需要继承RxAppCompatActivity 或者RxBusActivity */
-                .build()
-                .request(new HttpObserver() {
-            @Override
-            public void onSuccess(Response o) {
-           
-            }
-           
-            @Override
-            public void onError(ApiException t) {
-           
-            }
-                       
-             @Override
-            public void onCancelOrPause() {
-                                    
-            }
-        });
+         
         
         
  #### RxBus 方式
@@ -153,7 +132,7 @@
                        .request();
                        
         @RxSubscribe(observeOnThread = EventThread.MAIN)
-        public void weatherCallBack(Weather weather) {//entity 设置为哪个对象，RxbSubscribe那个对象即可
+        public void weatherCallBack(Weather weather) {//entity 设置为哪个对象，RxbSubscribe那个对象即可 方法名随便定义
                   content.setText(new Gson().toJson(weather));
         }
                        
@@ -345,7 +324,7 @@
                      public void uploadProgress(MultipartUploadTask multipartUploadTask)
                      {
                          content.setText("总进度：" + multipartUploadTask.getProgress() + "%" + multipartUploadTask.getState().toString());
-                         if (multipartUploadTask.getUploadTasks().size() == 3) {//上传3个文件
+                         if (multipartUploadTask.getUploadTasks().size() == 3) {//假设上传3个文件
                              content1.setText("第一个：" + multipartUploadTask.getProgress(0) + "%" + multipartUploadTask.getState(0).toString());
                              content2.setText("第二个：" + multipartUploadTask.getProgress(1) + "%" + multipartUploadTask.getState(1).toString());
                              content3.setText("第三个：" + multipartUploadTask.getProgress(2) + "%" + multipartUploadTask.getState(2).toString());
