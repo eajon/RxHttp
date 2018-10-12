@@ -45,6 +45,8 @@
  # 最新更新
                   1.请求的时候不传observer默认使用rxbus发射，返回结果可以@RxSubscribe 标签获取
                   2.增加阻塞对话框,调用withDialog 就可以增加阻塞dialog,如果使用lifecycle对话框取消也会跟随生命周期，同时对话框消失任务会暂停或者取消
+		  3.增加粘性消息isStick
+		  4.增加发射标识eventId和注解,方便实现点对点发射,增强代码的阅读性,便于debug
                     /*阻塞对话框*/
                           public RxHttp.Builder withDialog(Context context) {
                               this.context = context;
@@ -66,6 +68,18 @@
                               this.context = context;
                               this.message = message;
                               this.cancelable = cancelable;
+                              return this;
+                          }
+			  
+			   /*是否是粘性消息*/
+                          public RxHttp.Builder isStick(boolean isStick) {
+                              this.isStick = isStick;
+                              return this;
+                          }
+
+                          /*eventId*/
+                          public RxHttp.Builder eventId(String eventId) {
+                              this.eventId = eventId;
                               return this;
                           }
         
