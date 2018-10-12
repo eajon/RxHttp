@@ -30,14 +30,22 @@ public class UploadRequestBody extends RequestBody {
 
     private MultipartUploadTask multipartUploadTask;
 
+    private boolean isStick;
 
-    public UploadRequestBody(RequestBody requestBody, UploadTask uploadTask) {
+    private String eventId;
+
+    public UploadRequestBody(RequestBody requestBody, String eventId,boolean isStick, UploadTask uploadTask) {
         this.requestBody = requestBody;
+        this.eventId=eventId;
+        this.isStick = isStick;
         this.uploadTask = uploadTask;
+
     }
 
-    public UploadRequestBody(RequestBody requestBody, UploadTask uploadTask, MultipartUploadTask multipartUploadTask) {
+    public UploadRequestBody(RequestBody requestBody,String eventId, boolean isStick, UploadTask uploadTask, MultipartUploadTask multipartUploadTask) {
         this.requestBody = requestBody;
+        this.eventId=eventId;
+        this.isStick = isStick;
         this.uploadTask = uploadTask;
         this.multipartUploadTask = multipartUploadTask;
     }
@@ -107,9 +115,9 @@ public class UploadRequestBody extends RequestBody {
                 }
 //                LogUtils.e(RxHttp.getConfig().getLogTag(),"upload"+ uploadTask.getProgress());
                 if (multipartUploadTask != null) {
-                    multipartUploadTask.sendBus();
+                    multipartUploadTask.sendBus(eventId,isStick);
                 } else {
-                    uploadTask.sendBus();
+                    uploadTask.sendBus(eventId,isStick);
                 }
             }
         };

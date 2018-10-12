@@ -1,12 +1,13 @@
 package com.github.eajon.upload;
 
+import android.text.TextUtils;
+
 import com.threshold.rxbus2.RxBus;
 
 import java.util.ArrayList;
 
 public class MultipartUploadTask {
 
-    private String tag;
     private ArrayList <UploadTask> uploadTasks;
 
     private UploadTask.State state = UploadTask.State.NONE;//上传状态
@@ -29,8 +30,8 @@ public class MultipartUploadTask {
     }
 
 
-    public MultipartUploadTask(String tag, ArrayList <UploadTask> uploadTasks) {
-        this.tag = tag;
+    public MultipartUploadTask(ArrayList <UploadTask> uploadTasks) {
+
         this.uploadTasks = uploadTasks;
     }
 
@@ -68,15 +69,27 @@ public class MultipartUploadTask {
     }
 
 
-    public void sendBus() {
-        RxBus.getDefault().post(this);
+    public void sendBus(String eventId,boolean isStick) {
+        if (isStick) {
+            RxBus.getDefault().removeStickyEventType(this.getClass());
+            if (TextUtils.isEmpty(eventId)) {
+                RxBus.getDefault().postSticky(this);
+            } else {
+                RxBus.getDefault().postSticky(eventId, this);
+            }
+        } else {
+            if (TextUtils.isEmpty(eventId)) {
+                RxBus.getDefault().post(this);
+            } else {
+                RxBus.getDefault().post(eventId, this);
+            }
+        }
     }
 
     @Override
     public String toString() {
         return "MultipartUploadTask{" +
-                "tag='" + tag + '\'' +
-                ", uploadTasks=" + uploadTasks +
+                "uploadTasks=" + uploadTasks +
                 ", state=" + state +
                 '}';
     }

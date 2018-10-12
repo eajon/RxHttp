@@ -19,6 +19,7 @@ import com.github.eajon.upload.MultipartUploadTask;
 import com.github.eajon.upload.UploadRequestBody;
 import com.github.eajon.upload.UploadTask;
 import com.github.eajon.util.LogUtils;
+import com.github.eajon.util.NetUtils;
 import com.github.eajon.util.RetrofitUtils;
 import com.threshold.rxbus2.RxBus;
 import com.trello.rxlifecycle2.LifecycleProvider;
@@ -26,8 +27,6 @@ import com.trello.rxlifecycle2.android.ActivityEvent;
 import com.trello.rxlifecycle2.android.FragmentEvent;
 
 import java.io.File;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -66,8 +65,6 @@ public class RxHttp {
     private ActivityEvent activityEvent;
     /*FragmentEvent*/
     private FragmentEvent fragmentEvent;
-    /*标识请求的TAG*/
-    private String tag;
     /*上传任务列表*/
     private UploadTask uploadTask;
     /*上传任务列表*/
@@ -92,6 +89,11 @@ public class RxHttp {
     Observable observable;
     /*自定义对话框*/
     private ProgressDialog progressDialog;
+    /*是否是粘性消息*/
+    private boolean isStick;
+
+    /*rxBus发射标识 不配置直接获取 配置了需要配置注解eventId*/
+    String eventId;
 
 
     /*构造函数*/
@@ -101,7 +103,6 @@ public class RxHttp {
         this.lifecycle = builder.lifecycle;
         this.activityEvent = builder.activityEvent;
         this.fragmentEvent = builder.fragmentEvent;
-        this.tag = builder.tag;
         this.uploadTask = builder.uploadTask;
         this.multipartUploadTask = builder.multipartUploadTask;
         this.baseUrl = builder.baseUrl;
@@ -114,7 +115,14 @@ public class RxHttp {
         this.message = builder.message;
         this.cancelable = builder.cancelable;
         this.progressDialog = builder.progressDialog;
+        this.isStick = builder.isStick;
+        this.eventId = builder.eventId;
     }
+
+    public static RxConfig getConfig() {
+        return RxConfig.get();
+    }
+
 
     /*普通Http请求*/
     public void request(HttpObserver httpObserver) {
@@ -147,7 +155,11 @@ public class RxHttp {
     }
 
     public void upload() {
-        doUpload();
+        if (uploadTask == null && multipartUploadTask == null) {
+            throw new NullPointerException("UploadTask must not null!");
+        } else {
+            doUpload();
+        }
     }
 
     /*下载文件请求*/
@@ -165,7 +177,11 @@ public class RxHttp {
     }
 
     public void download() {
-        doDownload();
+        if (downloadTask == null) {
+            throw new NullPointerException("DownloadTask must not null!");
+        } else {
+            doDownload();
+        }
     }
 
 
@@ -220,7 +236,7 @@ public class RxHttp {
         if (uploadTask != null) {
             file = uploadTask.getFile();
             requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
-            MultipartBody.Part part = MultipartBody.Part.createFormData(uploadTask.getTag(), file.getName(), new UploadRequestBody(requestBody, uploadTask));
+            MultipartBody.Part part = MultipartBody.Part.createFormData(uploadTask.getFileName(), file.getName(), new UploadRequestBody(requestBody, eventId,isStick, uploadTask));
             fileList.add(part);
 
         } else {
@@ -228,7 +244,7 @@ public class RxHttp {
                 UploadTask task = multipartUploadTask.getUploadTasks().get(i);
                 file = task.getFile();
                 requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
-                MultipartBody.Part part = MultipartBody.Part.createFormData(task.getTag(), file.getName(), new UploadRequestBody(requestBody, task, multipartUploadTask));
+                MultipartBody.Part part = MultipartBody.Part.createFormData(task.getFileName(), file.getName(), new UploadRequestBody(requestBody, eventId,isStick, task, multipartUploadTask));
                 fileList.add(part);
             }
 
@@ -242,7 +258,7 @@ public class RxHttp {
     private void doDownload() {
 
         /*请求处理*/
-        observable = RetrofitUtils.get().getRetrofit(getBasUrl(downloadTask.getServerUrl()), new DownloadInterceptor(downloadTask)).download(downloadTask.getServerUrl(), "bytes=" + downloadTask.getCurrentSize() + "-");
+        observable = RetrofitUtils.get().getRetrofit(NetUtils.getBaseUrl(downloadTask.getServerUrl()), new DownloadInterceptor(eventId,isStick, downloadTask)).download(downloadTask.getServerUrl(), "bytes=" + downloadTask.getCurrentSize() + "-");
         subscribe();
 
 
@@ -359,15 +375,15 @@ public class RxHttp {
                         LogUtils.e("dialog", "doOnLifecycle");
                         if (downloadTask != null) {
                             downloadTask.setState(DownloadTask.State.LOADING);
-                            downloadTask.sendBus();
+                            downloadTask.sendBus(eventId,isStick);
                         }
                         if (uploadTask != null) {
                             uploadTask.setState(UploadTask.State.LOADING);
-                            uploadTask.sendBus();
+                            uploadTask.sendBus(eventId,isStick);
                         }
                         if (multipartUploadTask != null) {
                             multipartUploadTask.setState(UploadTask.State.LOADING);
-                            multipartUploadTask.sendBus();
+                            multipartUploadTask.sendBus(eventId,isStick);
 
                         }
                     }
@@ -383,30 +399,30 @@ public class RxHttp {
                         if (downloadTask != null) {
                             if (downloadTask.isFinish()) {
                                 downloadTask.setState(DownloadTask.State.FINISH);
-                                downloadTask.sendBus();
+                                downloadTask.sendBus(eventId,isStick);
                             } else {
                                 downloadTask.setState(DownloadTask.State.PAUSE);
-                                downloadTask.sendBus();
+                                downloadTask.sendBus(eventId,isStick);
                                 httpObserver.onCancelOrPause();
                             }
                         }
                         if (uploadTask != null) {
                             if (uploadTask.isFinish()) {
                                 uploadTask.setState(UploadTask.State.FINISH);
-                                uploadTask.sendBus();
+                                uploadTask.sendBus(eventId,isStick);
                             } else {
                                 uploadTask.setState(UploadTask.State.CANCEL);
-                                uploadTask.sendBus();
+                                uploadTask.sendBus(eventId,isStick);
                                 httpObserver.onCancelOrPause();
                             }
                         }
                         if (multipartUploadTask != null) {
                             if (multipartUploadTask.isFinish()) {
                                 multipartUploadTask.setState(UploadTask.State.FINISH);
-                                multipartUploadTask.sendBus();
+                                multipartUploadTask.sendBus(eventId,isStick);
                             } else {
                                 multipartUploadTask.setState(UploadTask.State.CANCEL);
-                                multipartUploadTask.sendBus();
+                                multipartUploadTask.sendBus(eventId,isStick);
                                 httpObserver.onCancelOrPause();
                             }
                         }
@@ -419,19 +435,19 @@ public class RxHttp {
                         if (downloadTask != null) {
                             if (downloadTask.getState() != DownloadTask.State.PAUSE) {
                                 downloadTask.setState(DownloadTask.State.ERROR);
-                                downloadTask.sendBus();
+                                downloadTask.sendBus(eventId,isStick);
                             }
                         }
                         if (uploadTask != null) {
                             if (uploadTask.getState() != UploadTask.State.CANCEL) {
                                 uploadTask.setState(UploadTask.State.ERROR);
-                                uploadTask.sendBus();
+                                uploadTask.sendBus(eventId,isStick);
                             }
                         }
                         if (multipartUploadTask != null) {
                             if (multipartUploadTask.getState() != UploadTask.State.CANCEL) {
                                 multipartUploadTask.setState(UploadTask.State.ERROR);
-                                multipartUploadTask.sendBus();
+                                multipartUploadTask.sendBus(eventId,isStick);
                             }
                         }
                     }
@@ -439,7 +455,6 @@ public class RxHttp {
                     @Override
                     public void accept(Object o) throws Exception {
 //                        LogUtils.e("dialog", "doOnNext");
-
                     }
                 }).doAfterNext(new Consumer() {
                     @Override
@@ -495,7 +510,7 @@ public class RxHttp {
         if (!header.isEmpty()) {
             //处理header中文或者换行符出错问题
             for (String key : header.keySet()) {
-                header.put(key, getHeaderValueEncoded(header.get(key)));
+                header.put(key, NetUtils.getHeaderValueEncoded(header.get(key)));
             }
         }
 
@@ -503,12 +518,10 @@ public class RxHttp {
 
     /*处理 Parameter*/
     private void disposeParameter() {
-
         /*空处理*/
         if (parameter == null) {
             parameter = new TreeMap <>();
         }
-
         //添加基础 Parameter
         Map <String, Object> baseParameter = getConfig().getBaseParameter();
         if (baseParameter != null && baseParameter.size() > 0) {
@@ -536,8 +549,6 @@ public class RxHttp {
         ActivityEvent activityEvent;
         /*FragmentEvent*/
         FragmentEvent fragmentEvent;
-        /*标识请求的TAG*/
-        String tag;
         /*单个上传任务*/
         UploadTask uploadTask;
         /*上传任务列表*/
@@ -558,6 +569,10 @@ public class RxHttp {
         boolean cancelable;
         /*自定义progressDialog*/
         ProgressDialog progressDialog;
+        /*是否是粘性消息*/
+        boolean isStick;
+        /*rxBus发射标识 不配置直接获取 配置了需要配置注解eventId*/
+        String eventId;
 
         public Builder() {
         }
@@ -653,8 +668,8 @@ public class RxHttp {
         }
 
         /*tag*/
-        public RxHttp.Builder tag(String tag) {
-            this.tag = tag;
+        public RxHttp.Builder eventId(String eventId) {
+            this.eventId = eventId;
             return this;
         }
 
@@ -712,66 +727,15 @@ public class RxHttp {
         }
 
 
+        /*是否是粘性消息*/
+        public RxHttp.Builder isStick(boolean isStick) {
+            this.isStick = isStick;
+            return this;
+        }
+
         public RxHttp build() {
             return new RxHttp(this);
         }
-
-
     }
-
-    /**
-     * 获取 encode 后 Header 值
-     * 备注: OkHttp Header 中的 value 不支持 null, \n 和 中文 等特殊字符
-     * 后台解析中文 Header 值需要decode（这个后台处理，前端不用理会）
-     *
-     * @param value
-     * @return
-     */
-    public static Object getHeaderValueEncoded(Object value) {
-        if (value == null) return "null";
-        if (value instanceof String) {
-            String strValue = ((String) value).replace("\n", "");//换行符
-            for (int i = 0, length = strValue.length(); i < length; i++) {
-                char c = strValue.charAt(i);
-                if (c <= '\u001f' || c >= '\u007f') {
-                    try {
-                        return URLEncoder.encode(strValue, "UTF-8");//中文处理
-                    } catch (UnsupportedEncodingException e) {
-                        e.printStackTrace();
-                        return "";
-                    }
-                }
-            }
-            return strValue;
-        } else {
-            return value;
-        }
-    }
-
-    /**
-     * 获取BaseUrl
-     * 备注:根据完整URL获取BasUrl
-     *
-     * @param url
-     * @return
-     */
-    public static String getBasUrl(String url) {
-        String head = "";
-        int index = url.indexOf("://");
-        if (index != -1) {
-            head = url.substring(0, index + 3);
-            url = url.substring(index + 3);
-        }
-        index = url.indexOf("/");
-        if (index != -1) {
-            url = url.substring(0, index + 1);
-        }
-        return head + url;
-    }
-
-    public static RxConfig getConfig() {
-        return RxConfig.get();
-    }
-
 }
 

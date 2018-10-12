@@ -1,11 +1,7 @@
 package com.github.eajon.download;
 
+import android.text.TextUtils;
 
-
-
-
-
-import com.threshold.rxbus2.ReplayBus;
 import com.threshold.rxbus2.RxBus;
 
 import java.io.Serializable;
@@ -14,7 +10,7 @@ import java.io.Serializable;
 public class DownloadTask implements Serializable {
 
 
-    private String tag;
+    private String fileName;
 
 
     private String localUrl;//本地存储地址
@@ -32,8 +28,8 @@ public class DownloadTask implements Serializable {
     private State state = State.NONE;//下载状态
 
 
-    public DownloadTask(String tag, String localUrl, String serverUrl) {
-        this.tag = tag;
+    public DownloadTask(String fileName, String localUrl, String serverUrl) {
+        this.fileName=fileName;
         this.localUrl = localUrl;
         this.serverUrl = serverUrl;
     }
@@ -51,12 +47,12 @@ public class DownloadTask implements Serializable {
         FINISH,         //完成
     }
 
-    public String getTag() {
-        return tag;
+    public String getFileName() {
+        return fileName;
     }
 
-    public void setTag(String tag) {
-        this.tag = tag;
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
     }
 
 
@@ -114,17 +110,27 @@ public class DownloadTask implements Serializable {
         return currentSize == totalSize;
     }
 
-    public void sendBus() {
-//        RxResponse rxResponse = new RxResponse(this.tag);
-//        rxResponse.setData(this);
-//        RxBusRelay.get().post(rxResponse);
-        RxBus.getDefault().post(this);
+    public void sendBus(String eventId, boolean isStick) {
+        if (isStick) {
+            RxBus.getDefault().removeStickyEventType(this.getClass());
+            if (TextUtils.isEmpty(eventId)) {
+                RxBus.getDefault().postSticky(this);
+            } else {
+                RxBus.getDefault().postSticky(eventId, this);
+            }
+        } else {
+            if (TextUtils.isEmpty(eventId)) {
+                RxBus.getDefault().post(this);
+            } else {
+                RxBus.getDefault().post(eventId, this);
+            }
+        }
     }
 
     @Override
     public String toString() {
         return "DownloadTask{" +
-                "tag='" + tag + '\'' +
+                "fileName='" + fileName + '\'' +
                 ", localUrl='" + localUrl + '\'' +
                 ", serverUrl='" + serverUrl + '\'' +
                 ", totalSize=" + totalSize +

@@ -11,9 +11,10 @@ public abstract class RxBusFragment extends RxFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         RxBus.getDefault().register(this);
     }
+
+
 
     @Override
     public void onDestroy() {

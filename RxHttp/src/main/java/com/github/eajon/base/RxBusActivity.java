@@ -16,9 +16,11 @@ public abstract class RxBusActivity extends RxAppCompatActivity  {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         RxBus.getDefault().register(this);
+    }
 
-
-
+    @Override
+    protected void onStart() {
+        super.onStart();
 
     }
 

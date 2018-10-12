@@ -36,8 +36,13 @@ public class DownloadResponseBody extends ResponseBody {
 
     private BufferedSource bufferedSource;
 
-    public DownloadResponseBody(Response originalResponse, DownloadTask downloadTask) {
+    private boolean isStick;
+    private String eventId;
+
+    public DownloadResponseBody(Response originalResponse,String eventId, boolean isStick,DownloadTask downloadTask) {
         this.originalResponse = originalResponse;
+        this.eventId=eventId;
+        this.isStick =isStick;
         this.downloadTask = downloadTask;
     }
 
@@ -77,7 +82,7 @@ public class DownloadResponseBody extends ResponseBody {
                 }
                 downloadTask.setCurrentSize(readBytesCount);
                 downloadTask.setTotalSize(totalBytesCount);
-                downloadTask.sendBus();
+                downloadTask.sendBus(eventId,isStick);
                 return bytesRead;
             }
         };

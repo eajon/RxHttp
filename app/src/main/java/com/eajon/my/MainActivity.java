@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Debug;
 import android.os.Environment;
 import android.util.Log;
 import android.view.View;
@@ -30,6 +31,7 @@ import com.lzy.imagepicker.loader.ImageLoader;
 import com.lzy.imagepicker.ui.ImageGridActivity;
 import com.tbruyelle.rxpermissions2.Permission;
 import com.tbruyelle.rxpermissions2.RxPermissions;
+import com.threshold.rxbus2.RxBus;
 import com.threshold.rxbus2.annotation.RxSubscribe;
 import com.threshold.rxbus2.util.EventThread;
 
@@ -58,6 +60,8 @@ public class MainActivity extends BaseActivity {
     Button download;
     @BindView(R.id.upload)
     Button upload;
+    @BindView(R.id.stick)
+    Button stick;
 
     @BindView(R.id.content)
     TextView content;
@@ -106,6 +110,7 @@ public class MainActivity extends BaseActivity {
 
         doRequest();
 
+
     }
 
     private void doRequest() {
@@ -121,6 +126,12 @@ public class MainActivity extends BaseActivity {
 //                .request();
     }
 
+
+    @RxSubscribe(observeOnThread = EventThread.MAIN,eventId = "111")
+    public void weatherCallBack(String weather) {
+        LogUtils.e("download",weather);
+        content.setText(weather);
+    }
 
     @RxSubscribe(observeOnThread = EventThread.MAIN)
     public void weatherCallBack(Weather weather) {
@@ -145,7 +156,7 @@ public class MainActivity extends BaseActivity {
         upload.setText(uploadTask.getState().toString() + uploadTask.getProgress() + "%");
     }
 
-    @RxSubscribe(observeOnThread = EventThread.MAIN)
+    @RxSubscribe(observeOnThread = EventThread.MAIN,eventId = "upload")
     public void uploadProgress(MultipartUploadTask multipartUploadTask) {
         content.setText("总进度：" + multipartUploadTask.getProgress() + "%" + multipartUploadTask.getState().toString());
         if (multipartUploadTask.getUploadTasks().size() == 3) {
@@ -167,7 +178,7 @@ public class MainActivity extends BaseActivity {
     private void upload(ArrayList <UploadTask> uploadTasks) {
 
 
-        MultipartUploadTask multipartUploadTask = new MultipartUploadTask("mulitTag", uploadTasks);
+        MultipartUploadTask multipartUploadTask = new MultipartUploadTask(uploadTasks);
         /**
          * 发送请求
          */
@@ -176,13 +187,15 @@ public class MainActivity extends BaseActivity {
                 .apiUrl("UploadFile?tentantId=16")
                 .multipartUploadTask(multipartUploadTask)
                 .lifecycle(this)
+                .eventId("upload")
                 .build()
                 .upload();
 
     }
 
-    @OnClick({R.id.download, R.id.upload, R.id.request})
+    @OnClick({R.id.download, R.id.upload, R.id.request, R.id.stick})
     public void onViewClicked(View view) {
+        Intent intent;
         switch (view.getId()) {
             case R.id.download:
                 new RxPermissions(MainActivity.this)
@@ -195,8 +208,8 @@ public class MainActivity extends BaseActivity {
                                         observer.dispose();
                                         download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%");
                                     } else {
-                                        RxHttp rxHttp = new RxHttp.Builder().lifecycle(MainActivity.this).withDialog(MainActivity.this,"下载").downloadTask(downloadTask).build();
-                                        observer = new HttpObserver<DownloadTask>() {
+                                        RxHttp rxHttp = new RxHttp.Builder().isStick(true).downloadTask(downloadTask).build();
+                                        observer = new HttpObserver <DownloadTask>() {
 
                                             @Override
                                             public void onCancelOrPause() {
@@ -232,7 +245,7 @@ public class MainActivity extends BaseActivity {
                         });
                 break;
             case R.id.upload:
-                Intent intent = new Intent(this, ImageGridActivity.class);
+                intent = new Intent(this, ImageGridActivity.class);
                 startActivityForResult(intent, 1000);
                 break;
             case R.id.request:
@@ -247,7 +260,7 @@ public class MainActivity extends BaseActivity {
                         .withDialog(MainActivity.this)
                         .entity(Weather.class)
                         .build()
-                        .request(new HttpObserver<Weather>() {
+                        .request(new HttpObserver <Weather>() {
                             @Override
                             public void onCancelOrPause() {
 
@@ -263,6 +276,10 @@ public class MainActivity extends BaseActivity {
 
                             }
                         });
+                break;
+            case R.id.stick:
+                intent = new Intent(this, SecondActivity.class);
+                startActivity(intent);
                 break;
         }
     }
@@ -283,7 +300,7 @@ public class MainActivity extends BaseActivity {
                 String path;
                 uploadTasks.clear();
                 for (int i = 0; i < images.size(); i++) {
-                    UploadTask uploadTask = new UploadTask(images.get(i).name, new File(images.get(i).path));
+                    UploadTask uploadTask = new UploadTask(new File(images.get(i).path));
                     uploadTasks.add(uploadTask);
                 }
                 try {

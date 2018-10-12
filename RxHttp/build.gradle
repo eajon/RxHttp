@@ -41,7 +41,7 @@ dependencies {
 
     // rxbus
 
-    api 'com.github.wind0ws:rxbus2:1.1.1'
+    api 'com.github.eajon:rxbus2:1.2.0'
 
 
 }

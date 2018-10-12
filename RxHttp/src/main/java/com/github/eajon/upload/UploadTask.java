@@ -1,12 +1,16 @@
 package com.github.eajon.upload;
 
+
+
+import android.text.TextUtils;
+
 import com.threshold.rxbus2.RxBus;
 
 import java.io.File;
 
 public class UploadTask {
 
-    private String tag;
+    private String fileName;
     private File file;
     private long currentSize;
     private long totalSize;
@@ -32,21 +36,20 @@ public class UploadTask {
         this.state = state;
     }
 
+    public String getFileName() {
+        return fileName;
+    }
 
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
 
-    public UploadTask(String tag, File file) {
-        this.tag = tag;
+    public UploadTask(File file) {
         this.file = file;
+        this.fileName=file.getName();
         this.totalSize=file.length();
     }
 
-    public String getTag() {
-        return tag;
-    }
-
-    public void setTag(String tag) {
-        this.tag = tag;
-    }
 
     public File getFile() {
         return file;
@@ -90,14 +93,27 @@ public class UploadTask {
     }
 
 
-    public void sendBus() {
-        RxBus.getDefault().post(this);
+    public void sendBus(String eventId,boolean isStick) {
+        if (isStick) {
+            RxBus.getDefault().removeStickyEventType(this.getClass());
+            if (TextUtils.isEmpty(eventId)) {
+                RxBus.getDefault().postSticky(this);
+            } else {
+                RxBus.getDefault().postSticky(eventId, this);
+            }
+        } else {
+            if (TextUtils.isEmpty(eventId)) {
+                RxBus.getDefault().post(this);
+            } else {
+                RxBus.getDefault().post(eventId, this);
+            }
+        }
     }
 
     @Override
     public String toString() {
         return "UploadTask{" +
-                "tag='" + tag + '\'' +
+                "fileName='" + fileName + '\'' +
                 ", file=" + file +
                 ", currentSize=" + currentSize +
                 ", totalSize=" + totalSize +
