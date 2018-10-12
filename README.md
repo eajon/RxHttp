@@ -45,8 +45,8 @@
  # 最新更新
                   1.请求的时候不传observer默认使用rxbus发射，返回结果可以@RxSubscribe 标签获取
                   2.增加阻塞对话框,调用withDialog 就可以增加阻塞dialog,如果使用lifecycle对话框取消也会跟随生命周期，同时对话框消失任务会暂停或者取消
-		  3.增加粘性消息isStick
-		  4.增加发射标识eventId和注解,方便实现点对点发射,增强代码的阅读性,便于debug
+		      3.增加粘性消息isStick
+		      4.增加发射标识eventId和注解,方便实现点对点发射,增强代码的阅读性,便于debug
                     /*阻塞对话框*/
                           public RxHttp.Builder withDialog(Context context) {
                               this.context = context;
@@ -151,6 +151,30 @@
         }
                        
          @RxSubscribe(observeOnThread = EventThread.MAIN)//异常捕获
+         public void weatherCallBack(ApiException e) {
+              content.setText(new Gson().toJson(e));
+         }
+	 
+	 
+#### 当你使用RxBus方式时,代码中有很多接口返回的数据类型又是一样的话，问题就来了 你很难知道是哪里发射而来的，这种情况你可以增加一个eventId标识,然后注解的时候也加入这个eventId 此eventId只支持常量
+	 HashMap map = new HashMap();
+               map.put("city", "常熟");
+               new RxHttp.Builder()
+                       .get()
+                       .baseUrl("http://wthrcdn.etouch.cn/")
+                       .apiUrl("weather_mini")
+                       .addParameter(map)
+		       .eventId("test")
+                       .entity(Weather.class)
+                       .build()
+                       .request();
+                       
+        @RxSubscribe(observeOnThread = EventThread.MAIN,eventId = "test")
+        public void weatherCallBack(Weather weather) {//entity 设置为哪个对象，RxbSubscribe那个对象即可 方法名随便定义
+                  content.setText(new Gson().toJson(weather));
+        }
+                       
+         @RxSubscribe(observeOnThread = EventThread.MAIN,,eventId = "test")//异常捕获
          public void weatherCallBack(ApiException e) {
               content.setText(new Gson().toJson(e));
          }
