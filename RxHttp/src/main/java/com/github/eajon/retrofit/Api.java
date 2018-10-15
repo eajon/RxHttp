@@ -93,6 +93,22 @@ public interface Api {
     Observable<JsonElement> put(@Url String url, @FieldMap Map <String, Object> parameter, @HeaderMap Map <String, Object> header);
 
 
+
+
+    /**
+     * 单文件上传
+     *
+     * @param url       api接口url
+     * @param parameter 请求接口参数
+     * @param header    请求头map
+     * @param file  文件列表
+     * @return
+     * @Multipart 文件上传注解
+     */
+    @Multipart
+    @POST
+    Observable<JsonElement> upload(@Url String url, @PartMap Map <String, Object> parameter, @HeaderMap Map <String, Object> header,  @Part MultipartBody.Part file);
+
     /**
      * 多文件上传
      *
@@ -106,6 +122,8 @@ public interface Api {
     @Multipart
     @POST
     Observable<JsonElement> upload(@Url String url, @PartMap Map <String, Object> parameter, @HeaderMap Map <String, Object> header, @Part List <MultipartBody.Part> fileList);
+
+
 
 
     /**

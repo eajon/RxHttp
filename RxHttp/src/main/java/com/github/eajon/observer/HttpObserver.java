@@ -1,15 +1,13 @@
 package com.github.eajon.observer;
 
-
 import com.github.eajon.RxHttp;
 import com.github.eajon.exception.ApiException;
 import com.github.eajon.exception.ExceptionEngine;
 import com.github.eajon.util.LogUtils;
 
-import io.reactivex.Observer;
-import io.reactivex.disposables.Disposable;
+import io.reactivex.observers.DisposableObserver;
 
-public abstract class HttpObserver<T> implements Observer <T> {
+public abstract class HttpObserver<T> extends DisposableObserver <T> {
 
 
     public abstract void onSuccess(T t);
@@ -18,21 +16,6 @@ public abstract class HttpObserver<T> implements Observer <T> {
 
     public abstract void onCancelOrPause();
 
-    private Disposable disposable;
-
-    @Override
-    public void onSubscribe(Disposable d) {
-        this.disposable = d;
-    }
-
-
-    public void dispose() {
-        LogUtils.e("dialog", " dispose" );
-        if (disposable != null && !disposable.isDisposed()) {
-            disposable.dispose();
-            LogUtils.e("dialog", " success" );
-        }
-    }
 
     @Override
     public void onNext(T value) {
@@ -55,7 +38,5 @@ public abstract class HttpObserver<T> implements Observer <T> {
         LogUtils.d(RxHttp.getConfig().getLogTag(), "onComplete");
         LogUtils.e("dialog", "observer onComplete");
         dispose();
-
-
     }
 }

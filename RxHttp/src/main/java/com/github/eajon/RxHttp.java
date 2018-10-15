@@ -230,35 +230,36 @@ public class RxHttp {
         disposeParameter();
 
         /*处理文件*/
-        List <MultipartBody.Part> fileList = new ArrayList <>();
+        List <MultipartBody.Part> partList = new ArrayList <>();
         File file;
         RequestBody requestBody;
         if (uploadTask != null) {
             file = uploadTask.getFile();
             requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
-            MultipartBody.Part part = MultipartBody.Part.createFormData(uploadTask.getFileName(), file.getName(), new UploadRequestBody(requestBody, eventId,isStick, uploadTask));
-            fileList.add(part);
+            MultipartBody.Part part = MultipartBody.Part.createFormData(uploadTask.getFileName(), file.getName(), new UploadRequestBody(requestBody, eventId, isStick, uploadTask));
+            observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).upload(disposeApiUrl(), parameter, header, part);
 
         } else {
             for (int i = 0; i < multipartUploadTask.getUploadTasks().size(); i++) {
                 UploadTask task = multipartUploadTask.getUploadTasks().get(i);
                 file = task.getFile();
                 requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
-                MultipartBody.Part part = MultipartBody.Part.createFormData(task.getFileName(), file.getName(), new UploadRequestBody(requestBody, eventId,isStick, task, multipartUploadTask));
-                fileList.add(part);
+                MultipartBody.Part part = MultipartBody.Part.createFormData(task.getFileName(), file.getName(), new UploadRequestBody(requestBody, eventId, isStick, task, multipartUploadTask));
+                partList.add(part);
             }
+            observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).upload(disposeApiUrl(), parameter, header, partList);
 
         }
 
         /*请求处理*/
-        observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).upload(disposeApiUrl(), parameter, header, fileList);
         subscribe();
     }
 
     private void doDownload() {
 
+
+        observable = RetrofitUtils.get().getRetrofit(NetUtils.getBaseUrl(downloadTask.getServerUrl()), new DownloadInterceptor(eventId, isStick, downloadTask)).download(downloadTask.getServerUrl(), "bytes=" + downloadTask.getCurrentSize() + "-");
         /*请求处理*/
-        observable = RetrofitUtils.get().getRetrofit(NetUtils.getBaseUrl(downloadTask.getServerUrl()), new DownloadInterceptor(eventId,isStick, downloadTask)).download(downloadTask.getServerUrl(), "bytes=" + downloadTask.getCurrentSize() + "-");
         subscribe();
 
 
@@ -275,12 +276,12 @@ public class RxHttp {
             observe().subscribe(new HttpObserver() {
                 @Override
                 public void onSuccess(Object o) {
-                    RxBus.getDefault().post(o);
+                    sendBus(eventId, isStick, o);
                 }
 
                 @Override
                 public void onError(ApiException t) {
-                    RxBus.getDefault().post(t);
+                    sendBus(eventId, isStick, t);
                 }
 
                 @Override
@@ -375,56 +376,64 @@ public class RxHttp {
                         LogUtils.e("dialog", "doOnLifecycle");
                         if (downloadTask != null) {
                             downloadTask.setState(DownloadTask.State.LOADING);
-                            downloadTask.sendBus(eventId,isStick);
+                            downloadTask.sendBus(eventId, isStick);
                         }
                         if (uploadTask != null) {
                             uploadTask.setState(UploadTask.State.LOADING);
-                            uploadTask.sendBus(eventId,isStick);
+                            uploadTask.sendBus(eventId, isStick);
                         }
                         if (multipartUploadTask != null) {
                             multipartUploadTask.setState(UploadTask.State.LOADING);
-                            multipartUploadTask.sendBus(eventId,isStick);
+                            multipartUploadTask.sendBus(eventId, isStick);
 
                         }
                     }
                 }, new Action() {
                     @Override
                     public void run() throws Exception {
-                        LogUtils.e("dialog", "doOnLifecycle action");
+//                        LogUtils.e("dialog", "doOnLifecycle action");
                     }
                 }).doOnTerminate(new Action() {
+                    //当取消
+                    //判断下载或者上传是否完成 未完成即为取消
                     @Override
                     public void run() throws Exception {
                         LogUtils.e("dialog", "doOnTerminate");
                         if (downloadTask != null) {
                             if (downloadTask.isFinish()) {
                                 downloadTask.setState(DownloadTask.State.FINISH);
-                                downloadTask.sendBus(eventId,isStick);
+                                downloadTask.sendBus(eventId, isStick);
                             } else {
                                 downloadTask.setState(DownloadTask.State.PAUSE);
-                                downloadTask.sendBus(eventId,isStick);
+                                downloadTask.sendBus(eventId, isStick);
                                 httpObserver.onCancelOrPause();
                             }
                         }
-                        if (uploadTask != null) {
+                        else if (uploadTask != null) {
                             if (uploadTask.isFinish()) {
                                 uploadTask.setState(UploadTask.State.FINISH);
-                                uploadTask.sendBus(eventId,isStick);
+                                uploadTask.sendBus(eventId, isStick);
                             } else {
                                 uploadTask.setState(UploadTask.State.CANCEL);
-                                uploadTask.sendBus(eventId,isStick);
+                                uploadTask.sendBus(eventId, isStick);
                                 httpObserver.onCancelOrPause();
                             }
                         }
-                        if (multipartUploadTask != null) {
+                        else if (multipartUploadTask != null) {
                             if (multipartUploadTask.isFinish()) {
                                 multipartUploadTask.setState(UploadTask.State.FINISH);
-                                multipartUploadTask.sendBus(eventId,isStick);
+                                multipartUploadTask.sendBus(eventId, isStick);
                             } else {
                                 multipartUploadTask.setState(UploadTask.State.CANCEL);
-                                multipartUploadTask.sendBus(eventId,isStick);
+                                for (UploadTask uploadTask : multipartUploadTask.getUploadTasks()) {
+                                    uploadTask.setState(UploadTask.State.CANCEL);
+                                }
+                                multipartUploadTask.sendBus(eventId, isStick);
                                 httpObserver.onCancelOrPause();
                             }
+                        }else
+                        {
+
                         }
                     }
                 }).doOnError(new Consumer <Throwable>() {
@@ -435,19 +444,20 @@ public class RxHttp {
                         if (downloadTask != null) {
                             if (downloadTask.getState() != DownloadTask.State.PAUSE) {
                                 downloadTask.setState(DownloadTask.State.ERROR);
-                                downloadTask.sendBus(eventId,isStick);
+                                downloadTask.sendBus(eventId, isStick);
                             }
-                        }
-                        if (uploadTask != null) {
+                        } else if (uploadTask != null) {
                             if (uploadTask.getState() != UploadTask.State.CANCEL) {
                                 uploadTask.setState(UploadTask.State.ERROR);
-                                uploadTask.sendBus(eventId,isStick);
+                                uploadTask.sendBus(eventId, isStick);
                             }
-                        }
-                        if (multipartUploadTask != null) {
+                        } else if (multipartUploadTask != null) {
                             if (multipartUploadTask.getState() != UploadTask.State.CANCEL) {
                                 multipartUploadTask.setState(UploadTask.State.ERROR);
-                                multipartUploadTask.sendBus(eventId,isStick);
+                                for (UploadTask uploadTask : multipartUploadTask.getUploadTasks()) {
+                                    uploadTask.setState(UploadTask.State.ERROR);
+                                }
+                                multipartUploadTask.sendBus(eventId, isStick);
                             }
                         }
                     }
@@ -667,11 +677,6 @@ public class RxHttp {
             return this;
         }
 
-        /*tag*/
-        public RxHttp.Builder eventId(String eventId) {
-            this.eventId = eventId;
-            return this;
-        }
 
         public RxHttp.Builder entity(Class <?> clazz) {
             this.clazz = clazz;
@@ -733,8 +738,31 @@ public class RxHttp {
             return this;
         }
 
+        /*eventId*/
+        public RxHttp.Builder eventId(String eventId) {
+            this.eventId = eventId;
+            return this;
+        }
+
         public RxHttp build() {
             return new RxHttp(this);
+        }
+    }
+
+    public void sendBus(String eventId, boolean isStick, Object object) {
+        if (isStick) {
+            RxBus.getDefault().removeStickyEventType(object.getClass());
+            if (TextUtils.isEmpty(eventId)) {
+                RxBus.getDefault().postSticky(object);
+            } else {
+                RxBus.getDefault().postSticky(eventId, object);
+            }
+        } else {
+            if (TextUtils.isEmpty(eventId)) {
+                RxBus.getDefault().post(object);
+            } else {
+                RxBus.getDefault().post(eventId, object);
+            }
         }
     }
 }

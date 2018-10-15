@@ -52,5 +52,7 @@ dependencies {
     //权限控制
     implementation 'com.github.tbruyelle:rxpermissions:0.10.2'
     /*图片选择*/
-    compile 'com.lzy.widget:imagepicker:0.6.1'
+    implementation 'com.github.qingmei2:rximagepicker:2.2.0'
+    implementation 'com.github.qingmei2:rximagepicker_support_zhihu:2.2.0'
+
 }

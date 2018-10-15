@@ -15,8 +15,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.eajon.my.base.BaseActivity;
 import com.eajon.my.glide.GlideUtils;
+import com.eajon.my.util.PhotoUtils;
+import com.eajon.my.util.Weather;
+import com.eajon.my.util.ZhihuImagePicker;
 import com.github.eajon.RxHttp;
 import com.github.eajon.download.DownloadTask;
 import com.github.eajon.exception.ApiException;
@@ -25,33 +29,38 @@ import com.github.eajon.upload.MultipartUploadTask;
 import com.github.eajon.upload.UploadTask;
 import com.github.eajon.util.LogUtils;
 import com.google.gson.Gson;
-import com.lzy.imagepicker.ImagePicker;
-import com.lzy.imagepicker.bean.ImageItem;
-import com.lzy.imagepicker.loader.ImageLoader;
-import com.lzy.imagepicker.ui.ImageGridActivity;
+import com.qingmei2.rximagepicker.core.RxImagePicker;
+import com.qingmei2.rximagepicker.entity.Result;
+import com.qingmei2.rximagepicker.ui.SystemImagePicker;
+import com.qingmei2.rximagepicker_extension.MimeType;
+import com.qingmei2.rximagepicker_extension_zhihu.ZhihuConfigurationBuilder;
 import com.tbruyelle.rxpermissions2.Permission;
 import com.tbruyelle.rxpermissions2.RxPermissions;
 import com.threshold.rxbus2.RxBus;
 import com.threshold.rxbus2.annotation.RxSubscribe;
 import com.threshold.rxbus2.util.EventThread;
+import com.trello.rxlifecycle2.android.ActivityEvent;
 
 import java.io.File;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
+import io.reactivex.observers.DefaultObserver;
 
 
 public class MainActivity extends BaseActivity {
-    ArrayList <UploadTask> uploadTasks = new ArrayList <>();
+    ArrayList <UploadTask> uploadTasks;
 
     File file1 = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "WEIXIN" + ".apk");
-    File file2 = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "QQ" + ".apk");
     String url1 = "http://imtt.dd.qq.com/16891/50CC095EFBE6059601C6FB652547D737.apk?fsname=com.tencent.mm_6.6.7_1321.apk&csr=1bbd";
-    String url2 = "http://imtt.dd.qq.com/16891/FC92B1B4471DE5AAD0D009DF9BF1AD01.apk?fsname=com.tencent.mobileqq_7.7.5_896.apk&csr=1bbd";
     DownloadTask downloadTask;
     HttpObserver observer;
     @BindView(R.id.request)
@@ -62,16 +71,16 @@ public class MainActivity extends BaseActivity {
     Button upload;
     @BindView(R.id.stick)
     Button stick;
-
     @BindView(R.id.content)
     TextView content;
-
     @BindView(R.id.content1)
     TextView content1;
     @BindView(R.id.content2)
     TextView content2;
     @BindView(R.id.content3)
     TextView content3;
+
+    private ZhihuImagePicker rxImagePicker;
 
 
     @Override
@@ -86,65 +95,58 @@ public class MainActivity extends BaseActivity {
 
     @Override
     protected void initClick() {
-        /**
-         * 图片选择配置
-         */
-        ImagePicker imagePicker = ImagePicker.getInstance();
-        imagePicker.setImageLoader(new GlideImageLoader());   //设置图片加载器
-        imagePicker.setShowCamera(false);  //显示拍照按钮
-        imagePicker.setCrop(false);        //允许裁剪（单选才有效）
-        imagePicker.setSaveRectangle(true); //是否按矩形区域保存
-        imagePicker.setSelectLimit(3);    //选中数量限制
-        imagePicker.setOutPutX(1000);//保存文件的宽度。单位像素
-        imagePicker.setOutPutY(1000);//保存文件的高度。单位像素
+
     }
 
     @Override
     protected void initData(Bundle savedInstanceState) {
+        rxImagePicker = RxImagePicker.INSTANCE
+                .create(ZhihuImagePicker.class);
         downloadTask = new DownloadTask(file1.getName(), file1.getAbsolutePath(), url1);
 
     }
 
     @Override
     protected void initLogic() {
-
         doRequest();
-
-
     }
 
     private void doRequest() {
-//        HashMap map = new HashMap();
-//        map.put("city", "常熟");
-//        new RxHttp.Builder()
-//                .get()
-//                .baseUrl("http://wthrcdn.etouch.cn/")
-//                .apiUrl("weather_mini")
-//                .addParameter(map)
-//                .entity(Weather.class)
-//                .build()
-//                .request();
+        HashMap map = new HashMap();
+        map.put("city", "常熟");
+        new RxHttp.Builder()
+                .get()
+                .baseUrl("http://wthrcdn.etouch.cn/")
+                .apiUrl("weather_mini")
+                .addParameter(map)
+                .entity(Weather.class)
+                .eventId("weather")
+                .isStick(true)
+                .build()
+                .request();
     }
 
 
-    @RxSubscribe(observeOnThread = EventThread.MAIN,eventId = "111")
-    public void weatherCallBack(String weather) {
-        LogUtils.e("download",weather);
-        content.setText(weather);
-    }
-
-    @RxSubscribe(observeOnThread = EventThread.MAIN)
+    @RxSubscribe(observeOnThread = EventThread.IO, isSticky = true, eventId = "weather")
     public void weatherCallBack(Weather weather) {
-        content.setText(new Gson().toJson(weather));
+        LogUtils.d("weather", "haha");
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                content.setText(new Gson().toJson(weather));
+            }
+        });
+
     }
 
-    @RxSubscribe(observeOnThread = EventThread.MAIN)//异常捕获
+    @RxSubscribe(observeOnThread = EventThread.MAIN, isSticky = true, eventId = "weather")//异常捕获
     public void weatherCallBack(ApiException e) {
         content.setText(new Gson().toJson(e));
     }
 
     //下载监听
-    @RxSubscribe(observeOnThread = EventThread.MAIN)
+    @RxSubscribe(observeOnThread = EventThread.MAIN, eventId = "download")
+    @SuppressWarnings("unused")
     public void downloadProgress(DownloadTask downloadTask) {
         download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%");
     }
@@ -152,14 +154,16 @@ public class MainActivity extends BaseActivity {
 
     //上传监听
     @RxSubscribe(observeOnThread = EventThread.MAIN)
+    @SuppressWarnings("unused")
     public void uploadProgress(UploadTask uploadTask) {
         upload.setText(uploadTask.getState().toString() + uploadTask.getProgress() + "%");
     }
 
-    @RxSubscribe(observeOnThread = EventThread.MAIN,eventId = "upload")
+    @RxSubscribe(observeOnThread = EventThread.MAIN, eventId = "upload")
+    @SuppressWarnings("unused")
     public void uploadProgress(MultipartUploadTask multipartUploadTask) {
         content.setText("总进度：" + multipartUploadTask.getProgress() + "%" + multipartUploadTask.getState().toString());
-        if (multipartUploadTask.getUploadTasks().size() == 3) {
+        if (multipartUploadTask.getUploadTasks().size() >= 3) {//假设选择3个
             content1.setText("第一个：" + multipartUploadTask.getProgress(0) + "%" + multipartUploadTask.getState(0).toString());
             content2.setText("第二个：" + multipartUploadTask.getProgress(1) + "%" + multipartUploadTask.getState(1).toString());
             content3.setText("第三个：" + multipartUploadTask.getProgress(2) + "%" + multipartUploadTask.getState(2).toString());
@@ -176,17 +180,12 @@ public class MainActivity extends BaseActivity {
 
 
     private void upload(ArrayList <UploadTask> uploadTasks) {
-
-
         MultipartUploadTask multipartUploadTask = new MultipartUploadTask(uploadTasks);
-        /**
-         * 发送请求
-         */
         new RxHttp.Builder()
                 .baseUrl("https://shop.cxwos.com/admin/File/")
                 .apiUrl("UploadFile?tentantId=16")
                 .multipartUploadTask(multipartUploadTask)
-                .lifecycle(this)
+                .isStick(true)
                 .eventId("upload")
                 .build()
                 .upload();
@@ -208,9 +207,8 @@ public class MainActivity extends BaseActivity {
                                         observer.dispose();
                                         download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%");
                                     } else {
-                                        RxHttp rxHttp = new RxHttp.Builder().isStick(true).downloadTask(downloadTask).build();
+                                        RxHttp rxHttp = new RxHttp.Builder().isStick(true).eventId("download").downloadTask(downloadTask).build();
                                         observer = new HttpObserver <DownloadTask>() {
-
                                             @Override
                                             public void onCancelOrPause() {
                                                 LogUtils.e("dialog", "onpause");
@@ -245,8 +243,7 @@ public class MainActivity extends BaseActivity {
                         });
                 break;
             case R.id.upload:
-                intent = new Intent(this, ImageGridActivity.class);
-                startActivityForResult(intent, 1000);
+                requestGalleryPermissions();
                 break;
             case R.id.request:
 
@@ -257,8 +254,10 @@ public class MainActivity extends BaseActivity {
                         .baseUrl("http://wthrcdn.etouch.cn/")
                         .apiUrl("weather_mini")
                         .addParameter(map)
+                        .eventId("weather")
                         .withDialog(MainActivity.this)
                         .entity(Weather.class)
+                        .isStick(true)
                         .build()
                         .request(new HttpObserver <Weather>() {
                             @Override
@@ -284,58 +283,73 @@ public class MainActivity extends BaseActivity {
         }
     }
 
+    private void requestCameraPermissions() {
+        new RxPermissions(this)
+                .requestEachCombined(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .subscribe(new Consumer <Permission>() {
+                    @Override
+                    public void accept(Permission permission) throws Exception {
+                        if (permission.granted) {
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == ImagePicker.RESULT_CODE_ITEMS) {
-            if (data != null && requestCode == 1000) {
-                ArrayList <ImageItem> images = (ArrayList <ImageItem>) data.getSerializableExtra(ImagePicker.EXTRA_RESULT_ITEMS);
-                /**
-                 * 获取选择图片之后上传
-                 */
-                File file;
+                        } else if (permission.shouldShowRequestPermissionRationale) {
+                            // 用户拒绝了该权限，没有选中『不再询问』（Never ask again）,那么下次再次启动时，还会提示请求权限的对话框
+                            Log.d("permission", permission.name + " is denied. More info should be provided.");
+                        } else {
 
-                String key;
-                String path;
-                uploadTasks.clear();
-                for (int i = 0; i < images.size(); i++) {
-                    UploadTask uploadTask = new UploadTask(new File(images.get(i).path));
-                    uploadTasks.add(uploadTask);
-                }
-                try {
-                    Thread.sleep(500);//延时0.5秒看效果
-                    //上传图片
-                    upload(uploadTasks);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                Toast.makeText(this, "没有数据", Toast.LENGTH_SHORT).show();
-            }
-        }
+                            // 用户拒绝了该权限，并且选中『不再询问』
+                            Log.d("permission", permission.name + " is denied.");
+                        }
+                    }
+                });
     }
 
+    private void requestGalleryPermissions() {
+        new RxPermissions(this)
+                .requestEachCombined(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .subscribe(new Consumer <Permission>() {
+                    @Override
+                    public void accept(Permission permission) throws Exception {
+                        if (permission.granted) {
+                            rxImagePicker.openGallery(MainActivity.this,
+                                    new ZhihuConfigurationBuilder(MimeType.INSTANCE.ofImage(), false)
+                                            .maxSelectable(9)
+                                            .countable(true)
+                                            .spanCount(3)
+                                            .theme(R.style.Zhihu_Normal)
+                                            .build()).compose(MainActivity.this.bindUntilEvent(ActivityEvent.DESTROY))
+                                    .subscribe(new Observer <Result>() {
+                                        @Override
+                                        public void onSubscribe(Disposable d) {
+                                            uploadTasks = new ArrayList <>();
+                                        }
 
-    /**
-     * 图片加载器
-     */
-    public class GlideImageLoader implements ImageLoader {
+                                        @Override
+                                        public void onNext(Result result) {
+                                            uploadTasks.add(new UploadTask(new File(PhotoUtils.getPath(MainActivity.this, result.getUri()))));
+                                        }
 
-        @Override
-        public void displayImage(Activity activity, String path, ImageView imageView, int width, int height) {
-            Uri uri = Uri.fromFile(new File(path));
-            GlideUtils.loadImg(activity, path, imageView);
-        }
+                                        @Override
+                                        public void onError(Throwable e) {
 
-        @Override
-        public void displayImagePreview(Activity activity, String path, ImageView imageView, int width, int height) {
-            Uri uri = Uri.fromFile(new File(path));
-            GlideUtils.loadImg(activity, path, imageView);
-        }
+                                        }
 
-        @Override
-        public void clearMemoryCache() {
-        }
+                                        @Override
+                                        public void onComplete() {
+                                            if (uploadTasks.size() > 0)
+                                                upload(uploadTasks);
+                                        }
+                                    });
+                        } else if (permission.shouldShowRequestPermissionRationale) {
+
+                            // 用户拒绝了该权限，没有选中『不再询问』（Never ask again）,那么下次再次启动时，还会提示请求权限的对话框
+                            Log.d("permission", permission.name + " is denied. More info should be provided.");
+                        } else {
+
+                            // 用户拒绝了该权限，并且选中『不再询问』
+                            Log.d("permission", permission.name + " is denied.");
+                        }
+                    }
+                });
     }
+
 }

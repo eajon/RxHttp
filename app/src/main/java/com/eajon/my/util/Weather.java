@@ -1,4 +1,4 @@
-package com.eajon.my;
+package com.eajon.my.util;
 
 import java.util.List;
 

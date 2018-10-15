@@ -4,8 +4,11 @@ import android.os.Bundle;
 import android.widget.TextView;
 
 import com.eajon.my.base.BaseActivity;
+import com.eajon.my.util.Weather;
 import com.github.eajon.download.DownloadTask;
+import com.github.eajon.upload.MultipartUploadTask;
 import com.github.eajon.util.LogUtils;
+import com.google.gson.Gson;
 import com.threshold.rxbus2.annotation.RxSubscribe;
 import com.threshold.rxbus2.util.EventThread;
 
@@ -50,7 +53,7 @@ public class SecondActivity extends BaseActivity {
         ButterKnife.bind(this);
     }
 
-    @RxSubscribe(observeOnThread = EventThread.MAIN, isSticky = true)
+    @RxSubscribe(observeOnThread = EventThread.MAIN, isSticky = true,eventId = "download")
     private void download(DownloadTask downloadTask) {
         LogUtils.d("download",downloadTask.getProgress());
         runOnUiThread(new Runnable() {
@@ -60,5 +63,29 @@ public class SecondActivity extends BaseActivity {
             }
         });
 
+    }
+
+
+    @RxSubscribe(observeOnThread = EventThread.MAIN, isSticky = true,eventId = "upload")
+    @SuppressWarnings("unused")
+    public void uploadProgress(MultipartUploadTask multipartUploadTask) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                content.setText("总进度：" + multipartUploadTask.getProgress() + "%" + multipartUploadTask.getState().toString());
+            }
+        });
+    }
+
+
+    @RxSubscribe(observeOnThread = EventThread.MAIN, isSticky = true,eventId = "weather")
+    public void weatherCallBack(Weather weather) {
+        LogUtils.d("weather","haha2");
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                content.setText(new Gson().toJson(weather));
+            }
+        });
     }
 }
