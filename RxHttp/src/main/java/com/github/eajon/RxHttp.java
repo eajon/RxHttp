@@ -12,7 +12,9 @@ import com.github.eajon.function.ErrorResponseFunction;
 import com.github.eajon.function.HttpResponseFunction;
 import com.github.eajon.download.DownloadInterceptor;
 import com.github.eajon.download.DownloadTask;
+import com.github.eajon.observer.DownloadObserver;
 import com.github.eajon.observer.HttpObserver;
+import com.github.eajon.observer.UploadObserver;
 import com.github.eajon.retrofit.Method;
 import com.github.eajon.retrofit.RxConfig;
 import com.github.eajon.upload.MultipartUploadTask;
@@ -284,10 +286,6 @@ public class RxHttp {
                     sendBus(eventId, isStick, t);
                 }
 
-                @Override
-                public void onCancelOrPause() {
-
-                }
             });
         }
     }
@@ -406,20 +404,23 @@ public class RxHttp {
                             } else {
                                 downloadTask.setState(DownloadTask.State.PAUSE);
                                 downloadTask.sendBus(eventId, isStick);
-                                httpObserver.onCancelOrPause();
+                                if (httpObserver instanceof DownloadObserver) {
+                                    ((DownloadObserver) httpObserver).onPause(downloadTask);
+                                }
+
                             }
-                        }
-                        else if (uploadTask != null) {
+                        } else if (uploadTask != null) {
                             if (uploadTask.isFinish()) {
                                 uploadTask.setState(UploadTask.State.FINISH);
                                 uploadTask.sendBus(eventId, isStick);
                             } else {
                                 uploadTask.setState(UploadTask.State.CANCEL);
                                 uploadTask.sendBus(eventId, isStick);
-                                httpObserver.onCancelOrPause();
+                                if (httpObserver instanceof UploadObserver) {
+                                    ((UploadObserver) httpObserver).onCancel();
+                                }
                             }
-                        }
-                        else if (multipartUploadTask != null) {
+                        } else if (multipartUploadTask != null) {
                             if (multipartUploadTask.isFinish()) {
                                 multipartUploadTask.setState(UploadTask.State.FINISH);
                                 multipartUploadTask.sendBus(eventId, isStick);
@@ -429,10 +430,11 @@ public class RxHttp {
                                     uploadTask.setState(UploadTask.State.CANCEL);
                                 }
                                 multipartUploadTask.sendBus(eventId, isStick);
-                                httpObserver.onCancelOrPause();
+                                if (httpObserver instanceof UploadObserver) {
+                                    ((UploadObserver) httpObserver).onCancel();
+                                }
                             }
-                        }else
-                        {
+                        } else {
 
                         }
                     }

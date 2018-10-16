@@ -14,7 +14,6 @@ public abstract class HttpObserver<T> extends DisposableObserver <T> {
 
     public abstract void onError(ApiException t);
 
-    public abstract void onCancelOrPause();
 
 
     @Override

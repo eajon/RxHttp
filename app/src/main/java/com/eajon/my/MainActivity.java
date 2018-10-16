@@ -24,6 +24,7 @@ import com.eajon.my.util.ZhihuImagePicker;
 import com.github.eajon.RxHttp;
 import com.github.eajon.download.DownloadTask;
 import com.github.eajon.exception.ApiException;
+import com.github.eajon.observer.DownloadObserver;
 import com.github.eajon.observer.HttpObserver;
 import com.github.eajon.upload.MultipartUploadTask;
 import com.github.eajon.upload.UploadTask;
@@ -208,13 +209,12 @@ public class MainActivity extends BaseActivity {
                                         download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%");
                                     } else {
                                         RxHttp rxHttp = new RxHttp.Builder().isStick(true).eventId("download").downloadTask(downloadTask).build();
-                                        observer = new HttpObserver <DownloadTask>() {
-                                            @Override
-                                            public void onCancelOrPause() {
-                                                LogUtils.e("dialog", "onpause");
-                                                download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%");
-                                            }
+                                        observer = new DownloadObserver <DownloadTask>() {
 
+                                            @Override
+                                            public void onPause(DownloadTask downloadTask) {
+                                                LogUtils.d("onPause",downloadTask.getProgress());
+                                            }
 
                                             @Override
                                             public void onSuccess(DownloadTask downloadTask) {
@@ -248,7 +248,7 @@ public class MainActivity extends BaseActivity {
             case R.id.request:
 
                 HashMap map = new HashMap();
-                map.put("city", "苏州");
+                map.put("city", "上海");
                 new RxHttp.Builder()
                         .get()
                         .baseUrl("http://wthrcdn.etouch.cn/")
@@ -259,22 +259,7 @@ public class MainActivity extends BaseActivity {
                         .entity(Weather.class)
                         .isStick(true)
                         .build()
-                        .request(new HttpObserver <Weather>() {
-                            @Override
-                            public void onCancelOrPause() {
-
-                            }
-
-                            @Override
-                            public void onSuccess(Weather weather) {
-                                content.setText(new Gson().toJson(weather));
-                            }
-
-                            @Override
-                            public void onError(ApiException t) {
-
-                            }
-                        });
+                        .request();
                 break;
             case R.id.stick:
                 intent = new Intent(this, SecondActivity.class);
