@@ -3,11 +3,13 @@ package com.eajon.my;
 
 import android.Manifest;
 import android.app.Activity;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Debug;
 import android.os.Environment;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -21,6 +23,8 @@ import com.eajon.my.glide.GlideUtils;
 import com.eajon.my.util.PhotoUtils;
 import com.eajon.my.util.Weather;
 import com.eajon.my.util.ZhihuImagePicker;
+import com.eajon.my.viewModel.WeatherModule;
+import com.eajon.my.viewModel.WeatherModule2;
 import com.github.eajon.RxHttp;
 import com.github.eajon.download.DownloadTask;
 import com.github.eajon.exception.ApiException;
@@ -32,7 +36,6 @@ import com.github.eajon.util.LogUtils;
 import com.google.gson.Gson;
 import com.qingmei2.rximagepicker.core.RxImagePicker;
 import com.qingmei2.rximagepicker.entity.Result;
-import com.qingmei2.rximagepicker.ui.SystemImagePicker;
 import com.qingmei2.rximagepicker_extension.MimeType;
 import com.qingmei2.rximagepicker_extension_zhihu.ZhihuConfigurationBuilder;
 import com.tbruyelle.rxpermissions2.Permission;
@@ -54,7 +57,6 @@ import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
-import io.reactivex.observers.DefaultObserver;
 
 
 public class MainActivity extends BaseActivity {
@@ -91,6 +93,17 @@ public class MainActivity extends BaseActivity {
 
     @Override
     protected void initView() {
+        //官方MVVM
+//        WeatherModule weatherModule= ViewModelProviders.of(this).get(WeatherModule.class);
+//        weatherModule.getWeather().observe(this, new android.arch.lifecycle.Observer <Weather>() {
+//            @Override
+//            public void onChanged(@Nullable Weather weather) {
+//                content.setText(new Gson().toJson(weather));
+//            }
+//        });
+        //RxHttp MVVM
+        WeatherModule2 weatherModule2 = ViewModelProviders.of(this).get(WeatherModule2.class);
+        weatherModule2.getWeather();
 
     }
 
@@ -109,7 +122,7 @@ public class MainActivity extends BaseActivity {
 
     @Override
     protected void initLogic() {
-        doRequest();
+//        doRequest();
     }
 
     private void doRequest() {
@@ -130,7 +143,6 @@ public class MainActivity extends BaseActivity {
 
     @RxSubscribe(observeOnThread = EventThread.IO, isSticky = true, eventId = "weather")
     public void weatherCallBack(Weather weather) {
-        LogUtils.d("weather", "haha");
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -208,12 +220,12 @@ public class MainActivity extends BaseActivity {
                                         observer.dispose();
                                         download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%");
                                     } else {
-                                        RxHttp rxHttp = new RxHttp.Builder().isStick(true).eventId("download").downloadTask(downloadTask).build();
+                                        RxHttp rxHttp = new RxHttp.Builder().isStick(true).eventId("download").withDialog(MainActivity.this).downloadTask(downloadTask).build();
                                         observer = new DownloadObserver <DownloadTask>() {
 
                                             @Override
                                             public void onPause(DownloadTask downloadTask) {
-                                                LogUtils.d("onPause",downloadTask.getProgress());
+                                                LogUtils.d("onPause", downloadTask.getProgress());
                                             }
 
                                             @Override
@@ -337,4 +349,9 @@ public class MainActivity extends BaseActivity {
                 });
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        RxBus.getDefault().reset();
+    }
 }

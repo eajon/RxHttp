@@ -20,6 +20,10 @@ public class SecondActivity extends BaseActivity {
 
     @BindView(R.id.content)
     TextView content;
+    @BindView(R.id.content1)
+    TextView content1;
+    @BindView(R.id.content2)
+    TextView content2;
 
     @Override
     protected int setContentId() {
@@ -53,38 +57,37 @@ public class SecondActivity extends BaseActivity {
         ButterKnife.bind(this);
     }
 
-    @RxSubscribe(observeOnThread = EventThread.MAIN, isSticky = true,eventId = "download")
+    @RxSubscribe(observeOnThread = EventThread.MAIN, isSticky = true, eventId = "download")
     private void download(DownloadTask downloadTask) {
-        LogUtils.d("download",downloadTask.getProgress());
+        LogUtils.d("download", downloadTask.getProgress());
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                content.setText(downloadTask.getProgress() + "%");
+                content.setText("下载进度：" + downloadTask.getProgress() + "%" + downloadTask.getState().toString());
             }
         });
 
     }
 
 
-    @RxSubscribe(observeOnThread = EventThread.MAIN, isSticky = true,eventId = "upload")
+    @RxSubscribe(observeOnThread = EventThread.MAIN, isSticky = true, eventId = "upload")
     @SuppressWarnings("unused")
     public void uploadProgress(MultipartUploadTask multipartUploadTask) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                content.setText("总进度：" + multipartUploadTask.getProgress() + "%" + multipartUploadTask.getState().toString());
+                content1.setText("上传进度：" + multipartUploadTask.getProgress() + "%" + multipartUploadTask.getState().toString());
             }
         });
     }
 
 
-    @RxSubscribe(observeOnThread = EventThread.MAIN, isSticky = true,eventId = "weather")
+    @RxSubscribe(observeOnThread = EventThread.MAIN, isSticky = true, eventId = "weather")
     public void weatherCallBack(Weather weather) {
-        LogUtils.d("weather","haha2");
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                content.setText(new Gson().toJson(weather));
+                content2.setText("请求返回" + new Gson().toJson(weather));
             }
         });
     }
