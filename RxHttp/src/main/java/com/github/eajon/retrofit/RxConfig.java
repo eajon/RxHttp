@@ -19,7 +19,7 @@ import okhttp3.OkHttpClient;
 public class RxConfig {
 
 
-    private static RxConfig config;
+    private volatile static RxConfig config;
 
     public static RxConfig get() {
         if (config == null) {

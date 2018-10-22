@@ -21,7 +21,6 @@ import android.util.Log;
 
 import com.github.eajon.converter.GsonDiskConverter;
 import com.github.eajon.converter.IDiskConverter;
-import com.github.eajon.converter.SerializableDiskConverter;
 import com.github.eajon.core.CacheCore;
 import com.github.eajon.core.DynamicKey;
 import com.github.eajon.core.LruDiskCache;
@@ -415,7 +414,7 @@ public final class RxCache {
         private long cacheTime;
 
         public Builder() {
-            diskConverter = new SerializableDiskConverter();
+            diskConverter = new GsonDiskConverter();
             cacheTime = CACHE_NEVER_EXPIRE;
             appVersion = 1;
         }
