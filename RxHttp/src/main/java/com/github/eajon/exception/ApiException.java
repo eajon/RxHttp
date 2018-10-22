@@ -3,7 +3,7 @@ package com.github.eajon.exception;
 /**
  * api接口错误/异常统一处理类
  *
- * @author ZhongDaFeng
+ *
  */
 public class ApiException extends Exception {
     private int code;//错误码

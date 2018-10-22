@@ -6,12 +6,17 @@ import android.content.DialogInterface;
 import android.text.TextUtils;
 
 
+import com.github.eajon.cache.RxCache;
+import com.github.eajon.cache.RxCacheProvider;
 import com.github.eajon.exception.ApiException;
+import com.github.eajon.function.CacheResultFunction;
 import com.github.eajon.function.DownloadResponseFunction;
 import com.github.eajon.function.ErrorResponseFunction;
 import com.github.eajon.function.HttpResponseFunction;
 import com.github.eajon.download.DownloadInterceptor;
 import com.github.eajon.download.DownloadTask;
+import com.github.eajon.model.CacheMode;
+import com.github.eajon.model.CacheResult;
 import com.github.eajon.observer.DownloadObserver;
 import com.github.eajon.observer.HttpObserver;
 import com.github.eajon.observer.UploadObserver;
@@ -29,6 +34,7 @@ import com.trello.rxlifecycle2.android.ActivityEvent;
 import com.trello.rxlifecycle2.android.FragmentEvent;
 
 import java.io.File;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -36,11 +42,14 @@ import java.util.TreeMap;
 import java.util.concurrent.Callable;
 
 import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
+import io.reactivex.ObservableTransformer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
+import io.reactivex.internal.functions.ObjectHelper;
 import io.reactivex.schedulers.Schedulers;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -78,7 +87,7 @@ public class RxHttp {
     /*apiUrl*/
     private String apiUrl;
     /*entity*/
-    private Class <?> clazz;
+    private Type type;
     /*HTTP回调*/
     private HttpObserver httpObserver;
     /*RxDialog提供Context*/
@@ -97,6 +106,8 @@ public class RxHttp {
     /*rxBus发射标识 不配置直接获取 配置了需要配置注解eventId*/
     String eventId;
 
+    String cacheKey;
+
 
     /*构造函数*/
     private RxHttp(Builder builder) {
@@ -110,7 +121,7 @@ public class RxHttp {
         this.baseUrl = builder.baseUrl;
         this.apiUrl = builder.apiUrl;
         this.method = builder.method;
-        this.clazz = builder.clazz;
+        this.type = builder.type;
         this.requestBody = builder.requestBody;
         this.downloadTask = builder.downloadTask;
         this.context = builder.context;
@@ -119,6 +130,7 @@ public class RxHttp {
         this.progressDialog = builder.progressDialog;
         this.isStick = builder.isStick;
         this.eventId = builder.eventId;
+        this.cacheKey = builder.cacheKey;
     }
 
     public static RxConfig getConfig() {
@@ -287,6 +299,7 @@ public class RxHttp {
                 }
 
             });
+
         }
     }
 
@@ -312,13 +325,52 @@ public class RxHttp {
         return map();
     }
 
-
     private Observable map() {
         if (downloadTask != null) {
             return observable.map(new DownloadResponseFunction(downloadTask));
         } else {
-            return observable.map(new HttpResponseFunction(clazz));
+            if (TextUtils.isEmpty(cacheKey) || uploadTask != null || multipartUploadTask != null) {
+                return observable.map(new HttpResponseFunction(type));
+            } else {
+                return doBuildCache(type);
+            }
         }
+    }
+
+    @SuppressWarnings(value = {"unchecked", "deprecation"})
+    private <T> Observable <T> doBuildCache(Type type) {
+        RxCache.Builder rxCacheBuilder = generateRxCache();
+        RxCache rxCache = rxCacheBuilder.build();
+        return observable.map(new HttpResponseFunction(type))
+                .compose(rxCache. <T>transformer(RxCacheProvider.getCacheMode(), type == null ? String.class : type))
+                .compose(new ObservableTransformer <CacheResult <T>, T>() {
+                    @Override
+                    public ObservableSource <T> apply(Observable <CacheResult <T>> upstream) {
+                        return upstream.map(new CacheResultFunction <T>());
+                    }
+                });
+    }
+
+
+    private RxCache.Builder generateRxCache() {
+        CacheMode cacheMode = RxCacheProvider.getCacheMode();
+        long cacheTime = RxCacheProvider.getCacheTime();
+        final RxCache.Builder rxCacheBuilder = RxCacheProvider.getRxCacheBuilder();
+        switch (cacheMode) {
+            case DEFAULT://使用Okhttp的缓存
+                break;
+            case FIRSTREMOTE:
+            case FIRSTCACHE:
+            case ONLYREMOTE:
+            case ONLYCACHE:
+            case CACHEANDREMOTE:
+            case CACHEANDREMOTEDISTINCT:
+                rxCacheBuilder.cacheKey(ObjectHelper.requireNonNull(cacheKey, "cacheKey == null"))
+                        .cacheTime(cacheTime);
+                return rxCacheBuilder;
+
+        }
+        return rxCacheBuilder;
     }
 
 
@@ -491,6 +543,7 @@ public class RxHttp {
                     }
                 }).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
+
     }
 
 
@@ -572,7 +625,7 @@ public class RxHttp {
         /*下载任务*/
         DownloadTask downloadTask;
         /*entity*/
-        Class <?> clazz;
+        Type type;
         /*RxDialog提供Context*/
         Context context;
         /*dialog提示*/
@@ -585,6 +638,8 @@ public class RxHttp {
         boolean isStick;
         /*rxBus发射标识 不配置直接获取 配置了需要配置注解eventId*/
         String eventId;
+
+        String cacheKey;
 
         public Builder() {
         }
@@ -680,8 +735,8 @@ public class RxHttp {
         }
 
 
-        public RxHttp.Builder entity(Class <?> clazz) {
-            this.clazz = clazz;
+        public RxHttp.Builder entity(Type type) {
+            this.type = type;
             return this;
         }
 
@@ -743,6 +798,12 @@ public class RxHttp {
         /*eventId*/
         public RxHttp.Builder eventId(String eventId) {
             this.eventId = eventId;
+            return this;
+        }
+
+        /*eventId*/
+        public RxHttp.Builder useCache(String cacheKey) {
+            this.cacheKey = cacheKey;
             return this;
         }
 

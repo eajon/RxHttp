@@ -22,6 +22,7 @@ public class WeatherModule2 extends ViewModel {
                 .addParameter(map)
                 .entity(Weather.class)
                 .eventId("weather")
+                .useCache("weather")
                 .build()
                 .request();
 

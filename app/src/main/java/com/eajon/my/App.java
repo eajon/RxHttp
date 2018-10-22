@@ -3,7 +3,13 @@ package com.eajon.my;
 import android.app.Application;
 import android.content.Context;
 
+import com.github.eajon.converter.GsonDiskConverter;
 import com.github.eajon.retrofit.RxConfig;
+
+import java.io.File;
+
+import static com.github.eajon.model.CacheMode.CACHEANDREMOTEDISTINCT;
+import static com.github.eajon.model.CacheMode.FIRSTCACHE;
 
 public class App extends Application {
 
@@ -14,9 +20,7 @@ public class App extends Application {
         super.onCreate();
         instance = this;
 
-        RxConfig.init(this).logTag("RxHttps");
-
-
+        RxConfig.get().logTag("RxHttps").rxCache(new File(getExternalCacheDir(), "rxcache"));
     }
 
     @Override

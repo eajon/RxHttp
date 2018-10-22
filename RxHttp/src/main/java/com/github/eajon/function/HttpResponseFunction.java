@@ -5,6 +5,8 @@ import com.github.eajon.util.LogUtils;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 
+import java.lang.reflect.Type;
+
 import io.reactivex.annotations.NonNull;
 import io.reactivex.functions.Function;
 
@@ -16,21 +18,21 @@ import io.reactivex.functions.Function;
 public class HttpResponseFunction implements Function <JsonElement, Object> {
 
 
-    private Class clazz;
+    private Type type;
 
-    public HttpResponseFunction(Class <?> clazz) {
-        this.clazz = clazz;
+    public HttpResponseFunction(Type type) {
+        this.type = type;
     }
 
     @Override
     public Object apply(@NonNull JsonElement response) throws Exception {
         //打印服务器回传结果
-        LogUtils.e(RxHttp.getConfig().getLogTag(),response.toString());
+        LogUtils.e(RxHttp.getConfig().getLogTag(), response.toString());
         /*此处不再处理业务相关逻辑交由开发者重写httpCallback*/
-        if (null != clazz) {
-            return new Gson().fromJson(response, clazz);
-        } else {
+        if (type == null) {
             return new Gson().toJson(response);
         }
+        return new Gson().fromJson(response, type);
+
     }
 }

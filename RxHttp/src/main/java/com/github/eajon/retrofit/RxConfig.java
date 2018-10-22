@@ -2,10 +2,13 @@ package com.github.eajon.retrofit;
 
 import android.content.Context;
 
+import com.github.eajon.cache.RxCacheProvider;
+import com.github.eajon.model.CacheMode;
 import com.github.eajon.util.LogUtils;
 import com.github.eajon.util.OkHttpUtils;
 import com.threshold.rxbus2.RxBus;
 
+import java.io.File;
 import java.util.Map;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -18,20 +21,16 @@ public class RxConfig {
 
     private static RxConfig config;
 
-    public static RxConfig init(Context context) {
+    public static RxConfig get() {
         if (config == null) {
             synchronized (RxConfig.class) {
                 if (config == null) {
-                    config = new RxConfig(context);
+                    config = new RxConfig();
                     setRxJava2ErrorHandler();
                     RxBus.setMainScheduler(AndroidSchedulers.mainThread());
                 }
             }
         }
-        return config;
-    }
-
-    public static RxConfig get() {
         return config;
     }
 
@@ -46,8 +45,6 @@ public class RxConfig {
 
     }
 
-    Context context;
-
     /*请求基础路径*/
     String baseUrl;
     /*请求参数*/
@@ -57,17 +54,14 @@ public class RxConfig {
 
     OkHttpClient okHttpClient;
 
+
     String logTag = "RxHttp";
 
 
-    private RxConfig(Context context) {
-        this.context = context;
+    private RxConfig() {
+
     }
 
-
-    public Context getContext() {
-        return context;
-    }
 
     /*请求基础路径*/
     public RxConfig baseUrl(String baseUrl) {
@@ -118,6 +112,38 @@ public class RxConfig {
 
     public OkHttpClient getOkHttpClient() {
         return this.okHttpClient == null ? OkHttpUtils.httpClient : this.okHttpClient;
+    }
+
+
+    public RxConfig rxCache(File cacheDir) {
+        RxCacheProvider.getInstance()
+                .setCacheDirectory(cacheDir)
+                .setCacheMode(CacheMode.FIRSTREMOTE)
+                .setCacheMaxSize(50 * 1024 * 1024)
+                .setCacheTime(-1)
+                .setCacheVersion(1);
+        return this;
+    }
+
+
+    public RxConfig rxCache(File cacheDir, CacheMode cacheMode) {
+        RxCacheProvider.getInstance()
+                .setCacheDirectory(cacheDir)
+                .setCacheMode(cacheMode)
+                .setCacheMaxSize(50 * 1024 * 1024)
+                .setCacheTime(-1)
+                .setCacheVersion(1);
+        return this;
+    }
+
+    public RxConfig rxCache(File cacheDir, CacheMode cacheMode, long cacheMaxSize, long cacheExpTime, int cacheVersion) {
+        RxCacheProvider.getInstance()
+                .setCacheDirectory(cacheDir)
+                .setCacheMaxSize(cacheMaxSize)
+                .setCacheTime(cacheExpTime)
+                .setCacheMode(cacheMode)
+                .setCacheVersion(cacheVersion);
+        return this;
     }
 
 

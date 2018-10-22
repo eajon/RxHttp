@@ -133,11 +133,21 @@ public class MainActivity extends BaseActivity {
                 .baseUrl("http://wthrcdn.etouch.cn/")
                 .apiUrl("weather_mini")
                 .addParameter(map)
-                .entity(Weather.class)
+                .useCache("haha1")
                 .eventId("weather")
                 .isStick(true)
                 .build()
-                .request();
+                .request(new HttpObserver() {
+                    @Override
+                    public void onSuccess(Object o) {
+                        content.setText(o.toString());
+                    }
+
+                    @Override
+                    public void onError(ApiException t) {
+
+                    }
+                });
     }
 
 
@@ -268,6 +278,7 @@ public class MainActivity extends BaseActivity {
                         .addParameter(map)
                         .eventId("weather")
                         .withDialog(MainActivity.this)
+                        .useCache("weather")
                         .entity(Weather.class)
                         .isStick(true)
                         .build()
