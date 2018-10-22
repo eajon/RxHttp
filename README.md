@@ -37,7 +37,7 @@
 #### Step 2. Add the dependency
 	
  	dependencies {
-	        implementation 'com.github.eajon:RxHttp:0.6.0'
+	        implementation 'com.github.eajon:RxHttp:0.7.0'
 	}
 
 	
