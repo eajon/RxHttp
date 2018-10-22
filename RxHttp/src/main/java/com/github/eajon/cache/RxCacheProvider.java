@@ -47,6 +47,11 @@ public class RxCacheProvider {
         return singleton;
     }
 
+    public static boolean useRxCache() {
+
+        return singleton != null;
+    }
+
     public static RxCache getRxCache() {
         return getInstance().rxCacheBuilder.build();
     }

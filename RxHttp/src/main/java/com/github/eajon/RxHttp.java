@@ -329,7 +329,7 @@ public class RxHttp {
         if (downloadTask != null) {
             return observable.map(new DownloadResponseFunction(downloadTask));
         } else {
-            if (TextUtils.isEmpty(cacheKey) || uploadTask != null || multipartUploadTask != null) {
+            if (!RxCacheProvider.useRxCache() || TextUtils.isEmpty(cacheKey) || uploadTask != null || multipartUploadTask != null) {
                 return observable.map(new HttpResponseFunction(type));
             } else {
                 return doBuildCache(type);

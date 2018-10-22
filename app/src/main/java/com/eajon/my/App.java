@@ -20,7 +20,7 @@ public class App extends Application {
         super.onCreate();
         instance = this;
 
-        RxConfig.get().logTag("RxHttps").rxCache(new File(getExternalCacheDir(), "rxcache"));
+        RxConfig.get().logTag("RxHttps");
     }
 
     @Override
