@@ -4,16 +4,22 @@
 # RxHttp
          本框架 是对 RXJAVA2 + Retrofit + RxBus2 + OkHttp3 的架构的封装 
          达成目标：链式调用，简单明了
-         1.支持 主流的Http 请求 
-         2.支持 多文件上传 监听进度
-         3.支持 大文件下载 监听进度
-         4.所有请求支持RXBUS获取返回数据
+         1.采用链式调用一点到底
+         2.支持动态配置和自定义Okhttpclient
+         3.支持多种方式访问网络GET、POST、PUT、DELETE等请求协议
+         4.支持网络缓存,七种缓存策略可选
+	 5.支持固定添加header和动态添加header
+         6.支持添加全局参数和动态添加局部参数
+	 7.支持文件下载,断点续传,通过rxbus可以监听进度
+	 8.支持多文件上传,通过rxbus可以监听进度
+	 9.支持任意数据结构的自动解析,采用gson
+	 10.支持请求数据结果采用订阅和RXBUS方式
+	 11.支持显示progressDialog,并且生命周期和请求自动关联,无需手动控制
+	 12.支持LifeCycle,所有请求可以配置生命周期与当前页面关联
+	 13.支持RXBUS 使用注解获取数据 并且支持粘性消息 可以替代Intent
+	 具体其他功能 可查看源码
+	 
 
-
-# Future 
-          1.增加发送粘性消息（已完成）
-          2.增加rxchche
-          3.增加自动重试
 	  
 
 
@@ -93,7 +99,8 @@
                 .baseHeader(null)/*公用请求头*/
                 .baseParameter(null)/*公用请参数*/
                 .okHttpClient(null)/*自定义okHttpClient*/
-                .logTag("RxHttp");/*自定义Log名称*/
+                .logTag("RxHttp")/*自定义Log名称*/
+		.rxCache(new File(getExternalCacheDir(), "rxcache") );/* 配置cache 不配置默认使用okhttp的缓存*/
                 
                 
                 
@@ -124,10 +131,7 @@
             
              }
                         
-             @Override
-             public void onCancelOrPause() {
-                        
-             }
+           
         });
         
          
@@ -205,10 +209,7 @@
 
             }
             
-             @Override
-            public void onCancelOrPause() {
-                                    
-            }
+           
             
             
         });
@@ -241,10 +242,7 @@
 
             }
             
-             @Override
-            public void onCancelOrPause() {
-                                    
-            }
+         
         });
         
 #### 下载 暂停 继续 支持断点续传 并可以监听进度（监听进度在最下面）
@@ -267,10 +265,7 @@
 
                 }
                          
-                 @Override
-                 public void onCancelOrPause() {
-                                        
-                 }
+               
 
             };
                 
@@ -307,10 +302,7 @@
 
                     }
                     
-                     @Override
-                     public void onCancelOrPause() {
-                                            
-                     }
+                  
                 });
                 
  ####  多文件        支持RXBUS方式
@@ -338,10 +330,7 @@
 
                     }
                     
-                    @Override
-                    public void onCancelOrPause() {
-                                           
-                    }
+                   
                 });
                   
                   
