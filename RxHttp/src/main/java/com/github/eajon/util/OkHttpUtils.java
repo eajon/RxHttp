@@ -57,15 +57,14 @@ public class OkHttpUtils {
      * @return
      */
     public static OkHttpClient getOkHttpClient(Interceptor... interceptorArray) {
-        OkHttpClient.Builder okHttpClient =RxConfig.get().getOkHttpClientBuilder();
-
+        OkHttpClient.Builder okHttpClientBuilder = RxConfig.get().getOkHttpClient().newBuilder();
         //Interceptor设置
         if (interceptorArray != null) {
             for (Interceptor interceptor : interceptorArray) {
-                okHttpClient.addInterceptor(interceptor);
+                okHttpClientBuilder.addInterceptor(interceptor);
             }
         }
 
-        return okHttpClient.build();
+        return okHttpClientBuilder.build();
     }
 }

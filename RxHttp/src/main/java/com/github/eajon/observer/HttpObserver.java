@@ -2,7 +2,6 @@ package com.github.eajon.observer;
 
 import com.github.eajon.RxHttp;
 import com.github.eajon.exception.ApiException;
-import com.github.eajon.exception.ExceptionEngine;
 import com.github.eajon.util.LogUtils;
 
 import io.reactivex.observers.DisposableObserver;
@@ -28,7 +27,7 @@ public abstract class HttpObserver<T> extends DisposableObserver <T> {
     public void onError(Throwable e) {
         LogUtils.e(RxHttp.getConfig().getLogTag(), "error:" + e.getMessage());
         LogUtils.e("dialog", "observer onError");
-        onError(ExceptionEngine.handleException(e));
+        onError(ApiException.handleException(e));
         dispose();
     }
 

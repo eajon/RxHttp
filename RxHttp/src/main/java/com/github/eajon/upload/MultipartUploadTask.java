@@ -1,7 +1,6 @@
 package com.github.eajon.upload;
 
 import android.text.TextUtils;
-
 import com.threshold.rxbus2.RxBus;
 
 import java.util.ArrayList;
@@ -57,7 +56,11 @@ public class MultipartUploadTask {
     }
 
     public boolean isFinish() {
-        return getProgress() == 100;
+         return state == UploadTask.State.FINISH;
+    }
+
+    public boolean isError() {
+        return state == UploadTask.State.ERROR;
     }
 
     public int getProgress(int position) {
@@ -69,7 +72,7 @@ public class MultipartUploadTask {
     }
 
 
-    public void sendBus(String eventId,boolean isStick) {
+    public void sendBus(String eventId, boolean isStick) {
         if (isStick) {
             RxBus.getDefault().removeStickyEventType(this.getClass());
             if (TextUtils.isEmpty(eventId)) {

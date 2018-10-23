@@ -35,7 +35,7 @@ public class App extends Application {
         super.onCreate();
         instance = this;
 
-        Interceptor NetCacheInterceptor = new Interceptor() {
+        Interceptor netCacheInterceptor = new Interceptor() {
             @Override
             public Response intercept(Chain chain) throws IOException {
                 Request request = chain.request();
@@ -48,7 +48,7 @@ public class App extends Application {
             }
         };
 
-        Interceptor OfflineCacheInterceptor = new Interceptor() {
+        Interceptor offlineCacheInterceptor = new Interceptor() {
             @Override
             public Response intercept(Chain chain) throws IOException {
                 Request request = chain.request();
@@ -70,9 +70,9 @@ public class App extends Application {
         ClearableCookieJar cookieJar =
                 new PersistentCookieJar(new SetCookieCache(), new SharedPrefsCookiePersistor(getContext()));
 
-        OkHttpClient.Builder HttpClientBuilder = new OkHttpClient.Builder()
-                .addInterceptor(OfflineCacheInterceptor)
-                .addNetworkInterceptor(NetCacheInterceptor)
+        OkHttpClient httpClient = new OkHttpClient.Builder()
+                .addInterceptor(offlineCacheInterceptor)
+                .addNetworkInterceptor(netCacheInterceptor)
                 .addNetworkInterceptor(new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
                     @Override
                     public void log(String message) {
@@ -83,10 +83,11 @@ public class App extends Application {
                 .connectTimeout(30, TimeUnit.SECONDS)
                 .readTimeout(30, TimeUnit.SECONDS)
                 .writeTimeout(30, TimeUnit.SECONDS)
-                .cookieJar(cookieJar);
+                .cookieJar(cookieJar)
+                .build();
 
 
-        RxConfig.get().logTag("RxHttps").okHttpClientBuilder(HttpClientBuilder);
+        RxConfig.get().logTag("RxHttps").okHttpClient(httpClient);
     }
 
 

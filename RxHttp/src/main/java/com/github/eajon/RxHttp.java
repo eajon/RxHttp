@@ -1,5 +1,6 @@
 package com.github.eajon;
 
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -15,6 +16,7 @@ import com.github.eajon.function.ErrorResponseFunction;
 import com.github.eajon.function.HttpResponseFunction;
 import com.github.eajon.download.DownloadInterceptor;
 import com.github.eajon.download.DownloadTask;
+import com.github.eajon.function.RetryExceptionFunction;
 import com.github.eajon.model.CacheMode;
 import com.github.eajon.model.CacheResult;
 import com.github.eajon.observer.DownloadObserver;
@@ -28,6 +30,7 @@ import com.github.eajon.upload.UploadTask;
 import com.github.eajon.util.LogUtils;
 import com.github.eajon.util.NetUtils;
 import com.github.eajon.util.RetrofitUtils;
+import com.github.eajon.util.RxUtil;
 import com.threshold.rxbus2.RxBus;
 import com.trello.rxlifecycle2.LifecycleProvider;
 import com.trello.rxlifecycle2.android.ActivityEvent;
@@ -51,6 +54,7 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.internal.functions.ObjectHelper;
 import io.reactivex.schedulers.Schedulers;
+import io.reactivex.subjects.BehaviorSubject;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -99,14 +103,16 @@ public class RxHttp {
     /*Retrofit observable */
     Observable observable;
     /*自定义对话框*/
-    private ProgressDialog progressDialog;
+    private Dialog dialog;
     /*是否是粘性消息*/
     private boolean isStick;
 
     /*rxBus发射标识 不配置直接获取 配置了需要配置注解eventId*/
-    String eventId;
+    private String eventId;
 
-    String cacheKey;
+    private String cacheKey;
+
+    private int retryTime;
 
 
     /*构造函数*/
@@ -127,10 +133,11 @@ public class RxHttp {
         this.context = builder.context;
         this.message = builder.message;
         this.cancelable = builder.cancelable;
-        this.progressDialog = builder.progressDialog;
+        this.dialog = builder.dialog;
         this.isStick = builder.isStick;
         this.eventId = builder.eventId;
         this.cacheKey = builder.cacheKey;
+        this.retryTime = builder.retryTime;
     }
 
     public static RxConfig getConfig() {
@@ -281,7 +288,7 @@ public class RxHttp {
 
     private void subscribe() {
         if (httpObserver != null) {
-            if (progressDialog != null || context != null) {
+            if (dialog != null || context != null) {
                 dialogObserver().subscribe(httpObserver);
             } else {
                 observe().subscribe(httpObserver);
@@ -374,36 +381,37 @@ public class RxHttp {
 
 
     private Observable dialogObserver() {
-        return Observable.using(new Callable <ProgressDialog>() {
+        return Observable.using(new Callable <Dialog>() {
             @Override
-            public ProgressDialog call() {
-                if (progressDialog != null) {
-                    progressDialog.show();
-                    return progressDialog;
+            public Dialog call() {
+                if (dialog != null) {
+                    dialog.show();
+                    return dialog;
                 }
                 return ProgressDialog.show(context, null, message, true, cancelable);
             }
-        }, new Function <ProgressDialog, Observable <? extends Object>>() {
+        }, new Function <Dialog, Observable <? extends Object>>() {
             @Override
-            public Observable <? extends Object> apply(final ProgressDialog progressDialog) throws Exception {
+            public Observable <? extends Object> apply(final Dialog progressDialog) throws Exception {
+                final BehaviorSubject <Boolean> dialogCancelSubject = BehaviorSubject.create();
                 return observe().doOnSubscribe(new Consumer <Disposable>() {
                     @Override
                     public void accept(final Disposable disposable) throws Exception {
                         progressDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
                             @Override
                             public void onDismiss(DialogInterface dialog) {
-                                LogUtils.e("dialog", "dismiss");
-                                disposable.dispose();
+                                LogUtils.e("dialog", "doOnSubscribe");
+                                dialogCancelSubject.onNext(true);
                             }
                         });
                     }
-                });
+                }).takeUntil(dialogCancelSubject);
             }
-        }, new Consumer <ProgressDialog>() {
+        }, new Consumer <Dialog>() {
             @Override
-            public void accept(ProgressDialog progressDialog) throws Exception {
-                LogUtils.e("dialog", "accept");
-                progressDialog.dismiss();
+            public void accept(Dialog dialog) throws Exception {
+                LogUtils.e("dialog", "dismiss");
+                dialog.dismiss();
             }
         });
     }
@@ -411,134 +419,81 @@ public class RxHttp {
 
     //    /*线程设置*/
     public Observable observe() {
-        return compose().onErrorResumeNext(new ErrorResponseFunction <>())
+        return compose()
+                .onErrorResumeNext(new ErrorResponseFunction <>())
+                .retryWhen(new RetryExceptionFunction(retryTime))
+                .doOnSubscribe(new Consumer <Disposable>() {
+                    @Override
+                    public void accept(Disposable disposable) throws Exception {
+//                        LogUtils.e("dialog", "doOnSubscribe");
+                        if (downloadTask != null) {
+                            downloadTask.setState(DownloadTask.State.LOADING);
+                            downloadTask.sendBus(eventId, isStick);
+                        } else if (uploadTask != null) {
+                            uploadTask.setState(UploadTask.State.LOADING);
+                            uploadTask.sendBus(eventId, isStick);
+                        } else if (multipartUploadTask != null) {
+                            multipartUploadTask.setState(UploadTask.State.LOADING);
+                            multipartUploadTask.sendBus(eventId, isStick);
+                        }
+                    }
+                })
                 .doOnDispose(new Action() {
                     @Override
                     public void run() throws Exception {
 //                        LogUtils.e("dialog", "doOnDispose");
                     }
-                }).doOnLifecycle(new Consumer <Disposable>() {
-                    @Override
-                    public void accept(Disposable disposable) throws Exception {
-                        LogUtils.e("dialog", "doOnLifecycle");
-                        if (downloadTask != null) {
-                            downloadTask.setState(DownloadTask.State.LOADING);
-                            downloadTask.sendBus(eventId, isStick);
-                        }
-                        if (uploadTask != null) {
-                            uploadTask.setState(UploadTask.State.LOADING);
-                            uploadTask.sendBus(eventId, isStick);
-                        }
-                        if (multipartUploadTask != null) {
-                            multipartUploadTask.setState(UploadTask.State.LOADING);
-                            multipartUploadTask.sendBus(eventId, isStick);
-
-                        }
-                    }
-                }, new Action() {
-                    @Override
-                    public void run() throws Exception {
-//                        LogUtils.e("dialog", "doOnLifecycle action");
-                    }
-                }).doOnTerminate(new Action() {
-                    //当取消
-                    //判断下载或者上传是否完成 未完成即为取消
-                    @Override
-                    public void run() throws Exception {
-                        LogUtils.e("dialog", "doOnTerminate");
-                        if (downloadTask != null) {
-                            if (downloadTask.isFinish()) {
-                                downloadTask.setState(DownloadTask.State.FINISH);
-                                downloadTask.sendBus(eventId, isStick);
-                            } else {
-                                downloadTask.setState(DownloadTask.State.PAUSE);
-                                downloadTask.sendBus(eventId, isStick);
-                                if (httpObserver instanceof DownloadObserver) {
-                                    ((DownloadObserver) httpObserver).onPause(downloadTask);
-                                }
-
-                            }
-                        } else if (uploadTask != null) {
-                            if (uploadTask.isFinish()) {
-                                uploadTask.setState(UploadTask.State.FINISH);
-                                uploadTask.sendBus(eventId, isStick);
-                            } else {
-                                uploadTask.setState(UploadTask.State.CANCEL);
-                                uploadTask.sendBus(eventId, isStick);
-                                if (httpObserver instanceof UploadObserver) {
-                                    ((UploadObserver) httpObserver).onCancel();
-                                }
-                            }
-                        } else if (multipartUploadTask != null) {
-                            if (multipartUploadTask.isFinish()) {
-                                multipartUploadTask.setState(UploadTask.State.FINISH);
-                                multipartUploadTask.sendBus(eventId, isStick);
-                            } else {
-                                multipartUploadTask.setState(UploadTask.State.CANCEL);
-                                for (UploadTask uploadTask : multipartUploadTask.getUploadTasks()) {
-                                    uploadTask.setState(UploadTask.State.CANCEL);
-                                }
-                                multipartUploadTask.sendBus(eventId, isStick);
-                                if (httpObserver instanceof UploadObserver) {
-                                    ((UploadObserver) httpObserver).onCancel();
-                                }
-                            }
-                        } else {
-
-                        }
-                    }
-                }).doOnError(new Consumer <Throwable>() {
+                })
+                .doOnError(new Consumer <Throwable>() {
                     @Override
                     public void accept(Throwable throwable) throws Exception {
-                        LogUtils.e("dialog", "doOnError");
-                        //由于手动取消RXJAVA2会进入异常 防止两次判断造成状态错误
+//                        LogUtils.e("dialog", "doOnError");
                         if (downloadTask != null) {
-                            if (downloadTask.getState() != DownloadTask.State.PAUSE) {
-                                downloadTask.setState(DownloadTask.State.ERROR);
-                                downloadTask.sendBus(eventId, isStick);
-                            }
+                            downloadTask.setState(DownloadTask.State.ERROR);
+                            downloadTask.sendBus(eventId, isStick);
                         } else if (uploadTask != null) {
-                            if (uploadTask.getState() != UploadTask.State.CANCEL) {
-                                uploadTask.setState(UploadTask.State.ERROR);
-                                uploadTask.sendBus(eventId, isStick);
-                            }
+                            uploadTask.setState(UploadTask.State.ERROR);
+                            uploadTask.sendBus(eventId, isStick);
                         } else if (multipartUploadTask != null) {
-                            if (multipartUploadTask.getState() != UploadTask.State.CANCEL) {
-                                multipartUploadTask.setState(UploadTask.State.ERROR);
-                                for (UploadTask uploadTask : multipartUploadTask.getUploadTasks()) {
-                                    uploadTask.setState(UploadTask.State.ERROR);
-                                }
-                                multipartUploadTask.sendBus(eventId, isStick);
+                            multipartUploadTask.setState(UploadTask.State.ERROR);
+                            for (UploadTask uploadTask : multipartUploadTask.getUploadTasks()) {
+                                uploadTask.setState(UploadTask.State.ERROR);
                             }
+                            multipartUploadTask.sendBus(eventId, isStick);
                         }
                     }
                 }).doOnNext(new Consumer() {
                     @Override
                     public void accept(Object o) throws Exception {
 //                        LogUtils.e("dialog", "doOnNext");
-                    }
-                }).doAfterNext(new Consumer() {
-                    @Override
-                    public void accept(Object o) throws Exception {
-//                        LogUtils.e("dialog", "doAfterNext");
+                        if (downloadTask != null) {
+                            downloadTask.setState(DownloadTask.State.FINISH);
+                            downloadTask.sendBus(eventId, isStick);
+                        } else if (uploadTask != null) {
+                            uploadTask.setState(UploadTask.State.FINISH);
+                            uploadTask.sendBus(eventId, isStick);
+                        } else if (multipartUploadTask != null) {
+                            multipartUploadTask.setState(UploadTask.State.FINISH);
+                            multipartUploadTask.sendBus(eventId, isStick);
+                        }
                     }
                 }).doFinally(new Action() {
                     @Override
                     public void run() throws Exception {
 //                        LogUtils.e("dialog", "doFinally");
+                        if (downloadTask != null && !downloadTask.isFinish() && !downloadTask.isError()) {
+                            downloadTask.setState(DownloadTask.State.PAUSE);
+                            downloadTask.sendBus(eventId, isStick);
+                        } else if (uploadTask != null && !uploadTask.isFinish() && !uploadTask.isError()) {
+                            uploadTask.setState(UploadTask.State.CANCEL);
+                            uploadTask.sendBus(eventId, isStick);
+                        } else if (multipartUploadTask != null && !multipartUploadTask.isFinish() && !multipartUploadTask.isError()) {
+                            multipartUploadTask.setState(UploadTask.State.CANCEL);
+                            multipartUploadTask.sendBus(eventId, isStick);
+                        }
                     }
-                }).doAfterTerminate(new Action() {
-                    @Override
-                    public void run() throws Exception {
-//                        LogUtils.e("dialog", "doAfterTerminate");
-                    }
-                }).doOnComplete(new Action() {
-                    @Override
-                    public void run() throws Exception {
-//                        LogUtils.e("dialog", "doOnComplete");
-
-                    }
-                }).subscribeOn(Schedulers.io())
+                })
+                .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
 
     }
@@ -630,13 +585,15 @@ public class RxHttp {
         /*dialog是否默认可以取消*/
         boolean cancelable;
         /*自定义progressDialog*/
-        ProgressDialog progressDialog;
+        Dialog dialog;
         /*是否是粘性消息*/
         boolean isStick;
         /*rxBus发射标识 不配置直接获取 配置了需要配置注解eventId*/
         String eventId;
 
         String cacheKey;
+
+        int retryTime;
 
         public Builder() {
         }
@@ -780,8 +737,8 @@ public class RxHttp {
         }
 
         /*阻塞对话框*/
-        public RxHttp.Builder withDialog(ProgressDialog progressDialog) {
-            this.progressDialog = progressDialog;
+        public RxHttp.Builder withDialog(Dialog dialog) {
+            this.dialog = dialog;
             return this;
         }
 
@@ -799,8 +756,14 @@ public class RxHttp {
         }
 
         /*eventId*/
-        public RxHttp.Builder useCache(String cacheKey) {
+        public RxHttp.Builder cacheKey(String cacheKey) {
             this.cacheKey = cacheKey;
+            return this;
+        }
+
+        /*eventId*/
+        public RxHttp.Builder retryTime(int retryTime) {
+            this.retryTime = retryTime;
             return this;
         }
 

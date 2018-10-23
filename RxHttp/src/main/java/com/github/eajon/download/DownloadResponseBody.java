@@ -82,6 +82,7 @@ public class DownloadResponseBody extends ResponseBody {
                 }
                 downloadTask.setCurrentSize(readBytesCount);
                 downloadTask.setTotalSize(totalBytesCount);
+                LogUtils.d("download_body",downloadTask.getState().toString() + downloadTask.getProgress() + "%");
                 downloadTask.sendBus(eventId,isStick);
                 return bytesRead;
             }

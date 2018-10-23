@@ -1,7 +1,6 @@
 package com.github.eajon.upload;
 
 
-
 import android.text.TextUtils;
 
 import com.threshold.rxbus2.RxBus;
@@ -46,8 +45,8 @@ public class UploadTask {
 
     public UploadTask(File file) {
         this.file = file;
-        this.fileName=file.getName();
-        this.totalSize=file.length();
+        this.fileName = file.getName();
+        this.totalSize = file.length();
     }
 
 
@@ -76,9 +75,6 @@ public class UploadTask {
     }
 
 
-
-
-
     public int getProgress() {
         if (totalSize != 0) {
             float progress = (float) currentSize / (float) totalSize;
@@ -89,11 +85,15 @@ public class UploadTask {
     }
 
     public boolean isFinish() {
-        return currentSize == totalSize;
+        return state == State.FINISH;
     }
 
 
-    public void sendBus(String eventId,boolean isStick) {
+    public boolean isError() {
+        return state == State.ERROR;
+    }
+
+    public void sendBus(String eventId, boolean isStick) {
         if (isStick) {
             RxBus.getDefault().removeStickyEventType(this.getClass());
             if (TextUtils.isEmpty(eventId)) {

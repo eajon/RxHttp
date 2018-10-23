@@ -25,6 +25,7 @@ import com.eajon.my.util.Weather;
 import com.eajon.my.util.ZhihuImagePicker;
 import com.eajon.my.viewModel.WeatherModule;
 import com.eajon.my.viewModel.WeatherModule2;
+import com.eajon.my.widget.CProgressDialog;
 import com.github.eajon.RxHttp;
 import com.github.eajon.download.DownloadTask;
 import com.github.eajon.exception.ApiException;
@@ -133,7 +134,7 @@ public class MainActivity extends BaseActivity {
                 .baseUrl("http://wthrcdn.etouch.cn/")
                 .apiUrl("weather_mini")
                 .addParameter(map)
-                .useCache("haha1")
+                .cacheKey("haha1")
                 .eventId("weather")
                 .isStick(true)
                 .build()
@@ -171,6 +172,7 @@ public class MainActivity extends BaseActivity {
     @RxSubscribe(observeOnThread = EventThread.MAIN, eventId = "download")
     @SuppressWarnings("unused")
     public void downloadProgress(DownloadTask downloadTask) {
+        LogUtils.d("download",downloadTask.getState().toString() + downloadTask.getProgress() + "%");
         download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%");
     }
 
@@ -230,7 +232,8 @@ public class MainActivity extends BaseActivity {
                                         observer.dispose();
                                         download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%");
                                     } else {
-                                        RxHttp rxHttp = new RxHttp.Builder().isStick(true).eventId("download").withDialog(MainActivity.this).downloadTask(downloadTask).build();
+                                        final CProgressDialog progressDialog = new CProgressDialog(MainActivity.this, R.style.CustomDialog);
+                                        RxHttp rxHttp = new RxHttp.Builder().lifecycle(MainActivity.this).eventId("download").withDialog(progressDialog).downloadTask(downloadTask).build();
                                         observer = new DownloadObserver <DownloadTask>() {
 
                                             @Override
@@ -268,7 +271,6 @@ public class MainActivity extends BaseActivity {
                 requestGalleryPermissions();
                 break;
             case R.id.request:
-
                 HashMap map = new HashMap();
                 map.put("city", "上海");
                 new RxHttp.Builder()
@@ -278,7 +280,8 @@ public class MainActivity extends BaseActivity {
                         .addParameter(map)
                         .eventId("weather")
                         .withDialog(MainActivity.this)
-                        .useCache("weather")
+                        .cacheKey("weather")
+                        .retryTime(2)
                         .entity(Weather.class)
                         .isStick(true)
                         .build()

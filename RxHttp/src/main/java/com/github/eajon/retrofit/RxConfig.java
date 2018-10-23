@@ -52,7 +52,6 @@ public class RxConfig {
     /*header*/
     Map <String, Object> header;
 
-    OkHttpClient.Builder okHttpClientBuilder;
 
     OkHttpClient okHttpClient;
 
@@ -107,15 +106,12 @@ public class RxConfig {
 
 
     /*HttpClient*/
-    public RxConfig okHttpClientBuilder(OkHttpClient.Builder okHttpClientBuilder) {
-        this.okHttpClientBuilder = okHttpClientBuilder;
-        this.okHttpClient = okHttpClientBuilder.build();
+    public RxConfig okHttpClient(OkHttpClient okHttpClient) {
+        this.okHttpClient = okHttpClient;
         return this;
     }
 
-    public OkHttpClient.Builder getOkHttpClientBuilder() {
-        return this.okHttpClientBuilder == null ? OkHttpUtils.HttpClientBuilder : this.okHttpClientBuilder;
-    }
+
 
     public OkHttpClient getOkHttpClient() {
         return this.okHttpClient == null ? OkHttpUtils.HttpClient : this.okHttpClient;

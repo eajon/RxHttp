@@ -22,7 +22,6 @@ import android.util.Log;
 import com.github.eajon.converter.GsonDiskConverter;
 import com.github.eajon.converter.IDiskConverter;
 import com.github.eajon.core.CacheCore;
-import com.github.eajon.core.DynamicKey;
 import com.github.eajon.core.LruDiskCache;
 import com.github.eajon.exception.RxCacheNullException;
 import com.github.eajon.model.CacheMode;
@@ -305,17 +304,6 @@ public final class RxCache {
         return cacheCore.containsKey(key);
     }
 
-    /**
-     * 是否包含
-     */
-//    public Observable<Boolean> containsKey(final String key) {
-//        return Observable.create(new SimpleSubscribe<Boolean>() {
-//            @Override
-//            Boolean execute() throws Throwable {
-//                return cacheCore.containsKey(key);
-//            }
-//        });
-//    }
 
     /**
      * 删除缓存
@@ -466,12 +454,6 @@ public final class RxCache {
             return this;
         }
 
-        public Builder dynamicKey(DynamicKey dynamicKey) {
-            if (dynamicKey != null) {
-                this.cacheKey = dynamicKey.getDynamicKey();
-            }
-            return this;
-        }
 
         public Builder cacheTime(long cacheTime) {
             this.cacheTime = cacheTime;

@@ -29,7 +29,7 @@ public class DownloadTask implements Serializable {
 
 
     public DownloadTask(String fileName, String localUrl, String serverUrl) {
-        this.fileName=fileName;
+        this.fileName = fileName;
         this.localUrl = localUrl;
         this.serverUrl = serverUrl;
     }
@@ -107,7 +107,11 @@ public class DownloadTask implements Serializable {
     }
 
     public boolean isFinish() {
-        return currentSize == totalSize;
+        return state == State.FINISH;
+    }
+
+    public boolean isError() {
+        return state == State.ERROR;
     }
 
     public void sendBus(String eventId, boolean isStick) {
