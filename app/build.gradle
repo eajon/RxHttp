@@ -55,5 +55,7 @@ dependencies {
     implementation 'com.github.qingmei2:rximagepicker:2.2.0'
     implementation 'com.github.qingmei2:rximagepicker_support_zhihu:2.2.0'
 
+    implementation 'com.github.franmontiel:PersistentCookieJar:v1.0.1'
+
 
 }

@@ -339,8 +339,7 @@ public class RxHttp {
 
     @SuppressWarnings(value = {"unchecked", "deprecation"})
     private <T> Observable <T> doBuildCache(Type type) {
-        RxCache.Builder rxCacheBuilder = generateRxCache();
-        RxCache rxCache = rxCacheBuilder.build();
+        RxCache rxCache = generateRxCache().build();
         return observable.map(new HttpResponseFunction(type))
                 .compose(rxCache. <T>transformer(RxCacheProvider.getCacheMode(), type == null ? String.class : type))
                 .compose(new ObservableTransformer <CacheResult <T>, T>() {
@@ -375,7 +374,6 @@ public class RxHttp {
 
 
     private Observable dialogObserver() {
-
         return Observable.using(new Callable <ProgressDialog>() {
             @Override
             public ProgressDialog call() {
@@ -413,7 +411,6 @@ public class RxHttp {
 
     //    /*线程设置*/
     public Observable observe() {
-
         return compose().onErrorResumeNext(new ErrorResponseFunction <>())
                 .doOnDispose(new Action() {
                     @Override

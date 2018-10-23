@@ -36,7 +36,7 @@ dependencies {
     //lifecycle
     api 'com.trello.rxlifecycle2:rxlifecycle:2.2.2'
     api 'com.trello.rxlifecycle2:rxlifecycle-components:2.2.2'
-    api "android.arch.lifecycle:extensions:1.1.0"
+    api 'android.arch.lifecycle:extensions:1.1.0'
 
 
     // rxbus
@@ -45,6 +45,7 @@ dependencies {
 
     api 'com.jakewharton:disklrucache:2.0.2'
     api 'com.google.code.gson:gson:2.8.5'
+
 
 
 }
