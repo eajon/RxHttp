@@ -3,7 +3,7 @@
 
 # RxHttp
          本框架 是对 RXJAVA2 + Retrofit + RxBus2 + OkHttp3 的架构的封装 
-         达成目标：链式调用，简单明了
+         达成目标：重写了RxEasyHttp 大部分代码 基本实现了其百分之90的功能
          1.采用链式调用一点到底
          2.支持动态配置和自定义Okhttpclient
          3.支持多种方式访问网络GET、POST、PUT、DELETE等请求协议
@@ -17,8 +17,12 @@
 	     11.支持显示progressDialog,并且生命周期和请求自动关联,无需手动控制
 	     12.支持LifeCycle,所有请求可以配置生命周期与当前页面关联
 	     13.支持RXBUS 使用注解获取数据 并且支持粘性消息 可以替代Intent
-	     具体其他功能 可查看源码
-	 
+	     与RxEasyHttp的区别 
+	     1.可以自定义配置okHttpClient,方便自己操作cookiejar 拦截器之列，减少耦合，减少配置代码，配置好okhttpclient就行
+	     2.增加RXBUS2,可以使用rxbus2发射数据
+	     3.发送数据基本是retorfit原生方式,方便理解代码
+	     
+	     
 
 	  
 
@@ -43,7 +47,7 @@
 #### Step 2. Add the dependency
 	
  	dependencies {
-	        implementation 'com.github.eajon:RxHttp:v1.0.0'
+	        implementation 'com.github.eajon:RxHttp:v1.1.0'
 	}
 
 	
