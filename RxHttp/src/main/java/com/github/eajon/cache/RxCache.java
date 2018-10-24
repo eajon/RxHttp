@@ -110,6 +110,27 @@ public final class RxCache {
         return new Builder(this);
     }
 
+    public static RxCache generateRxCache(String cacheKey) {
+        CacheMode cacheMode = RxCacheProvider.getCacheMode();
+        long cacheTime = RxCacheProvider.getCacheTime();
+        final RxCache.Builder rxCacheBuilder = RxCacheProvider.getRxCacheBuilder();
+        switch (cacheMode) {
+            case DEFAULT://使用Okhttp的缓存
+                break;
+            case FIRSTREMOTE:
+            case FIRSTCACHE:
+            case ONLYREMOTE:
+            case ONLYCACHE:
+            case CACHEANDREMOTE:
+            case CACHEANDREMOTEDISTINCT:
+                rxCacheBuilder.cacheKey(ObjectHelper.requireNonNull(cacheKey, "cacheKey == null"))
+                        .cacheTime(cacheTime);
+                return rxCacheBuilder.build();
+
+        }
+        return rxCacheBuilder.build();
+    }
+
     @SuppressWarnings(value = {"unchecked", "deprecation"})
     public <T> ObservableTransformer <T, CacheResult <T>> transformer(CacheMode cacheMode, Type type) {
         return transformer(cacheMode, type, false);
@@ -459,6 +480,8 @@ public final class RxCache {
             this.cacheTime = cacheTime;
             return this;
         }
+
+
 
         public RxCache build() {
             ObjectHelper.requireNonNull(this.diskDir, "diskDir==null");

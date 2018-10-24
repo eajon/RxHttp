@@ -87,7 +87,7 @@ public class App extends Application {
                 .build();
 
 
-        RxConfig.get().logTag("RxHttps").okHttpClient(httpClient);
+        RxConfig.get().logTag("RxHttps").okHttpClient(httpClient).rxCache(new File(getExternalCacheDir(), "rxcache"));
     }
 
 

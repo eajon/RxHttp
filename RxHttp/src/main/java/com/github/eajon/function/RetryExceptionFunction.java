@@ -38,7 +38,7 @@ import io.reactivex.functions.Function;
  * 日期： 2017/4/12 17:52 <br>
  * 版本： v1.0<br>
  */
-public class RetryExceptionFunction implements Function <Observable <? extends Throwable>, Observable <?>> {
+public class RetryExceptionFunction implements Function <Observable <? extends Throwable>, Observable > {
     /* retry次数*/
     private int count;
     /*延迟*/
@@ -51,7 +51,7 @@ public class RetryExceptionFunction implements Function <Observable <? extends T
 
 
     @Override
-    public Observable <?> apply(@NonNull Observable <? extends Throwable> observable) throws Exception {
+    public Observable  apply(@NonNull Observable <? extends Throwable> observable) throws Exception {
         return observable.zipWith(Observable.range(1, count + 1), new BiFunction <Throwable, Integer, Wrapper>() {
             @Override
             public Wrapper apply(@NonNull Throwable throwable, @NonNull Integer integer) throws Exception {

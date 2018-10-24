@@ -6,7 +6,7 @@ import com.github.eajon.util.FileUtils;
 import io.reactivex.functions.Function;
 import okhttp3.ResponseBody;
 
-public class DownloadResponseFunction implements Function<ResponseBody, Object> {
+public class DownloadResponseFunction<T> implements Function<ResponseBody, Object> {
 
     DownloadTask downloadTask;
 

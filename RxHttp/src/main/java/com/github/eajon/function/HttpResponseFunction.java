@@ -15,7 +15,7 @@ import io.reactivex.functions.Function;
  *
  * @author wengyijiong
  */
-public class HttpResponseFunction implements Function <JsonElement, Object> {
+public class HttpResponseFunction<T> implements Function <JsonElement, Object> {
 
 
     private Type type;

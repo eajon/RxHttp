@@ -31,6 +31,7 @@ import com.github.eajon.download.DownloadTask;
 import com.github.eajon.exception.ApiException;
 import com.github.eajon.observer.DownloadObserver;
 import com.github.eajon.observer.HttpObserver;
+import com.github.eajon.observer.UploadObserver;
 import com.github.eajon.upload.MultipartUploadTask;
 import com.github.eajon.upload.UploadTask;
 import com.github.eajon.util.LogUtils;
@@ -134,7 +135,7 @@ public class MainActivity extends BaseActivity {
                 .baseUrl("http://wthrcdn.etouch.cn/")
                 .apiUrl("weather_mini")
                 .addParameter(map)
-                .cacheKey("haha1")
+                .cacheKey("weather")
                 .eventId("weather")
                 .isStick(true)
                 .build()
@@ -172,7 +173,7 @@ public class MainActivity extends BaseActivity {
     @RxSubscribe(observeOnThread = EventThread.MAIN, eventId = "download")
     @SuppressWarnings("unused")
     public void downloadProgress(DownloadTask downloadTask) {
-        LogUtils.d("download",downloadTask.getState().toString() + downloadTask.getProgress() + "%");
+        LogUtils.d("download", downloadTask.getState().toString() + downloadTask.getProgress() + "%");
         download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%");
     }
 
@@ -205,6 +206,7 @@ public class MainActivity extends BaseActivity {
 
 
     private void upload(ArrayList <UploadTask> uploadTasks) {
+        CProgressDialog progressDialog = new CProgressDialog(MainActivity.this, R.style.CustomDialog);
         MultipartUploadTask multipartUploadTask = new MultipartUploadTask(uploadTasks);
         new RxHttp.Builder()
                 .baseUrl("https://shop.cxwos.com/admin/File/")
@@ -212,8 +214,26 @@ public class MainActivity extends BaseActivity {
                 .multipartUploadTask(multipartUploadTask)
                 .isStick(true)
                 .eventId("upload")
+                .lifecycle(MainActivity.this)
+                .activityEvent(ActivityEvent.PAUSE)
+                .withDialog(progressDialog)
                 .build()
-                .upload();
+                .upload(new UploadObserver() {
+                    @Override
+                    public void onCancel() {
+
+                    }
+
+                    @Override
+                    public void onSuccess(Object o) {
+
+                    }
+
+                    @Override
+                    public void onError(ApiException t) {
+
+                    }
+                });
 
     }
 
@@ -233,7 +253,13 @@ public class MainActivity extends BaseActivity {
                                         download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%");
                                     } else {
                                         final CProgressDialog progressDialog = new CProgressDialog(MainActivity.this, R.style.CustomDialog);
-                                        RxHttp rxHttp = new RxHttp.Builder().lifecycle(MainActivity.this).eventId("download").withDialog(progressDialog).downloadTask(downloadTask).build();
+                                        RxHttp rxHttp = new RxHttp.Builder()
+                                                .lifecycle(MainActivity.this)
+                                                .eventId("download")
+                                                .withDialog(progressDialog)
+                                                .activityEvent(ActivityEvent.PAUSE)
+                                                .downloadTask(downloadTask)
+                                                .build();
                                         observer = new DownloadObserver <DownloadTask>() {
 
                                             @Override
@@ -280,7 +306,7 @@ public class MainActivity extends BaseActivity {
                         .addParameter(map)
                         .eventId("weather")
                         .withDialog(MainActivity.this)
-                        .cacheKey("weather")
+//                        .cacheKey("weather")
                         .retryTime(2)
                         .entity(Weather.class)
                         .isStick(true)
@@ -327,7 +353,8 @@ public class MainActivity extends BaseActivity {
                                             .countable(true)
                                             .spanCount(3)
                                             .theme(R.style.Zhihu_Normal)
-                                            .build()).compose(MainActivity.this.bindUntilEvent(ActivityEvent.DESTROY))
+                                            .build())
+                                    .compose(MainActivity.this.bindUntilEvent(ActivityEvent.DESTROY))
                                     .subscribe(new Observer <Result>() {
                                         @Override
                                         public void onSubscribe(Disposable d) {

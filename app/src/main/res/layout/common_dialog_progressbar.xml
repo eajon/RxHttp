@@ -12,7 +12,7 @@
         android:layout_width="90dip"
         android:layout_height="90dip"
         android:layout_centerInParent="true"
-        android:background="@drawable/common_rectangle_666666"
+        android:background="@drawable/common_progress_rectangle"
         android:padding="20dp" />
 
 </RelativeLayout>

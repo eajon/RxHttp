@@ -6,6 +6,7 @@ import com.github.eajon.exception.ApiException;
 import com.github.eajon.util.LogUtils;
 
 import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.functions.Function;
 
@@ -14,11 +15,11 @@ import io.reactivex.functions.Function;
  *
  * @author WENGHYIJIONG
  */
-public class ErrorResponseFunction<T> implements Function<Throwable, Observable<T>> {
+public class ErrorResponseFunction<T> implements Function <Throwable, Observable> {
     @Override
-    public Observable<T> apply(@NonNull Throwable throwable) throws Exception {
+    public Observable <? extends T> apply(@NonNull Throwable throwable) throws Exception {
         //打印具体错误
-        LogUtils.e(RxHttp.getConfig().getLogTag() , throwable.getMessage());
+        LogUtils.e(RxHttp.getConfig().getLogTag(), throwable.getMessage());
         return Observable.error(ApiException.handleException(throwable));
     }
 }

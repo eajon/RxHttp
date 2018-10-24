@@ -5,7 +5,7 @@ import android.util.Log;
 import com.github.eajon.converter.GsonDiskConverter;
 import com.github.eajon.converter.IDiskConverter;
 import com.github.eajon.model.CacheMode;
-import com.github.eajon.util.RxUtil;
+import com.github.eajon.util.RxUtils;
 
 import java.io.File;
 import java.lang.reflect.Type;
@@ -47,8 +47,7 @@ public class RxCacheProvider {
         return singleton;
     }
 
-    public static boolean useRxCache() {
-
+    public static boolean isInit() {
         return singleton != null;
     }
 
@@ -148,7 +147,7 @@ public class RxCacheProvider {
      * 异步清空缓存
      */
     public static void clearCache() {
-        rxClear().compose(RxUtil. <Boolean>io_main())
+        rxClear().compose(RxUtils. <Boolean>io_main())
                 .subscribe(new Consumer <Boolean>() {
                     @Override
                     public void accept(@NonNull Boolean aBoolean) throws Exception {
@@ -166,7 +165,7 @@ public class RxCacheProvider {
      * 异步移除缓存（key）
      */
     public static void removeCache(String key) {
-        rxRemove(key).compose(RxUtil. <Boolean>io_main()).subscribe(new Consumer <Boolean>() {
+        rxRemove(key).compose(RxUtils. <Boolean>io_main()).subscribe(new Consumer <Boolean>() {
             @Override
             public void accept(@NonNull Boolean result) throws Exception {
                 Log.i(TAG, "removeCache result: " + result);

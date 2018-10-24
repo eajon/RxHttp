@@ -7,31 +7,19 @@ import android.content.DialogInterface;
 import android.text.TextUtils;
 
 
-import com.github.eajon.cache.RxCache;
-import com.github.eajon.cache.RxCacheProvider;
 import com.github.eajon.exception.ApiException;
-import com.github.eajon.function.CacheResultFunction;
-import com.github.eajon.function.DownloadResponseFunction;
-import com.github.eajon.function.ErrorResponseFunction;
-import com.github.eajon.function.HttpResponseFunction;
 import com.github.eajon.download.DownloadInterceptor;
 import com.github.eajon.download.DownloadTask;
-import com.github.eajon.function.RetryExceptionFunction;
-import com.github.eajon.model.CacheMode;
-import com.github.eajon.model.CacheResult;
-import com.github.eajon.observer.DownloadObserver;
 import com.github.eajon.observer.HttpObserver;
-import com.github.eajon.observer.UploadObserver;
 import com.github.eajon.retrofit.Method;
 import com.github.eajon.retrofit.RxConfig;
 import com.github.eajon.upload.MultipartUploadTask;
 import com.github.eajon.upload.UploadRequestBody;
 import com.github.eajon.upload.UploadTask;
-import com.github.eajon.util.LogUtils;
 import com.github.eajon.util.NetUtils;
 import com.github.eajon.util.RetrofitUtils;
-import com.github.eajon.util.RxUtil;
-import com.threshold.rxbus2.RxBus;
+import com.github.eajon.util.RxBusUtils;
+import com.github.eajon.util.RxUtils;
 import com.trello.rxlifecycle2.LifecycleProvider;
 import com.trello.rxlifecycle2.android.ActivityEvent;
 import com.trello.rxlifecycle2.android.FragmentEvent;
@@ -45,15 +33,9 @@ import java.util.TreeMap;
 import java.util.concurrent.Callable;
 
 import io.reactivex.Observable;
-import io.reactivex.ObservableSource;
-import io.reactivex.ObservableTransformer;
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
-import io.reactivex.internal.functions.ObjectHelper;
-import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.BehaviorSubject;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -95,13 +77,11 @@ public class RxHttp {
     /*HTTP回调*/
     private HttpObserver httpObserver;
     /*RxDialog提供Context*/
-    private Context context;
+    private Context dialogContext;
     /*dialog提示*/
     private String message;
     /*dialog是否默认可以取消*/
     private boolean cancelable;
-    /*Retrofit observable */
-    Observable observable;
     /*自定义对话框*/
     private Dialog dialog;
     /*是否是粘性消息*/
@@ -109,9 +89,9 @@ public class RxHttp {
 
     /*rxBus发射标识 不配置直接获取 配置了需要配置注解eventId*/
     private String eventId;
-
+    /*cacheKey*/
     private String cacheKey;
-
+    /*重试次数*/
     private int retryTime;
 
 
@@ -130,7 +110,7 @@ public class RxHttp {
         this.type = builder.type;
         this.requestBody = builder.requestBody;
         this.downloadTask = builder.downloadTask;
-        this.context = builder.context;
+        this.dialogContext = builder.dialogContext;
         this.message = builder.message;
         this.cancelable = builder.cancelable;
         this.dialog = builder.dialog;
@@ -155,7 +135,7 @@ public class RxHttp {
         }
     }
 
-    /*普通Http请求*/
+    /*普通HttpRxBus*/
     public void request() {
         doRequest();
     }
@@ -175,6 +155,7 @@ public class RxHttp {
         }
     }
 
+    /*上传文件RXBUS*/
     public void upload() {
         if (uploadTask == null && multipartUploadTask == null) {
             throw new NullPointerException("UploadTask must not null!");
@@ -197,6 +178,7 @@ public class RxHttp {
         }
     }
 
+    /*下载文件RXBUS*/
     public void download() {
         if (downloadTask == null) {
             throw new NullPointerException("DownloadTask must not null!");
@@ -208,6 +190,8 @@ public class RxHttp {
 
     /*执行请求*/
     private void doRequest() {
+
+        Observable observable;
         /*header处理*/
         disposeHeader();
 
@@ -239,11 +223,12 @@ public class RxHttp {
                 observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).post(disposeApiUrl(), parameter, header);
                 break;
         }
-        subscribe();
+        subscribe(observable);
     }
 
     /*执行文件上传*/
     private void doUpload() {
+        Observable observable;
         /*header处理*/
         disposeHeader();
 
@@ -273,114 +258,50 @@ public class RxHttp {
         }
 
         /*请求处理*/
-        subscribe();
+        subscribe(observable);
     }
 
     private void doDownload() {
 
 
-        observable = RetrofitUtils.get().getRetrofit(NetUtils.getBaseUrl(downloadTask.getServerUrl()), new DownloadInterceptor(eventId, isStick, downloadTask)).download(downloadTask.getServerUrl(), "bytes=" + downloadTask.getCurrentSize() + "-");
+        Observable observable = RetrofitUtils.get().getRetrofit(NetUtils.getBaseUrl(downloadTask.getServerUrl()), new DownloadInterceptor(eventId, isStick, downloadTask)).download(downloadTask.getServerUrl(), "bytes=" + downloadTask.getCurrentSize() + "-");
         /*请求处理*/
-        subscribe();
+        subscribe(observable);
 
 
     }
 
-    private void subscribe() {
+    private void subscribe(Observable observable) {
         if (httpObserver != null) {
-            if (dialog != null || context != null) {
-                dialogObserver().subscribe(httpObserver);
+            //自定义dilaog或者有dialog的context
+            if (dialog != null || dialogContext != null) {
+                dialogObserver(observable).subscribe(httpObserver);
             } else {
-                observe().subscribe(httpObserver);
+                observe(observable).subscribe(httpObserver);
             }
         } else {
-            observe().subscribe(new HttpObserver() {
+            HttpObserver observer = new HttpObserver() {
                 @Override
                 public void onSuccess(Object o) {
-                    sendBus(eventId, isStick, o);
+                    RxBusUtils.sendBus(eventId, isStick, o);
                 }
 
                 @Override
                 public void onError(ApiException t) {
-                    sendBus(eventId, isStick, t);
+                    RxBusUtils.sendBus(eventId, isStick, t);
                 }
-
-            });
-
-        }
-    }
-
-
-    /* compose 操作符 介于 map onErrorResumeNext */
-    private Observable compose() {
-        if (lifecycle != null) {
-            if (activityEvent != null || fragmentEvent != null) {
-                //两个同时存在,以 activity 为准
-                if (activityEvent != null && fragmentEvent != null) {
-                    return map().compose(lifecycle.bindUntilEvent(activityEvent));
-                }
-                if (activityEvent != null) {
-                    return map().compose(lifecycle.bindUntilEvent(activityEvent));
-                }
-                if (fragmentEvent != null) {
-                    return map().compose(lifecycle.bindUntilEvent(fragmentEvent));
-                }
+            };
+            if (dialog != null || dialogContext != null) {
+                dialogObserver(observable).subscribe(observer);
             } else {
-                return map().compose(lifecycle.bindToLifecycle());
-            }
-        }
-        return map();
-    }
-
-    private Observable map() {
-        if (downloadTask != null) {
-            return observable.map(new DownloadResponseFunction(downloadTask));
-        } else {
-            if (!RxCacheProvider.useRxCache() || TextUtils.isEmpty(cacheKey) || uploadTask != null || multipartUploadTask != null) {
-                return observable.map(new HttpResponseFunction(type));
-            } else {
-                return doBuildCache(type);
+                observe(observable).subscribe(observer);
             }
         }
     }
 
-    @SuppressWarnings(value = {"unchecked", "deprecation"})
-    private <T> Observable <T> doBuildCache(Type type) {
-        RxCache rxCache = generateRxCache().build();
-        return observable.map(new HttpResponseFunction(type))
-                .compose(rxCache. <T>transformer(RxCacheProvider.getCacheMode(), type == null ? String.class : type))
-                .compose(new ObservableTransformer <CacheResult <T>, T>() {
-                    @Override
-                    public ObservableSource <T> apply(Observable <CacheResult <T>> upstream) {
-                        return upstream.map(new CacheResultFunction <T>());
-                    }
-                });
-    }
 
-
-    private RxCache.Builder generateRxCache() {
-        CacheMode cacheMode = RxCacheProvider.getCacheMode();
-        long cacheTime = RxCacheProvider.getCacheTime();
-        final RxCache.Builder rxCacheBuilder = RxCacheProvider.getRxCacheBuilder();
-        switch (cacheMode) {
-            case DEFAULT://使用Okhttp的缓存
-                break;
-            case FIRSTREMOTE:
-            case FIRSTCACHE:
-            case ONLYREMOTE:
-            case ONLYCACHE:
-            case CACHEANDREMOTE:
-            case CACHEANDREMOTEDISTINCT:
-                rxCacheBuilder.cacheKey(ObjectHelper.requireNonNull(cacheKey, "cacheKey == null"))
-                        .cacheTime(cacheTime);
-                return rxCacheBuilder;
-
-        }
-        return rxCacheBuilder;
-    }
-
-
-    private Observable dialogObserver() {
+    //dialog
+    private Observable dialogObserver(final Observable observable) {
         return Observable.using(new Callable <Dialog>() {
             @Override
             public Dialog call() {
@@ -388,114 +309,52 @@ public class RxHttp {
                     dialog.show();
                     return dialog;
                 }
-                return ProgressDialog.show(context, null, message, true, cancelable);
+                return ProgressDialog.show(dialogContext, null, message, true, cancelable);
             }
         }, new Function <Dialog, Observable <? extends Object>>() {
             @Override
             public Observable <? extends Object> apply(final Dialog progressDialog) throws Exception {
-                final BehaviorSubject <Boolean> dialogCancelSubject = BehaviorSubject.create();
-                return observe().doOnSubscribe(new Consumer <Disposable>() {
+                final BehaviorSubject <Boolean> dialogSubject = BehaviorSubject.create();
+                return observe(observable).doOnSubscribe(new Consumer <Disposable>() {
                     @Override
                     public void accept(final Disposable disposable) throws Exception {
                         progressDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
                             @Override
                             public void onDismiss(DialogInterface dialog) {
-                                LogUtils.e("dialog", "doOnSubscribe");
-                                dialogCancelSubject.onNext(true);
+//                                LogUtils.e("dialog", "doOnSubscribe");
+                                dialogSubject.onNext(true);
                             }
                         });
                     }
-                }).takeUntil(dialogCancelSubject);
+                }).takeUntil(dialogSubject);
             }
         }, new Consumer <Dialog>() {
             @Override
             public void accept(Dialog dialog) throws Exception {
-                LogUtils.e("dialog", "dismiss");
+//                LogUtils.e("dialog", "dismiss");
                 dialog.dismiss();
             }
         });
     }
 
 
-    //    /*线程设置*/
-    public Observable observe() {
-        return compose()
-                .onErrorResumeNext(new ErrorResponseFunction <>())
-                .retryWhen(new RetryExceptionFunction(retryTime))
-                .doOnSubscribe(new Consumer <Disposable>() {
-                    @Override
-                    public void accept(Disposable disposable) throws Exception {
-//                        LogUtils.e("dialog", "doOnSubscribe");
-                        if (downloadTask != null) {
-                            downloadTask.setState(DownloadTask.State.LOADING);
-                            downloadTask.sendBus(eventId, isStick);
-                        } else if (uploadTask != null) {
-                            uploadTask.setState(UploadTask.State.LOADING);
-                            uploadTask.sendBus(eventId, isStick);
-                        } else if (multipartUploadTask != null) {
-                            multipartUploadTask.setState(UploadTask.State.LOADING);
-                            multipartUploadTask.sendBus(eventId, isStick);
-                        }
-                    }
-                })
-                .doOnDispose(new Action() {
-                    @Override
-                    public void run() throws Exception {
-//                        LogUtils.e("dialog", "doOnDispose");
-                    }
-                })
-                .doOnError(new Consumer <Throwable>() {
-                    @Override
-                    public void accept(Throwable throwable) throws Exception {
-//                        LogUtils.e("dialog", "doOnError");
-                        if (downloadTask != null) {
-                            downloadTask.setState(DownloadTask.State.ERROR);
-                            downloadTask.sendBus(eventId, isStick);
-                        } else if (uploadTask != null) {
-                            uploadTask.setState(UploadTask.State.ERROR);
-                            uploadTask.sendBus(eventId, isStick);
-                        } else if (multipartUploadTask != null) {
-                            multipartUploadTask.setState(UploadTask.State.ERROR);
-                            for (UploadTask uploadTask : multipartUploadTask.getUploadTasks()) {
-                                uploadTask.setState(UploadTask.State.ERROR);
-                            }
-                            multipartUploadTask.sendBus(eventId, isStick);
-                        }
-                    }
-                }).doOnNext(new Consumer() {
-                    @Override
-                    public void accept(Object o) throws Exception {
-//                        LogUtils.e("dialog", "doOnNext");
-                        if (downloadTask != null) {
-                            downloadTask.setState(DownloadTask.State.FINISH);
-                            downloadTask.sendBus(eventId, isStick);
-                        } else if (uploadTask != null) {
-                            uploadTask.setState(UploadTask.State.FINISH);
-                            uploadTask.sendBus(eventId, isStick);
-                        } else if (multipartUploadTask != null) {
-                            multipartUploadTask.setState(UploadTask.State.FINISH);
-                            multipartUploadTask.sendBus(eventId, isStick);
-                        }
-                    }
-                }).doFinally(new Action() {
-                    @Override
-                    public void run() throws Exception {
-//                        LogUtils.e("dialog", "doFinally");
-                        if (downloadTask != null && !downloadTask.isFinish() && !downloadTask.isError()) {
-                            downloadTask.setState(DownloadTask.State.PAUSE);
-                            downloadTask.sendBus(eventId, isStick);
-                        } else if (uploadTask != null && !uploadTask.isFinish() && !uploadTask.isError()) {
-                            uploadTask.setState(UploadTask.State.CANCEL);
-                            uploadTask.sendBus(eventId, isStick);
-                        } else if (multipartUploadTask != null && !multipartUploadTask.isFinish() && !multipartUploadTask.isError()) {
-                            multipartUploadTask.setState(UploadTask.State.CANCEL);
-                            multipartUploadTask.sendBus(eventId, isStick);
-                        }
-                    }
-                })
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread());
+    //构建数据发射器
+    public Observable observe(Observable observable) {
+        return observable
+                .compose(RxUtils.map(downloadTask, type))
+                .compose(RxUtils.cache(cacheKey, type, isRequest()))
+                .compose(RxUtils.lifeCycle(lifecycle, activityEvent, fragmentEvent))
+                .compose(RxUtils.retryPolicy(retryTime))
+                .compose(RxUtils.sendEvent(downloadTask, uploadTask, multipartUploadTask, eventId, isStick))
+                .compose(RxUtils.io_main());
 
+    }
+
+    private boolean isRequest() {
+        if (uploadTask != null || multipartUploadTask != null || downloadTask != null) {
+            return false;
+        }
+        return true;
     }
 
 
@@ -579,7 +438,7 @@ public class RxHttp {
         /*entity*/
         Type type;
         /*RxDialog提供Context*/
-        Context context;
+        Context dialogContext;
         /*dialog提示*/
         String message;
         /*dialog是否默认可以取消*/
@@ -714,7 +573,7 @@ public class RxHttp {
 
         /*阻塞对话框*/
         public RxHttp.Builder withDialog(Context context) {
-            this.context = context;
+            this.dialogContext = context;
             this.message = "";
             this.cancelable = true;
             return this;
@@ -722,7 +581,7 @@ public class RxHttp {
 
         /*阻塞对话框*/
         public RxHttp.Builder withDialog(Context context, String message) {
-            this.context = context;
+            this.dialogContext = context;
             this.message = message;
             this.cancelable = true;
             return this;
@@ -730,7 +589,7 @@ public class RxHttp {
 
         /*阻塞对话框*/
         public RxHttp.Builder withDialog(Context context, String message, boolean cancelable) {
-            this.context = context;
+            this.dialogContext = context;
             this.message = message;
             this.cancelable = cancelable;
             return this;
@@ -772,21 +631,6 @@ public class RxHttp {
         }
     }
 
-    public void sendBus(String eventId, boolean isStick, Object object) {
-        if (isStick) {
-            RxBus.getDefault().removeStickyEventType(object.getClass());
-            if (TextUtils.isEmpty(eventId)) {
-                RxBus.getDefault().postSticky(object);
-            } else {
-                RxBus.getDefault().postSticky(eventId, object);
-            }
-        } else {
-            if (TextUtils.isEmpty(eventId)) {
-                RxBus.getDefault().post(object);
-            } else {
-                RxBus.getDefault().post(eventId, object);
-            }
-        }
-    }
+
 }
 
