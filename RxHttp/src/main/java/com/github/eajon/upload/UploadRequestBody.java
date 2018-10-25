@@ -8,6 +8,10 @@ import com.github.eajon.util.LogUtils;
 
 import java.io.IOException;
 
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.functions.Consumer;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import okio.Buffer;
@@ -36,17 +40,21 @@ public class UploadRequestBody extends RequestBody {
 
     private String eventId;
 
-    public UploadRequestBody(RequestBody requestBody, String eventId,boolean isStick, UploadTask uploadTask) {
+    private long time;
+    private long secondBytesCount;
+
+
+    public UploadRequestBody(RequestBody requestBody, String eventId, boolean isStick, UploadTask uploadTask) {
         this.requestBody = requestBody;
-        this.eventId=eventId;
+        this.eventId = eventId;
         this.isStick = isStick;
         this.uploadTask = uploadTask;
 
     }
 
-    public UploadRequestBody(RequestBody requestBody,String eventId, boolean isStick, UploadTask uploadTask, MultipartUploadTask multipartUploadTask) {
+    public UploadRequestBody(RequestBody requestBody, String eventId, boolean isStick, UploadTask uploadTask, MultipartUploadTask multipartUploadTask) {
         this.requestBody = requestBody;
-        this.eventId=eventId;
+        this.eventId = eventId;
         this.isStick = isStick;
         this.uploadTask = uploadTask;
         this.multipartUploadTask = multipartUploadTask;
@@ -86,7 +94,6 @@ public class UploadRequestBody extends RequestBody {
             bufferedSink = Okio.buffer(sink(sink));
         }
         requestBody.writeTo(bufferedSink);
-        //必须调用flush，否则最后一部分数据可能不会被写入
         bufferedSink.flush();
     }
 
@@ -107,7 +114,31 @@ public class UploadRequestBody extends RequestBody {
             public void write(Buffer source, long byteCount) throws IOException {
                 super.write(source, byteCount);
                 //增加当前写入的字节数
+                secondBytesCount += byteCount;
                 writtenBytesCount += byteCount;
+                Observable.create(new ObservableOnSubscribe <Long>() {
+                    @Override
+                    public void subscribe(ObservableEmitter <Long> emitter) {
+                        if (time == 0) {
+                            time = System.currentTimeMillis();
+                        }
+                        long millis = System.currentTimeMillis() - time;
+                        if (millis >= 500) {
+                            emitter.onNext(millis);
+                        }
+                    }
+                }).subscribe(new Consumer <Long>() {
+                    @Override
+                    public void accept(Long aLong) throws Exception {
+                        uploadTask.setSpeed(secondBytesCount * 1000 / aLong);
+                        if (multipartUploadTask != null) {
+                            multipartUploadTask.setSpeed(secondBytesCount * 1000 / aLong);
+                        }
+                        secondBytesCount = 0;
+                        time = System.currentTimeMillis();
+                    }
+                });
+
                 uploadTask.setCurrentSize(writtenBytesCount);
 
                 if (writtenBytesCount >= uploadTask.getTotalSize()) {
@@ -115,11 +146,10 @@ public class UploadRequestBody extends RequestBody {
                 } else {
                     uploadTask.setState(UploadTask.State.LOADING);
                 }
-//                LogUtils.e(RxHttp.getConfig().getLogTag(),"upload"+ uploadTask.getProgress());
                 if (multipartUploadTask != null) {
-                    multipartUploadTask.sendBus(eventId,isStick);
+                    multipartUploadTask.sendBus(eventId, isStick);
                 } else {
-                    uploadTask.sendBus(eventId,isStick);
+                    uploadTask.sendBus(eventId, isStick);
                 }
             }
         };

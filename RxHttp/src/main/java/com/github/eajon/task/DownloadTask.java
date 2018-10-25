@@ -1,6 +1,7 @@
 package com.github.eajon.task;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 
 public class DownloadTask extends BaseTask implements Serializable {
@@ -10,6 +11,8 @@ public class DownloadTask extends BaseTask implements Serializable {
     private String localUrl;//本地存储地址
     private long totalSize;//文件大小
     private long currentSize;//当前大小
+
+
 
 
     public DownloadTask(String fileName, String localUrl) {
@@ -61,7 +64,6 @@ public class DownloadTask extends BaseTask implements Serializable {
     }
 
 
-
     @Override
     public String toString() {
         return "DownloadTask{" +
@@ -69,7 +71,9 @@ public class DownloadTask extends BaseTask implements Serializable {
                 ", localUrl='" + localUrl + '\'' +
                 ", totalSize=" + totalSize +
                 ", currentSize=" + currentSize +
+                ", speed=" + speed +
                 ", state=" + state +
                 '}';
     }
+
 }

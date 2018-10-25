@@ -2,6 +2,7 @@ package com.github.eajon.task;
 
 import java.io.File;
 import java.io.Serializable;
+import java.math.BigDecimal;
 
 public class UploadTask extends BaseTask implements Serializable {
 
@@ -9,6 +10,7 @@ public class UploadTask extends BaseTask implements Serializable {
     private File file;
     private long currentSize;
     private long totalSize;
+
 
 
 
@@ -60,6 +62,8 @@ public class UploadTask extends BaseTask implements Serializable {
             return 0;
         }
     }
+
+
 
 
     @Override

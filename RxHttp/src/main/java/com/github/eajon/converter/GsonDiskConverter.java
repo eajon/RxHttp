@@ -18,7 +18,6 @@ package com.github.eajon.converter;
 
 
 import com.github.eajon.model.RealEntity;
-import com.github.eajon.util.IOUtils;
 import com.google.gson.Gson;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
@@ -35,6 +34,7 @@ import java.lang.reflect.Type;
 import java.util.ConcurrentModificationException;
 
 import io.reactivex.internal.functions.ObjectHelper;
+import okhttp3.internal.Util;
 
 /**
  * <p>描述：GSON-数据转换器</p>
@@ -61,16 +61,12 @@ import io.reactivex.internal.functions.ObjectHelper;
  */
 @SuppressWarnings(value={"unchecked", "deprecation"})
 public class GsonDiskConverter implements IDiskConverter {
-    private Gson gson = new Gson();
+    private Gson gson ;
 
     public GsonDiskConverter() {
         this.gson = new Gson();
     }
 
-    public GsonDiskConverter(Gson gson) {
-        ObjectHelper.requireNonNull(gson, "gson == null");
-        this.gson = gson;
-    }
 
     @Override
     public <T> RealEntity<T> load(InputStream source, Type type) {
@@ -85,7 +81,7 @@ public class GsonDiskConverter implements IDiskConverter {
         } catch (Exception e){
             e.printStackTrace();
         }finally {
-            IOUtils.close(source);
+            Util.closeQuietly(source);
         }
 
         return entity;
@@ -104,7 +100,7 @@ public class GsonDiskConverter implements IDiskConverter {
         }catch (Exception e){
             e.printStackTrace();
         } finally {
-            IOUtils.close(sink);
+            Util.closeQuietly(sink);
         }
         return false;
     }

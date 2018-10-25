@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 
 import okhttp3.ResponseBody;
+import okhttp3.internal.Util;
 import okio.Buffer;
 import okio.BufferedSink;
 import okio.BufferedSource;
@@ -40,7 +41,7 @@ public class FileUtils {
             Buffer buffer = sink.buffer();
             long total = downloadTask.getCurrentSize();
             long len;
-            int bufferSize = 64 * 1024;
+            int bufferSize = 8 * 1024;
             source = responseBody.source();
             while ((len = source.read(buffer, bufferSize)) != -1) {
                 sink.emit();
@@ -52,10 +53,10 @@ public class FileUtils {
             throw e;
         } finally {
             if (source != null) {
-                IOUtils.close(source);
+                Util.closeQuietly(source);
             }
             if (sink != null) {
-                IOUtils.close(sink);
+                Util.closeQuietly(sink);
             }
         }
 

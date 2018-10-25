@@ -1,13 +1,16 @@
 package com.github.eajon.download;
 
 
-
-import com.github.eajon.RxHttp;
+import com.github.eajon.task.BaseTask;
 import com.github.eajon.task.DownloadTask;
 import com.github.eajon.util.LogUtils;
 
 import java.io.IOException;
 
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.functions.Consumer;
 import okhttp3.MediaType;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
@@ -39,11 +42,13 @@ public class DownloadResponseBody extends ResponseBody {
 
     private boolean isStick;
     private String eventId;
+    private long time;
+    private long secondBytesCount;
 
-    public DownloadResponseBody(Response originalResponse,String eventId, boolean isStick,DownloadTask downloadTask) {
+    public DownloadResponseBody(Response originalResponse, String eventId, boolean isStick, DownloadTask downloadTask) {
         this.originalResponse = originalResponse;
-        this.eventId=eventId;
-        this.isStick =isStick;
+        this.eventId = eventId;
+        this.isStick = isStick;
         this.downloadTask = downloadTask;
     }
 
@@ -73,16 +78,36 @@ public class DownloadResponseBody extends ResponseBody {
             long totalBytesCount = downloadTask.getTotalSize();
 
             @Override
-            public long read(Buffer sink, long byteCount) throws IOException {
+            public long read(Buffer sink, final long byteCount) throws IOException {
                 long bytesRead = super.read(sink, byteCount);
-                // read() returns the number of bytes read, or -1 if this source is exhausted.
+                secondBytesCount += byteCount != -1 ? bytesRead : 0;
                 readBytesCount += bytesRead != -1 ? bytesRead : 0;
                 if (totalBytesCount == 0) {
                     totalBytesCount = contentLength();
                 }
+
+                Observable.create(new ObservableOnSubscribe <Long>() {
+                    @Override
+                    public void subscribe(ObservableEmitter <Long> emitter) {
+                        if (time == 0) {
+                            time = System.currentTimeMillis();
+                        }
+                        long millis = System.currentTimeMillis() - time;
+                        if (millis >= 500) {
+                            emitter.onNext(millis);
+                        }
+                    }
+                }).subscribe(new Consumer <Long>() {
+                    @Override
+                    public void accept(Long aLong) throws Exception {
+                        downloadTask.setSpeed(secondBytesCount * 1000 / aLong);
+                        secondBytesCount = 0;
+                        time = System.currentTimeMillis();
+                    }
+                });
                 downloadTask.setCurrentSize(readBytesCount);
                 downloadTask.setTotalSize(totalBytesCount);
-                downloadTask.sendBus(eventId,isStick);
+                downloadTask.sendBus(eventId, isStick);
                 return bytesRead;
             }
         };

@@ -19,7 +19,6 @@ package com.github.eajon.core;
 
 import com.github.eajon.converter.IDiskConverter;
 import com.github.eajon.model.RealEntity;
-import com.github.eajon.util.IOUtils;
 import com.jakewharton.disklrucache.DiskLruCache;
 
 
@@ -30,6 +29,7 @@ import java.io.OutputStream;
 import java.lang.reflect.Type;
 
 import io.reactivex.internal.functions.ObjectHelper;
+import okhttp3.internal.Util;
 
 
 /**
@@ -73,7 +73,7 @@ public class LruDiskCache extends BaseCache {
             RealEntity<T> value;
             if (source != null) {
                 value = mDiskConverter.load(source,type);
-                IOUtils.close(source);
+                Util.closeQuietly(source);
                 edit.commit();
                 return value;
             }
@@ -97,7 +97,7 @@ public class LruDiskCache extends BaseCache {
             OutputStream sink = edit.newOutputStream(0);
             if (sink != null) {
                 boolean result = mDiskConverter.writer(sink, value);
-                IOUtils.close(sink);
+                Util.closeQuietly(sink);
                 edit.commit();
                 return result;
             }

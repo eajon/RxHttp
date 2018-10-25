@@ -162,8 +162,8 @@ public class MainActivity extends BaseActivity {
     @RxSubscribe(observeOnThread = EventThread.MAIN, eventId = "download")
     @SuppressWarnings("unused")
     public void downloadProgress(DownloadTask downloadTask) {
-        LogUtils.d("download", downloadTask.getState().toString() + downloadTask.getProgress() + "%");
-        download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%");
+        LogUtils.d("download1", downloadTask.getState().toString() + downloadTask.getProgress() + "%"+downloadTask.getSpeedKB());
+        download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%"+downloadTask.getSpeedKB());
     }
 
 
@@ -177,11 +177,11 @@ public class MainActivity extends BaseActivity {
     @RxSubscribe(observeOnThread = EventThread.MAIN, eventId = "upload")
     @SuppressWarnings("unused")
     public void uploadProgress(MultipartUploadTask multipartUploadTask) {
-        content.setText("总进度：" + multipartUploadTask.getProgress() + "%" + multipartUploadTask.getState().toString());
+        content.setText("总进度：" + multipartUploadTask.getProgress() + "%" + multipartUploadTask.getState().toString()+multipartUploadTask.getSpeedKB());
         if (multipartUploadTask.getUploadTasks().size() >= 3) {//假设选择3个
-            content1.setText("第一个：" + multipartUploadTask.getProgress(0) + "%" + multipartUploadTask.getState(0).toString());
-            content2.setText("第二个：" + multipartUploadTask.getProgress(1) + "%" + multipartUploadTask.getState(1).toString());
-            content3.setText("第三个：" + multipartUploadTask.getProgress(2) + "%" + multipartUploadTask.getState(2).toString());
+            content1.setText("第一个：" + multipartUploadTask.getProgress(0) + "%" + multipartUploadTask.getState(0).toString()+multipartUploadTask.getSpeedKB());
+            content2.setText("第二个：" + multipartUploadTask.getProgress(1) + "%" + multipartUploadTask.getState(1).toString()+multipartUploadTask.getSpeedKB());
+            content3.setText("第三个：" + multipartUploadTask.getProgress(2) + "%" + multipartUploadTask.getState(2).toString()+multipartUploadTask.getSpeedKB());
         }
     }
 
@@ -294,8 +294,8 @@ public class MainActivity extends BaseActivity {
                         .addParameter(map)
                         .eventId("weather")
                         .withDialog(new CProgressDialog(MainActivity.this, R.style.CustomDialog))
-//                        .cacheKey("weather")
-                        .retryTime(2)
+                        .cacheKey("HAHAHAHA")
+//                        .retryTime(2)
                         .entity(Weather.class)
                         .isStick(true)
                         .build()
