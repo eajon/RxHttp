@@ -116,28 +116,19 @@ public class UploadRequestBody extends RequestBody {
                 //增加当前写入的字节数
                 secondBytesCount += byteCount;
                 writtenBytesCount += byteCount;
-                Observable.create(new ObservableOnSubscribe <Long>() {
-                    @Override
-                    public void subscribe(ObservableEmitter <Long> emitter) {
-                        if (time == 0) {
-                            time = System.currentTimeMillis();
-                        }
-                        long millis = System.currentTimeMillis() - time;
-                        if (millis >= 500) {
-                            emitter.onNext(millis);
-                        }
+                if (time == 0) {
+                    time = System.currentTimeMillis();
+                }
+                long millis = System.currentTimeMillis() - time;
+                if (millis >= 500) {
+                    uploadTask.setSpeed(secondBytesCount * 1000 / millis);
+                    if (multipartUploadTask != null) {
+                        multipartUploadTask.setSpeed(secondBytesCount * 1000 / millis);
                     }
-                }).subscribe(new Consumer <Long>() {
-                    @Override
-                    public void accept(Long aLong) throws Exception {
-                        uploadTask.setSpeed(secondBytesCount * 1000 / aLong);
-                        if (multipartUploadTask != null) {
-                            multipartUploadTask.setSpeed(secondBytesCount * 1000 / aLong);
-                        }
-                        secondBytesCount = 0;
-                        time = System.currentTimeMillis();
-                    }
-                });
+                    secondBytesCount = 0;
+                    time = System.currentTimeMillis();
+                }
+
 
                 uploadTask.setCurrentSize(writtenBytesCount);
 

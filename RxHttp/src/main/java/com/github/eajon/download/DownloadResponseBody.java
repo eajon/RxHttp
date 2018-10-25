@@ -85,26 +85,15 @@ public class DownloadResponseBody extends ResponseBody {
                 if (totalBytesCount == 0) {
                     totalBytesCount = contentLength();
                 }
-
-                Observable.create(new ObservableOnSubscribe <Long>() {
-                    @Override
-                    public void subscribe(ObservableEmitter <Long> emitter) {
-                        if (time == 0) {
-                            time = System.currentTimeMillis();
-                        }
-                        long millis = System.currentTimeMillis() - time;
-                        if (millis >= 500) {
-                            emitter.onNext(millis);
-                        }
-                    }
-                }).subscribe(new Consumer <Long>() {
-                    @Override
-                    public void accept(Long aLong) throws Exception {
-                        downloadTask.setSpeed(secondBytesCount * 1000 / aLong);
-                        secondBytesCount = 0;
-                        time = System.currentTimeMillis();
-                    }
-                });
+                if (time == 0) {
+                    time = System.currentTimeMillis();
+                }
+                long millis = System.currentTimeMillis() - time;
+                if (millis >= 500) {
+                    downloadTask.setSpeed(secondBytesCount * 1000 / millis);
+                    secondBytesCount = 0;
+                    time = System.currentTimeMillis();
+                }
                 downloadTask.setCurrentSize(readBytesCount);
                 downloadTask.setTotalSize(totalBytesCount);
                 downloadTask.sendBus(eventId, isStick);
