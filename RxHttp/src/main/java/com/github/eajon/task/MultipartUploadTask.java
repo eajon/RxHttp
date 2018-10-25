@@ -1,33 +1,19 @@
-package com.github.eajon.upload;
+package com.github.eajon.task;
 
-import android.text.TextUtils;
-import com.threshold.rxbus2.RxBus;
-
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class MultipartUploadTask {
+public class MultipartUploadTask extends BaseTask implements Serializable {
 
     private ArrayList <UploadTask> uploadTasks;
 
-    private UploadTask.State state = UploadTask.State.NONE;//上传状态
-
-
-    public UploadTask.State getState() {
-        return state;
-    }
-
-    public UploadTask.State getState(int position) {
+    public State getState(int position) {
         if (uploadTasks.size() > position) {
             return this.getUploadTasks().get(position).getState();
         } else {
-            return UploadTask.State.NONE;
+            return State.NONE;
         }
     }
-
-    public void setState(UploadTask.State state) {
-        this.state = state;
-    }
-
 
     public MultipartUploadTask(ArrayList <UploadTask> uploadTasks) {
 
@@ -55,13 +41,7 @@ public class MultipartUploadTask {
         }
     }
 
-    public boolean isFinish() {
-         return state == UploadTask.State.FINISH;
-    }
 
-    public boolean isError() {
-        return state == UploadTask.State.ERROR;
-    }
 
     public int getProgress(int position) {
         if (uploadTasks.size() > position) {
@@ -72,22 +52,7 @@ public class MultipartUploadTask {
     }
 
 
-    public void sendBus(String eventId, boolean isStick) {
-        if (isStick) {
-            RxBus.getDefault().removeStickyEventType(this.getClass());
-            if (TextUtils.isEmpty(eventId)) {
-                RxBus.getDefault().postSticky(this);
-            } else {
-                RxBus.getDefault().postSticky(eventId, this);
-            }
-        } else {
-            if (TextUtils.isEmpty(eventId)) {
-                RxBus.getDefault().post(this);
-            } else {
-                RxBus.getDefault().post(eventId, this);
-            }
-        }
-    }
+
 
     @Override
     public String toString() {

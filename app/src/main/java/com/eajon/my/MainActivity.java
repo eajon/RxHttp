@@ -2,38 +2,29 @@ package com.eajon.my;
 
 
 import android.Manifest;
-import android.app.Activity;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Debug;
 import android.os.Environment;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
 import com.eajon.my.base.BaseActivity;
-import com.eajon.my.glide.GlideUtils;
 import com.eajon.my.util.PhotoUtils;
 import com.eajon.my.util.Weather;
 import com.eajon.my.util.ZhihuImagePicker;
-import com.eajon.my.viewModel.WeatherModule;
 import com.eajon.my.viewModel.WeatherModule2;
 import com.eajon.my.widget.CProgressDialog;
 import com.github.eajon.RxHttp;
-import com.github.eajon.download.DownloadTask;
 import com.github.eajon.exception.ApiException;
 import com.github.eajon.observer.DownloadObserver;
 import com.github.eajon.observer.HttpObserver;
 import com.github.eajon.observer.UploadObserver;
-import com.github.eajon.upload.MultipartUploadTask;
-import com.github.eajon.upload.UploadTask;
+import com.github.eajon.task.DownloadTask;
+import com.github.eajon.task.MultipartUploadTask;
+import com.github.eajon.task.UploadTask;
 import com.github.eajon.util.LogUtils;
 import com.google.gson.Gson;
 import com.qingmei2.rximagepicker.core.RxImagePicker;
@@ -48,7 +39,6 @@ import com.threshold.rxbus2.util.EventThread;
 import com.trello.rxlifecycle2.android.ActivityEvent;
 
 import java.io.File;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -57,7 +47,6 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
 
 
@@ -65,9 +54,9 @@ public class MainActivity extends BaseActivity {
     ArrayList <UploadTask> uploadTasks;
 
     File file1 = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "WEIXIN" + ".apk");
-    String url1 = "http://imtt.dd.qq.com/16891/50CC095EFBE6059601C6FB652547D737.apk?fsname=com.tencent.mm_6.6.7_1321.apk&csr=1bbd";
+    //    String url1 = "http://imtt.dd.qq.com/16891/50CC095EFBE6059601C6FB652547D737.apk?fsname=com.tencent.mm_6.6.7_1321.apk&csr=1bbd";
     DownloadTask downloadTask;
-    HttpObserver observer;
+    Disposable downloadDisposable;
     @BindView(R.id.request)
     Button request;
     @BindView(R.id.download)
@@ -118,7 +107,7 @@ public class MainActivity extends BaseActivity {
     protected void initData(Bundle savedInstanceState) {
         rxImagePicker = RxImagePicker.INSTANCE
                 .create(ZhihuImagePicker.class);
-        downloadTask = new DownloadTask(file1.getName(), file1.getAbsolutePath(), url1);
+        downloadTask = new DownloadTask(file1.getName(), file1.getAbsolutePath());
 
     }
 
@@ -206,17 +195,16 @@ public class MainActivity extends BaseActivity {
 
 
     private void upload(ArrayList <UploadTask> uploadTasks) {
-        CProgressDialog progressDialog = new CProgressDialog(MainActivity.this, R.style.CustomDialog);
         MultipartUploadTask multipartUploadTask = new MultipartUploadTask(uploadTasks);
         new RxHttp.Builder()
                 .baseUrl("https://shop.cxwos.com/admin/File/")
                 .apiUrl("UploadFile?tentantId=16")
-                .multipartUploadTask(multipartUploadTask)
+                .task(multipartUploadTask)
                 .isStick(true)
                 .eventId("upload")
                 .lifecycle(MainActivity.this)
                 .activityEvent(ActivityEvent.PAUSE)
-                .withDialog(progressDialog)
+                .withDialog(new CProgressDialog(MainActivity.this, R.style.CustomDialog))
                 .build()
                 .upload(new UploadObserver() {
                     @Override
@@ -249,37 +237,37 @@ public class MainActivity extends BaseActivity {
                             public void accept(Permission permission) throws Exception {
                                 if (permission.granted) {
                                     if (downloadTask.getState() == DownloadTask.State.LOADING) {
-                                        observer.dispose();
+                                        downloadDisposable.dispose();
                                         download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%");
                                     } else {
-                                        final CProgressDialog progressDialog = new CProgressDialog(MainActivity.this, R.style.CustomDialog);
-                                        RxHttp rxHttp = new RxHttp.Builder()
+                                        downloadDisposable = new RxHttp.Builder()
+                                                .baseUrl("http://imtt.dd.qq.com/")
+                                                .apiUrl("16891/50CC095EFBE6059601C6FB652547D737.apk?fsname=com.tencent.mm_6.6.7_1321.apk&csr=1bbd")
                                                 .lifecycle(MainActivity.this)
                                                 .eventId("download")
-                                                .withDialog(progressDialog)
+                                                .withDialog(new CProgressDialog(MainActivity.this, R.style.CustomDialog))
                                                 .activityEvent(ActivityEvent.PAUSE)
-                                                .downloadTask(downloadTask)
-                                                .build();
-                                        observer = new DownloadObserver <DownloadTask>() {
+                                                .task(downloadTask)
+                                                .build()
+                                                .download(new DownloadObserver <DownloadTask>() {
+                                                    @Override
+                                                    public void onPause(DownloadTask downloadTask) {
+                                                        LogUtils.d("onPause", downloadTask.getProgress());
+                                                    }
 
-                                            @Override
-                                            public void onPause(DownloadTask downloadTask) {
-                                                LogUtils.d("onPause", downloadTask.getProgress());
-                                            }
+                                                    @Override
+                                                    public void onSuccess(DownloadTask downloadTask) {
+                                                        LogUtils.e(RxHttp.getConfig().getLogTag(), downloadTask.getState());
+                                                    }
 
-                                            @Override
-                                            public void onSuccess(DownloadTask downloadTask) {
-                                                LogUtils.e(RxHttp.getConfig().getLogTag(), downloadTask.getState());
-                                            }
+                                                    @Override
+                                                    public void onError(ApiException t) {
+                                                        LogUtils.e("dialog", "onError");
+                                                        LogUtils.e(RxHttp.getConfig().getLogTag(), downloadTask.getState());
+                                                    }
+                                                });
 
-                                            @Override
-                                            public void onError(ApiException t) {
-                                                LogUtils.e("dialog", "onError");
-                                                LogUtils.e(RxHttp.getConfig().getLogTag(), downloadTask.getState());
-                                            }
 
-                                        };
-                                        rxHttp.download(observer);
                                     }
                                 } else if (permission.shouldShowRequestPermissionRationale) {
 
@@ -305,7 +293,7 @@ public class MainActivity extends BaseActivity {
                         .apiUrl("weather_mini")
                         .addParameter(map)
                         .eventId("weather")
-                        .withDialog(MainActivity.this)
+                        .withDialog(new CProgressDialog(MainActivity.this, R.style.CustomDialog))
 //                        .cacheKey("weather")
                         .retryTime(2)
                         .entity(Weather.class)

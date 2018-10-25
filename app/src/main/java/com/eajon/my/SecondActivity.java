@@ -5,8 +5,8 @@ import android.widget.TextView;
 
 import com.eajon.my.base.BaseActivity;
 import com.eajon.my.util.Weather;
-import com.github.eajon.download.DownloadTask;
-import com.github.eajon.upload.MultipartUploadTask;
+import com.github.eajon.task.DownloadTask;
+import com.github.eajon.task.MultipartUploadTask;
 import com.github.eajon.util.LogUtils;
 import com.google.gson.Gson;
 import com.threshold.rxbus2.annotation.RxSubscribe;

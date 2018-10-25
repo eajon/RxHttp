@@ -1,21 +1,20 @@
 package com.github.eajon.util;
 
 
-
-import com.github.eajon.RxHttp;
-import com.github.eajon.download.DownloadTask;
+import com.github.eajon.task.DownloadTask;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.RandomAccessFile;
-import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel;
 
 import okhttp3.ResponseBody;
+import okio.Buffer;
+import okio.BufferedSink;
+import okio.BufferedSource;
+import okio.Okio;
 
 
 public class FileUtils {
+
     /**
      * 写入文件
      *
@@ -23,42 +22,40 @@ public class FileUtils {
      * @param downloadTask
      * @throws IOException
      */
-    public static void writeFile(ResponseBody responseBody, DownloadTask downloadTask) throws IOException {
+    public static void write2File(ResponseBody responseBody, DownloadTask downloadTask) throws IOException {
         File file = new File(downloadTask.getLocalUrl());
-        RandomAccessFile randomAccessFile = null;
-        FileChannel channelOut = null;
-        InputStream inputStream = null;
+        BufferedSource source = null;
+        BufferedSink sink = null;
         try {
             //创建文件夹
             if (!file.getParentFile().exists()) {
                 file.getParentFile().mkdirs();
             }
-            //初始化
-            inputStream = responseBody.byteStream();
-            randomAccessFile = new RandomAccessFile(file, "rwd");
-            channelOut = randomAccessFile.getChannel();
-            //总长度
-            long allLength = downloadTask.getTotalSize() == 0 ? responseBody.contentLength() : downloadTask.getCurrentSize() + responseBody.contentLength();
+            if (file.length() != downloadTask.getCurrentSize()) {
+                sink = Okio.buffer(Okio.sink(file));
+            } else {
+                sink = Okio.buffer(Okio.appendingSink(file));
+            }
 
-            MappedByteBuffer mappedBuffer = channelOut.map(FileChannel.MapMode.READ_WRITE, downloadTask.getCurrentSize(), allLength - downloadTask.getCurrentSize());
-
-            byte[] buffer = new byte[1024 * 4];
-            int length;
-            while ((length = inputStream.read(buffer)) != -1) {
-                mappedBuffer.put(buffer, 0, length);
+            Buffer buffer = sink.buffer();
+            long total = downloadTask.getCurrentSize();
+            long len;
+            int bufferSize = 64 * 1024;
+            source = responseBody.source();
+            while ((len = source.read(buffer, bufferSize)) != -1) {
+                sink.emit();
+                total += len;
+                downloadTask.setCurrentSize(total);
             }
 
         } catch (IOException e) {
             throw e;
         } finally {
-            if (inputStream != null) {
-                IOUtils.close(inputStream);
+            if (source != null) {
+                IOUtils.close(source);
             }
-            if (channelOut != null) {
-                IOUtils.close(channelOut);
-            }
-            if (randomAccessFile != null) {
-                IOUtils.close(randomAccessFile);
+            if (sink != null) {
+                IOUtils.close(sink);
             }
         }
 

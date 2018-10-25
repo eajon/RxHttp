@@ -1,39 +1,16 @@
-package com.github.eajon.upload;
-
-
-import android.text.TextUtils;
-
-import com.threshold.rxbus2.RxBus;
+package com.github.eajon.task;
 
 import java.io.File;
+import java.io.Serializable;
 
-public class UploadTask {
+public class UploadTask extends BaseTask implements Serializable {
 
     private String fileName;
     private File file;
     private long currentSize;
     private long totalSize;
 
-    private State state = State.NONE;//上传状态
 
-    /**
-     * 枚举下载状态
-     */
-    public enum State {
-        NONE,           //无状态
-        LOADING,        //上传中
-        ERROR,          //错误
-        FINISH,         //完成
-        CANCEL,         //取消
-    }
-
-    public State getState() {
-        return state;
-    }
-
-    public void setState(State state) {
-        this.state = state;
-    }
 
     public String getFileName() {
         return fileName;
@@ -84,31 +61,6 @@ public class UploadTask {
         }
     }
 
-    public boolean isFinish() {
-        return state == State.FINISH;
-    }
-
-
-    public boolean isError() {
-        return state == State.ERROR;
-    }
-
-    public void sendBus(String eventId, boolean isStick) {
-        if (isStick) {
-            RxBus.getDefault().removeStickyEventType(this.getClass());
-            if (TextUtils.isEmpty(eventId)) {
-                RxBus.getDefault().postSticky(this);
-            } else {
-                RxBus.getDefault().postSticky(eventId, this);
-            }
-        } else {
-            if (TextUtils.isEmpty(eventId)) {
-                RxBus.getDefault().post(this);
-            } else {
-                RxBus.getDefault().post(eventId, this);
-            }
-        }
-    }
 
     @Override
     public String toString() {

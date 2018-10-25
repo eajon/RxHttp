@@ -2,6 +2,8 @@ package com.github.eajon.upload;
 
 
 import com.github.eajon.RxHttp;
+import com.github.eajon.task.MultipartUploadTask;
+import com.github.eajon.task.UploadTask;
 import com.github.eajon.util.LogUtils;
 
 import java.io.IOException;

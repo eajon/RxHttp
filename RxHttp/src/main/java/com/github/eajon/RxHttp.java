@@ -9,13 +9,14 @@ import android.text.TextUtils;
 
 import com.github.eajon.exception.ApiException;
 import com.github.eajon.download.DownloadInterceptor;
-import com.github.eajon.download.DownloadTask;
 import com.github.eajon.observer.HttpObserver;
 import com.github.eajon.retrofit.Method;
 import com.github.eajon.retrofit.RxConfig;
-import com.github.eajon.upload.MultipartUploadTask;
+import com.github.eajon.task.BaseTask;
+import com.github.eajon.task.DownloadTask;
+import com.github.eajon.task.MultipartUploadTask;
+import com.github.eajon.task.UploadTask;
 import com.github.eajon.upload.UploadRequestBody;
-import com.github.eajon.upload.UploadTask;
 import com.github.eajon.util.NetUtils;
 import com.github.eajon.util.RetrofitUtils;
 import com.github.eajon.util.RxBusUtils;
@@ -62,12 +63,8 @@ public class RxHttp {
     private ActivityEvent activityEvent;
     /*FragmentEvent*/
     private FragmentEvent fragmentEvent;
-    /*上传任务列表*/
-    private UploadTask uploadTask;
-    /*上传任务列表*/
-    private MultipartUploadTask multipartUploadTask;
-    /*entity*/
-    private DownloadTask downloadTask;
+    /*上传或者下载任务*/
+    private BaseTask task;
     /*基础URL*/
     private String baseUrl;
     /*apiUrl*/
@@ -86,14 +83,12 @@ public class RxHttp {
     private Dialog dialog;
     /*是否是粘性消息*/
     private boolean isStick;
-
     /*rxBus发射标识 不配置直接获取 配置了需要配置注解eventId*/
     private String eventId;
     /*cacheKey*/
     private String cacheKey;
     /*重试次数*/
     private int retryTime;
-
 
     /*构造函数*/
     private RxHttp(Builder builder) {
@@ -102,14 +97,12 @@ public class RxHttp {
         this.lifecycle = builder.lifecycle;
         this.activityEvent = builder.activityEvent;
         this.fragmentEvent = builder.fragmentEvent;
-        this.uploadTask = builder.uploadTask;
-        this.multipartUploadTask = builder.multipartUploadTask;
+        this.task = builder.task;
         this.baseUrl = builder.baseUrl;
         this.apiUrl = builder.apiUrl;
         this.method = builder.method;
         this.type = builder.type;
         this.requestBody = builder.requestBody;
-        this.downloadTask = builder.downloadTask;
         this.dialogContext = builder.dialogContext;
         this.message = builder.message;
         this.cancelable = builder.cancelable;
@@ -120,76 +113,81 @@ public class RxHttp {
         this.retryTime = builder.retryTime;
     }
 
+    /*builder复制函数,非全部复制*/
+    public RxHttp.Builder newBuilder() {
+        return new RxHttp.Builder(this);
+    }
+
     public static RxConfig getConfig() {
         return RxConfig.get();
     }
 
 
     /*普通Http请求*/
-    public void request(HttpObserver httpObserver) {
+    public Disposable request(HttpObserver httpObserver) {
         this.httpObserver = httpObserver;
         if (httpObserver == null) {
             throw new NullPointerException("Observer must not null!");
         } else {
-            doRequest();
+            return doRequest();
         }
     }
 
     /*普通HttpRxBus*/
-    public void request() {
-        doRequest();
+    public Disposable request() {
+        return doRequest();
     }
 
     /*上传文件请求*/
-    public void upload(HttpObserver httpObserver) {
+    public Disposable upload(HttpObserver httpObserver) {
         this.httpObserver = httpObserver;
         if (httpObserver == null) {
             throw new NullPointerException("UploadObserve must not null!");
         } else {
-            if (uploadTask == null && multipartUploadTask == null) {
-                throw new NullPointerException("UploadTask must not null!");
+            if (task != null && !(task instanceof DownloadTask)) {
+                return doUpload();
             } else {
-                doUpload();
+                throw new NullPointerException("UploadTask must not null!");
             }
 
         }
     }
 
     /*上传文件RXBUS*/
-    public void upload() {
-        if (uploadTask == null && multipartUploadTask == null) {
-            throw new NullPointerException("UploadTask must not null!");
+    public Disposable upload() {
+        if (task != null && !(task instanceof DownloadTask)) {
+            return doUpload();
         } else {
-            doUpload();
+            throw new NullPointerException("UploadTask must not null!");
         }
     }
 
     /*下载文件请求*/
-    public void download(HttpObserver httpObserver) {
+    public Disposable download(HttpObserver httpObserver) {
         this.httpObserver = httpObserver;
         if (httpObserver == null) {
             throw new NullPointerException("DownloadObserver must not null!");
         } else {
-            if (downloadTask == null) {
-                throw new NullPointerException("DownloadTask must not null!");
+            if (task != null && task instanceof DownloadTask) {
+                return doDownload();
             } else {
-                doDownload();
+                throw new NullPointerException("DownloadTask must not null!");
             }
         }
     }
 
     /*下载文件RXBUS*/
-    public void download() {
-        if (downloadTask == null) {
-            throw new NullPointerException("DownloadTask must not null!");
+    public Disposable download() {
+        if (task != null && task instanceof DownloadTask) {
+            return doDownload();
         } else {
-            doDownload();
+            throw new NullPointerException("DownloadTask must not null!");
         }
     }
 
 
     /*执行请求*/
-    private void doRequest() {
+    private Disposable doRequest() {
 
         Observable observable;
         /*header处理*/
@@ -223,11 +221,11 @@ public class RxHttp {
                 observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).post(disposeApiUrl(), parameter, header);
                 break;
         }
-        subscribe(observable);
+        return subscribe(observable);
     }
 
     /*执行文件上传*/
-    private void doUpload() {
+    private Disposable doUpload() {
         Observable observable;
         /*header处理*/
         disposeHeader();
@@ -239,13 +237,15 @@ public class RxHttp {
         List <MultipartBody.Part> partList = new ArrayList <>();
         File file;
         RequestBody requestBody;
-        if (uploadTask != null) {
+        if (task instanceof UploadTask) {
+            UploadTask uploadTask = (UploadTask) task;
             file = uploadTask.getFile();
             requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
             MultipartBody.Part part = MultipartBody.Part.createFormData(uploadTask.getFileName(), file.getName(), new UploadRequestBody(requestBody, eventId, isStick, uploadTask));
             observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).upload(disposeApiUrl(), parameter, header, part);
 
         } else {
+            MultipartUploadTask multipartUploadTask = (MultipartUploadTask) task;
             for (int i = 0; i < multipartUploadTask.getUploadTasks().size(); i++) {
                 UploadTask task = multipartUploadTask.getUploadTasks().get(i);
                 file = task.getFile();
@@ -254,24 +254,23 @@ public class RxHttp {
                 partList.add(part);
             }
             observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).upload(disposeApiUrl(), parameter, header, partList);
-
         }
 
         /*请求处理*/
-        subscribe(observable);
+        return subscribe(observable);
     }
 
-    private void doDownload() {
+    private Disposable doDownload() {
 
-
-        Observable observable = RetrofitUtils.get().getRetrofit(NetUtils.getBaseUrl(downloadTask.getServerUrl()), new DownloadInterceptor(eventId, isStick, downloadTask)).download(downloadTask.getServerUrl(), "bytes=" + downloadTask.getCurrentSize() + "-");
+        DownloadTask downloadTask = (DownloadTask) task;
+        Observable observable = RetrofitUtils.get().getRetrofit(getBaseUrl(), new DownloadInterceptor(eventId, isStick, downloadTask)).download(disposeApiUrl(), "bytes=" + downloadTask.getCurrentSize() + "-");
         /*请求处理*/
-        subscribe(observable);
+        return subscribe(observable);
 
 
     }
 
-    private void subscribe(Observable observable) {
+    private Disposable subscribe(Observable observable) {
         if (httpObserver != null) {
             //自定义dilaog或者有dialog的context
             if (dialog != null || dialogContext != null) {
@@ -279,8 +278,9 @@ public class RxHttp {
             } else {
                 observe(observable).subscribe(httpObserver);
             }
+            return httpObserver;
         } else {
-            HttpObserver observer = new HttpObserver() {
+            HttpObserver busObserver = new HttpObserver() {
                 @Override
                 public void onSuccess(Object o) {
                     RxBusUtils.sendBus(eventId, isStick, o);
@@ -292,11 +292,14 @@ public class RxHttp {
                 }
             };
             if (dialog != null || dialogContext != null) {
-                dialogObserver(observable).subscribe(observer);
+                dialogObserver(observable).subscribe(busObserver);
             } else {
-                observe(observable).subscribe(observer);
+                observe(observable).subscribe(busObserver);
             }
+            return busObserver;
         }
+
+
     }
 
 
@@ -341,20 +344,17 @@ public class RxHttp {
     //构建数据发射器
     public Observable observe(Observable observable) {
         return observable
-                .compose(RxUtils.map(downloadTask, type))
+                .compose(RxUtils.map(task, type))
                 .compose(RxUtils.cache(cacheKey, type, isRequest()))
                 .compose(RxUtils.lifeCycle(lifecycle, activityEvent, fragmentEvent))
                 .compose(RxUtils.retryPolicy(retryTime))
-                .compose(RxUtils.sendEvent(downloadTask, uploadTask, multipartUploadTask, eventId, isStick))
+                .compose(RxUtils.sendEvent(task, eventId, isStick))
                 .compose(RxUtils.io_main());
 
     }
 
     private boolean isRequest() {
-        if (uploadTask != null || multipartUploadTask != null || downloadTask != null) {
-            return false;
-        }
-        return true;
+        return task == null;
     }
 
 
@@ -425,16 +425,12 @@ public class RxHttp {
         ActivityEvent activityEvent;
         /*FragmentEvent*/
         FragmentEvent fragmentEvent;
-        /*单个上传任务*/
-        UploadTask uploadTask;
-        /*上传任务列表*/
-        MultipartUploadTask multipartUploadTask;
+        /*上传或者下载任务*/
+        BaseTask task;
         /*基础URL*/
         String baseUrl;
         /*apiUrl*/
         String apiUrl;
-        /*下载任务*/
-        DownloadTask downloadTask;
         /*entity*/
         Type type;
         /*RxDialog提供Context*/
@@ -449,13 +445,29 @@ public class RxHttp {
         boolean isStick;
         /*rxBus发射标识 不配置直接获取 配置了需要配置注解eventId*/
         String eventId;
-
+        /*cacheKey*/
         String cacheKey;
-
+        /*重试次数，仅针对部分http连接问题进行重试，默认每隔0.5秒*/
         int retryTime;
 
         public Builder() {
         }
+
+        Builder(RxHttp rxHttp) {
+            this.method = rxHttp.method;
+            this.activityEvent = rxHttp.activityEvent;
+            this.fragmentEvent = rxHttp.fragmentEvent;
+            this.baseUrl = rxHttp.baseUrl;
+            this.apiUrl = rxHttp.apiUrl;
+            this.type = rxHttp.type;
+            this.parameter = rxHttp.parameter;
+            this.header = rxHttp.header;
+            this.requestBody = rxHttp.requestBody;
+            this.isStick = rxHttp.isStick;
+            this.eventId = rxHttp.eventId;
+            this.cacheKey = rxHttp.cacheKey;
+        }
+
 
         /*GET*/
         public RxHttp.Builder get() {
@@ -547,27 +559,15 @@ public class RxHttp {
             return this;
         }
 
-
+        /*返回的实体类型，对下载无效*/
         public RxHttp.Builder entity(Type type) {
             this.type = type;
             return this;
         }
 
-        /*单个文件*/
-        public RxHttp.Builder uploadTask(UploadTask uploadTask) {
-            this.uploadTask = uploadTask;
-            return this;
-        }
-
-        /*文件集合*/
-        public RxHttp.Builder multipartUploadTask(MultipartUploadTask multipartUploadTask) {
-            this.multipartUploadTask = multipartUploadTask;
-            return this;
-        }
-
-        /*下载任务*/
-        public RxHttp.Builder downloadTask(DownloadTask downloadTask) {
-            this.downloadTask = downloadTask;
+        /*下载上传任务*/
+        public RxHttp.Builder task(BaseTask baseTask) {
+            this.task = baseTask;
             return this;
         }
 
@@ -614,13 +614,13 @@ public class RxHttp {
             return this;
         }
 
-        /*eventId*/
+        /*cacheKey*/
         public RxHttp.Builder cacheKey(String cacheKey) {
             this.cacheKey = cacheKey;
             return this;
         }
 
-        /*eventId*/
+        /*重试次数*/
         public RxHttp.Builder retryTime(int retryTime) {
             this.retryTime = retryTime;
             return this;
@@ -629,6 +629,8 @@ public class RxHttp {
         public RxHttp build() {
             return new RxHttp(this);
         }
+
+
     }
 
 

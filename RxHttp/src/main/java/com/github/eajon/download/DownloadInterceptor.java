@@ -1,5 +1,7 @@
 package com.github.eajon.download;
 
+import com.github.eajon.task.DownloadTask;
+
 import java.io.IOException;
 
 import okhttp3.Interceptor;

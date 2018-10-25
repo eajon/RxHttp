@@ -3,6 +3,7 @@ package com.github.eajon.download;
 
 
 import com.github.eajon.RxHttp;
+import com.github.eajon.task.DownloadTask;
 import com.github.eajon.util.LogUtils;
 
 import java.io.IOException;
@@ -76,13 +77,11 @@ public class DownloadResponseBody extends ResponseBody {
                 long bytesRead = super.read(sink, byteCount);
                 // read() returns the number of bytes read, or -1 if this source is exhausted.
                 readBytesCount += bytesRead != -1 ? bytesRead : 0;
-//                LogUtils.e(RxHttp.getConfig().getLogTag(),readBytesCount);
                 if (totalBytesCount == 0) {
                     totalBytesCount = contentLength();
                 }
                 downloadTask.setCurrentSize(readBytesCount);
                 downloadTask.setTotalSize(totalBytesCount);
-                LogUtils.d("download_body",downloadTask.getState().toString() + downloadTask.getProgress() + "%");
                 downloadTask.sendBus(eventId,isStick);
                 return bytesRead;
             }

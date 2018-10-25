@@ -21,14 +21,15 @@ import android.text.TextUtils;
 
 import com.github.eajon.cache.RxCache;
 import com.github.eajon.cache.RxCacheProvider;
-import com.github.eajon.download.DownloadTask;
 import com.github.eajon.function.CacheResultFunction;
 import com.github.eajon.function.DownloadResponseFunction;
 import com.github.eajon.function.ErrorResponseFunction;
 import com.github.eajon.function.HttpResponseFunction;
 import com.github.eajon.function.RetryExceptionFunction;
-import com.github.eajon.upload.MultipartUploadTask;
-import com.github.eajon.upload.UploadTask;
+import com.github.eajon.task.BaseTask;
+import com.github.eajon.task.DownloadTask;
+import com.github.eajon.task.MultipartUploadTask;
+import com.github.eajon.task.UploadTask;
 import com.trello.rxlifecycle2.LifecycleProvider;
 import com.trello.rxlifecycle2.android.ActivityEvent;
 import com.trello.rxlifecycle2.android.FragmentEvent;
@@ -82,12 +83,12 @@ public class RxUtils {
     }
 
     //返回数据转换
-    public static <T> ObservableTransformer <T, T> map(final DownloadTask downloadTask, final Type type) {
+    public static <T> ObservableTransformer <T, T> map(final BaseTask task, final Type type) {
         return new ObservableTransformer <T, T>() {
             @Override
             public ObservableSource <T> apply(@NonNull Observable <T> upstream) {
-                if (downloadTask != null) {
-                    return upstream.map(new DownloadResponseFunction(downloadTask));
+                if (task != null && task instanceof DownloadTask) {
+                    return upstream.map(new DownloadResponseFunction((DownloadTask) task));
                 } else {
                     return upstream.map(new HttpResponseFunction(type));
                 }
@@ -140,7 +141,7 @@ public class RxUtils {
 
 
     //RXbus发射状态
-    public static <T> ObservableTransformer <T, T> sendEvent(final DownloadTask downloadTask, final UploadTask uploadTask, final MultipartUploadTask multipartUploadTask, final String eventId, final boolean isStick) {
+    public static <T> ObservableTransformer <T, T> sendEvent(final BaseTask task, final String eventId, final boolean isStick) {
         return new ObservableTransformer <T, T>() {
             @Override
             public ObservableSource <T> apply(@NonNull Observable <T> upstream) {
@@ -148,15 +149,9 @@ public class RxUtils {
                     @Override
                     public void accept(Disposable disposable) throws Exception {
 //                        LogUtils.e("dialog", "doOnSubscribe");
-                        if (downloadTask != null) {
-                            downloadTask.setState(DownloadTask.State.LOADING);
-                            downloadTask.sendBus(eventId, isStick);
-                        } else if (uploadTask != null) {
-                            uploadTask.setState(UploadTask.State.LOADING);
-                            uploadTask.sendBus(eventId, isStick);
-                        } else if (multipartUploadTask != null) {
-                            multipartUploadTask.setState(UploadTask.State.LOADING);
-                            multipartUploadTask.sendBus(eventId, isStick);
+                        if (task != null) {
+                            task.setState(BaseTask.State.LOADING);
+                            task.sendBus(eventId, isStick);
                         }
                     }
                 }).doOnDispose(new Action() {
@@ -168,51 +163,41 @@ public class RxUtils {
                     @Override
                     public void accept(Throwable throwable) throws Exception {
 //                        LogUtils.e("dialog", "doOnError");
-                        if (downloadTask != null) {
-                            downloadTask.setState(DownloadTask.State.ERROR);
-                            downloadTask.sendBus(eventId, isStick);
-                        } else if (uploadTask != null) {
-                            uploadTask.setState(UploadTask.State.ERROR);
-                            uploadTask.sendBus(eventId, isStick);
-                        } else if (multipartUploadTask != null) {
-                            multipartUploadTask.setState(UploadTask.State.ERROR);
-                            for (UploadTask uploadTask : multipartUploadTask.getUploadTasks()) {
-                                uploadTask.setState(UploadTask.State.ERROR);
+                        if (task != null) {
+                            task.setState(UploadTask.State.ERROR);
+                            if (task instanceof MultipartUploadTask) {
+                                for (UploadTask uploadTask : ((MultipartUploadTask) task).getUploadTasks()) {
+                                    uploadTask.setState(UploadTask.State.ERROR);
+                                }
                             }
-                            multipartUploadTask.sendBus(eventId, isStick);
+                            task.sendBus(eventId, isStick);
                         }
                     }
                 }).doOnNext(new Consumer() {
                     @Override
                     public void accept(Object o) throws Exception {
 //                        LogUtils.e("dialog", "doOnNext");
-                        if (downloadTask != null) {
-                            downloadTask.setState(DownloadTask.State.FINISH);
-                            downloadTask.sendBus(eventId, isStick);
-                        } else if (uploadTask != null) {
-                            uploadTask.setState(UploadTask.State.FINISH);
-                            uploadTask.sendBus(eventId, isStick);
-                        } else if (multipartUploadTask != null) {
-                            multipartUploadTask.setState(UploadTask.State.FINISH);
-                            multipartUploadTask.sendBus(eventId, isStick);
+                        if (task != null) {
+                            task.setState(BaseTask.State.FINISH);
+                            task.sendBus(eventId, isStick);
                         }
                     }
                 }).doFinally(new Action() {
                     @Override
                     public void run() throws Exception {
 //                        LogUtils.e("dialog", "doFinally");
-                        if (downloadTask != null && !downloadTask.isFinish() && !downloadTask.isError()) {
-                            downloadTask.setState(DownloadTask.State.PAUSE);
-                            downloadTask.sendBus(eventId, isStick);
-                        } else if (uploadTask != null && !uploadTask.isFinish() && !uploadTask.isError()) {
-                            uploadTask.setState(UploadTask.State.CANCEL);
-                            uploadTask.sendBus(eventId, isStick);
-                        } else if (multipartUploadTask != null && !multipartUploadTask.isFinish() && !multipartUploadTask.isError()) {
-                            multipartUploadTask.setState(UploadTask.State.CANCEL);
-                            for (UploadTask uploadTask : multipartUploadTask.getUploadTasks()) {
-                                uploadTask.setState(UploadTask.State.CANCEL);
+                        if (task != null && !task.isFinish() && !task.isError()) {
+                            if (task instanceof DownloadTask) {
+                                task.setState(BaseTask.State.PAUSE);
+                            } else if (task instanceof UploadTask) {
+                                task.setState(BaseTask.State.CANCEL);
+                            } else if (task instanceof MultipartUploadTask) {
+                                task.setState(BaseTask.State.CANCEL);
+                                for (UploadTask uploadTask : ((MultipartUploadTask) task).getUploadTasks()) {
+                                    uploadTask.setState(UploadTask.State.CANCEL);
+                                }
                             }
-                            multipartUploadTask.sendBus(eventId, isStick);
+                            task.sendBus(eventId, isStick);
                         }
                     }
                 });
