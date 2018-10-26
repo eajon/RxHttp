@@ -109,7 +109,7 @@
  ## RxBus 注解方式
              new RxHttp
                 .Builder()
-    	        .get()/*post() put() delete() 按需配置默认POST*/
+                .get()/*post() put() delete() 按需配置默认POST*/
                 .requestBody(...)/*retorfit发射对象*/
                 .task(...)/*上传或者下载任务downalodTask uploadtask  mulitpartuploadtask三种任务*/
                 .baseUrl(...)/* 按需配置 RxConfig已配置，可不配*/
@@ -242,7 +242,8 @@
                   
                   
  ####  如何监听进度  
- #####上传 和下载一样 用rxbus注解实现,当然你还可以查看实时传输速度哦 task.getSpeed()             
+ #####上传 和下载一样 用rxbus注解实现,当然你还可以查看实时传输速度哦 task.getSpeed() 
+ 
                      @RxSubscribe(observeOnThread = EventThread.MAIN) //监听下载进度 
                      public void downloadProgress(DownloadTask task)
                      {
