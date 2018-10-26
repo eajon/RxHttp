@@ -1,26 +1,24 @@
-
 ![image](https://github.com/eajon/RxHttp/blob/master/app/src/main/res/drawable/demo.gif)  
 
 # RxHttp
-         本框架 是对 RXJAVA2 + Retrofit + RxBus2 + OkHttp3 的架构的封装 
-         达成目标：重写了RxEasyHttp 大部分代码 基本实现了其百分之90的功能
+         本框架 是对 RXJAVA2 + Retrofit + RxBus2 + OkHttp3 + lifecycle的架构的封装
          1.采用链式调用一点到底
          2.支持动态配置和自定义Okhttpclient
          3.支持多种方式访问网络GET、POST、PUT、DELETE等请求协议
          4.支持网络缓存,七种缓存策略可选
-	     5.支持固定添加header和动态添加header
+         5.支持固定添加header和动态添加header
 	     6.支持添加全局参数和动态添加局部参数
 	     7.支持文件下载,断点续传,通过rxbus可以监听进度
 	     8.支持多文件上传,通过rxbus可以监听进度
 	     9.支持任意数据结构的自动解析,采用gson
-	     10.支持请求数据结果采用订阅和RXBUS方式
+	     10.支持请求数据结果采用订阅和RXBUS注解方式
 	     11.支持显示progressDialog,并且生命周期和请求自动关联,无需手动控制
-	     12.支持LifeCycle,所有请求可以配置生命周期与当前页面关联
+	     12.支持LifeCycle,所有请求可以配置生命周期与当前页面生命周期绑定
 	     13.支持RXBUS 使用注解获取数据 并且支持粘性消息 可以替代Intent
-	     与RxEasyHttp的区别 
-	     1.可以自定义配置okHttpClient,方便自己操作cookiejar 拦截器之列，减少耦合，减少配置代码，配置好okhttpclient就行
-	     2.增加RXBUS2,可以使用rxbus2发射数据
-	     3.发送数据基本是retorfit原生方式,方便理解代码
+         14.支持自动重试
+         具体功能使用方法参看demo
+         
+	   
 	     
 	     
 
@@ -47,318 +45,224 @@
 #### Step 2. Add the dependency
 	
  	dependencies {
-	        implementation 'com.github.eajon:RxHttp:v1.1.0'
+	        implementation 'com.github.eajon:RxHttp:v1.4.1'
 	}
 
 	
 		
- # 最新更新
-                  1.请求的时候不传observer默认使用rxbus发射，返回结果可以@RxSubscribe 标签获取
-                  2.增加阻塞对话框,调用withDialog 就可以增加阻塞dialog,如果使用lifecycle对话框取消也会跟随生命周期，同时对话框消失任务会暂停或者取消
-		      3.增加粘性消息isStick
-		      4.增加发射标识eventId和注解,方便实现点对点发射,增强代码的阅读性,便于debug
-                    /*阻塞对话框*/
-                          public RxHttp.Builder withDialog(Context context) {
-                              this.context = context;
-                              this.message = "";
-                              this.cancelable = true;
-                              return this;
-                          }
-                  
-                          /*阻塞对话框*/
-                          public RxHttp.Builder withDialog(Context context, String message) {
-                              this.context = context;
-                              this.message = message;
-                              this.cancelable = true;
-                              return this;
-                          }
-                  
-                          /*阻塞对话框*/
-                          public RxHttp.Builder withDialog(Context context, String message, boolean cancelable) {
-                              this.context = context;
-                              this.message = message;
-                              this.cancelable = cancelable;
-                              return this;
-                          }
-			  
-			   /*是否是粘性消息*/
-                          public RxHttp.Builder isStick(boolean isStick) {
-                              this.isStick = isStick;
-                              return this;
-                          }
-
-                          /*eventId*/
-                          public RxHttp.Builder eventId(String eventId) {
-                              this.eventId = eventId;
-                              return this;
-                          }
-        
- # 如何使用他    
+# 如何使用他    
 
 	
-## 在Application中设置基础配置（可选）
+## 在Application中设置基础配置
 
-               RxConfig.init(this)/*必填*/
-                .baseUrl("http://192.168.0.1/api/")/*基础路径，这里配置了请求中可以不单独配置*/
-                .baseHeader(null)/*公用请求头*/
-                .baseParameter(null)/*公用请参数*/
-                .okHttpClient(null)/*自定义okHttpClient*/
-                .logTag("RxHttp")/*自定义Log名称*/
-		.rxCache(new File(getExternalCacheDir(), "rxcache") );/* 配置cache 不配置默认使用okhttp的缓存*/
+        RxConfig.get()
+                .baseUrl(...)/*基础路径，这里配置了请求中可以不单独配置*/
+                .baseHeader(...)/*公用请求头*/
+                .baseParameter(...)/*公用请参数*/
+                .okHttpClient(...)/*自定义okHttpClient*/
+                .logTag(...)/*自定义Log名称*/
+                .rxCache(...);/* 配置cache, 不配置默认使用okhttp的缓存*/
                 
                 
                 
-## HTTP 请求
+## 常规请求使用
      
-               
-####  Get Post Delete Put
+              
            
           
-         new RxHttp
+             new RxHttp
                 .Builder()
                 .get()/*post() put() delete() 按需配置默认POST*/
-                .baseUrl("http://192.168.0.1/api/")/* 按需配置 RxConfig已配置，可不配*/
-                .apiUrl("login")/* 按需配置 具体接口名称*/
-                .entity(Login.class)/* 按需配置 设置返回的数据类型，默认string*/
-                .addHeader(null)/* 按需配置 */
-                .addParameter(null)/* 按需配置 */
-                .lifecycle(this)/* 关联生命周期，可以指定到Activity具体动作，使用生命周期当前Activity需要继承RxAppCompatActivity 或者RxBusActivity */
+                .requestBody(...)/*retorfit发射对象*/
+                .task(...)/*上传或者下载任务*/
+                .baseUrl(...)/* 按需配置 RxConfig已配置，可不配*/
+                .apiUrl(...)/* 按需配置 具体接口名称*/
+                .entity(...)/* 按需配置 设置返回的数据类型，默认string*/
+                .addHeader(...)/* 按需配置 */
+                .addParameter(...)/* 按需配置 */
+                .lifecycle(...)/* 关联生命周期,当前Activity需要继承RxAppCompatActivity或者RxBusActivity */
+                .activityEvent(...)/*具体指定生命周期的动作*
+                .isStick(...)/*是否是粘性消息，默认每种类型只保存最后一个*/
+                .withDialog(...)/*是否加入阻塞对话框，可以自定义diolog*/
+                .eventId(...)/*rxbus发射的id*/
+                .cacheKey(...)/*缓存Key*/
+                .retryTime(...)/*重试次数*/
                 .build()
                 .request(new HttpObserver<Login>() {
-             @Override
-             public void onSuccess(Response o) {
+                
+                        @Override
+                        public void onSuccess(Response o) {
             
-             }
+                        }
             
-             @Override
-             public void onError(ApiException t) {
+                        @Override
+                        public void onError(ApiException t) {
             
-             }
+                        }
                         
            
-        });
+                    });
         
          
         
         
- #### RxBus 方式
-        HashMap map = new HashMap();
-               map.put("city", "常熟");
-               new RxHttp.Builder()
-                       .get()
-                       .baseUrl("http://wthrcdn.etouch.cn/")
-                       .apiUrl("weather_mini")
-                       .addParameter(map)
-                       .entity(Weather.class)
-                       .build()
-                       .request();
-                       
-        @RxSubscribe(observeOnThread = EventThread.MAIN)
-        public void weatherCallBack(Weather weather) {//entity 设置为哪个对象，RxbSubscribe那个对象即可 方法名随便定义
-                  content.setText(new Gson().toJson(weather));
-        }
-                       
-         @RxSubscribe(observeOnThread = EventThread.MAIN)//异常捕获
-         public void weatherCallBack(ApiException e) {
-              content.setText(new Gson().toJson(e));
-         }
-	 
-	 
-#### 当你使用RxBus方式时,代码中有很多接口返回的数据类型又是一样的话，问题就来了 你很难知道是哪里发射而来的，这种情况你可以增加一个eventId标识,然后注解的时候也加入这个eventId 此eventId只支持常量
-	 HashMap map = new HashMap();
-               map.put("city", "常熟");
-               new RxHttp.Builder()
-                       .get()
-                       .baseUrl("http://wthrcdn.etouch.cn/")
-                       .apiUrl("weather_mini")
-                       .addParameter(map)
-		       .eventId("test")
-                       .entity(Weather.class)
-                       .build()
-                       .request();
-                       
-        @RxSubscribe(observeOnThread = EventThread.MAIN,eventId = "test")
-        public void weatherCallBack(Weather weather) {//entity 设置为哪个对象，RxbSubscribe那个对象即可 方法名随便定义
-                  content.setText(new Gson().toJson(weather));
-        }
-                       
-         @RxSubscribe(observeOnThread = EventThread.MAIN,,eventId = "test")//异常捕获
-         public void weatherCallBack(ApiException e) {
-              content.setText(new Gson().toJson(e));
-         }
-                
-                
- ####  Post   对象  例如JSON
- 
- 
-        String requestBody = new Gson().toJson(new Login("username","password"));
-        RequestBody body = RequestBody.create(MediaType.parse("application/json"), requestBody);//对象转化为RequestBody
-            new RxHttp
+ ## RxBus 注解方式
+             new RxHttp
                 .Builder()
-                .baseUrl("http://192.168.0.1/api/")
-                .apiUrl("login")
-                .entity(Response.class)
-                .addHeader(null)
-                .lifecycle(this)/* 关联生命周期，可以指定到Activity具体动作，使用生命周期当前Activity需要继承RxAppCompatActivity 或者RxBusActivity */
-                .setRequestBody(body)/*必填参数 */
+    	        .get()/*post() put() delete() 按需配置默认POST*/
+                .requestBody(...)/*retorfit发射对象*/
+                .task(...)/*上传或者下载任务downalodTask uploadtask  mulitpartuploadtask三种任务*/
+                .baseUrl(...)/* 按需配置 RxConfig已配置，可不配*/
+                .apiUrl(...)/* 按需配置 具体接口名称*/
+                .entity(...)/* 按需配置 设置返回的数据类型，默认string*/
+                .addHeader(...)/* 按需配置 */
+                .addParameter(...)/* 按需配置 */
+                .lifecycle(...)/* 关联生命周期,当前Activity需要继承RxAppCompatActivity或者RxBusActivity */
+                .activityEvent(...)/*具体指定生命周期的动作*/
+                .isStick(...)/*是否是粘性消息，默认每种类型只保存最后一个*/
+                .withDialog(...)/*是否加入阻塞对话框，可以自定义diolog*/
+                .eventId(...)/*rxbus发射的id*/
+                .cacheKey(...)/*缓存Key*/
+                .retryTime(...)/*重试次数*/
                 .build()
-                .request(new HttpObserver<Response>() {
-            @Override
-            public void onSuccess(Response o) {
-
-            }
-
-            @Override
-            public void onError(ApiException t) {
-
-            }
-            
-           
-            
-            
-        });
+                .request();
+                       
+                       
+                //eventid 和 entity设置对应即可，方法名随意
+                @RxSubscribe(observeOnThread = EventThread.MAIN，eventId ="test")
+                public void weatherCallBack(Weather weather) {
+                           content.setText(new Gson().toJson(weather));
+                    }
+                       
+                @RxSubscribe(observeOnThread = EventThread.MAIN)//异常捕获
+                public void weatherCallBack(ApiException e) {
+                           content.setText(new Gson().toJson(e));
+                }
+	 
+	    
         
-        
-        /* 不需要关心cancel，可以使用BaseObserver   */
-        
-## 下载（设置entity无效,成功返回数据必须是DownloadTask）
+## 下载例子（设置entity无效,成功返回数据必须是DownloadTask）
 
-####  普通下载  支持RXBUS方式
+
 
 
     File file1 = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "WEIXIN" + ".apk")
-    String url1 = "http://imtt.dd.qq.com/16891/50CC095EFBE6059601C6FB652547D737.apk?fsname=com.tencent.mm_6.6.7_1321.apk&csr=1bbd";
-    DownloadTask downloadTask = new DownloadTask(file1.getName(), file1.getAbsolutePath(), url1);
-    DownloadTask downloadTask;
-             new RxHttp
+    DownloadTask downloadTask = new DownloadTask(file1.getName(), file1.getAbsolutePath());
+  
+    Disposable disposeable=  new RxHttp
                 .Builder()
-                .lifecycle(this)/*下载按需配置lifecycle 一般不配置*/
-                .downloadTask(downloadTask)
+                .baseUrl("http://imtt.dd.qq.com/")
+                .apiUrl("16891/50CC095EFBE6059601C6FB652547D737.apk?fsname=com.tencent.mm_6.6.7_1321.apk&csr=1bbd")
+                .eventId("download")
+                .lifecycle(this)
+                .task(downloadTask)
+                .withDailog(this)
                 .build()
-                .download(new HttpObserver() {
-            @Override
-            public void onSuccess(DownloadTask downloadTask) {
+                .download(new DownlaodObserver() {
+                    @Override
+                    public void onSuccess(DownloadTask downloadTask) {
+     
+                    }
 
-            }
+                    @Override
+                    public void onError(ApiException s) {
 
-            @Override
-            public void onError(ApiException s) {
-
-            }
+                    }
+                   
+                    @Override
+                    public void onPause(DownloadTask downloadTask) {
+ 
+                    }
             
          
-        });
+                });
         
-#### 下载 暂停 继续 支持断点续传 并可以监听进度（监听进度在最下面）
-           File file1 = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "WEIXIN" + ".apk")
-           String url1 = "http://imtt.dd.qq.com/16891/50CC095EFBE6059601C6FB652547D737.apk?fsname=com.tencent.mm_6.6.7_1321.apk&csr=1bbd";
-           DownloadTask downloadTask = new DownloadTask(file1.getName(), file1.getAbsolutePath(), url1);
-           RxHttp rxHttp = new RxHttp.Builder()
-           .lifecycle(this)/*下载按需配置lifecycle 一般不配置*/
-           .downloadTask(downloadTask)
-           .build();
-                                        
-            HttpObserver downloadObserver = new HttpObserver() {
-                @Override
-                public void onSuccess(DownloadTask downloadTask) {
-                       LogUtils.e(RxHttp.getConfig().getLogTag(), downloadTask.getState());
-                }
 
-                @Override
-                public void onError(String t) {
-
-                }
-                         
-               
-
-            };
-                
-            rxHttp.download(downloadObserver);
-  
-                
-                
-                //暂停OnClick
-                downloadObserver.dispose();//取消发射，暂停下载 注：调用dispose 下载由于支持断点续传为暂停,上传和请求均为进入取消请求
-                downloadTask.getState();//此时获取状态是暂停
-                downloadTask.getProgress();//获取进度
+             
                 
               
-                 
+            
                    
- ## 上传
+ ## 上传例子
  
- ####  单文件 支持RXBUS方式
-              UploadTask uploadTask = new UploadTask("SingleTag", new File(path));
-              new RxHttp.Builder()
-                .baseUrl("https://shop.cxwos.com/admin/File/")
-                .apiUrl("UploadFile?tentantId=16")
-                .uploadTask(uploadTask)/* 单文件必填*/
-                .lifecycle(this)/*上传按需配置lifecycle*/
-                .build()
-                .upload(new HttpObserver() {
-                    @Override
-                    public void onSuccess(Object o) {
+ ####  单文件 
+             UploadTask uploadTask = new UploadTask( new File(path));
+             Disposable disposeable = new RxHttp.Builder()
+                        .baseUrl("https://shop.cxwos.com/admin/File/")
+                        .apiUrl("UploadFile?tentantId=16")
+                        .task(uploadTask)/* 单文件必填*/
+                        .lifecycle(this)
+                        .build()
+                        .upload(new HttpObserver() {
+                               @Override
+                               public void onSuccess(Object o) {
 
-                    }
+                               }
 
-                    @Override
-                    public void onError(ApiException t) {
+                               @Override
+                               public void onError(ApiException t) {
 
-                    }
+                               }
                     
-                  
-                });
+                        });
                 
- ####  多文件        支持RXBUS方式
+ ####  多文件      
  
               ArrayList <UploadTask> uploadTasks = new ArrayList <>();
-              UploadTask uploadTask = new UploadTask("SingleTag", new File(path));
-              UploadTask uploadTask2 = new UploadTask("Single2Tag", new File(path2));
+              UploadTask uploadTask = new UploadTask( new File(path));
+              UploadTask uploadTask2 = new UploadTask(new File(path2));
               uploadTasks.add(uploadTask);
               uploadTasks.add(uploadTask2);
-               MultipartUploadTask multipartUploadTask =new MultipartUploadTask("muiltTag",uploadTasks);
-              new RxHttp.Builder()
-                .baseUrl("https://shop.cxwos.com/admin/File/")
-                .apiUrl("UploadFile?tentantId=16")
-                .multipartUploadTask(multipartUploadTask)
-                .lifecycle(this)/*上传按需配置lifecycle*/
-                .build()
-                .upload(new UploadObserver() {
-                    @Override
-                    public void onSuccess(Object o) {
+              MultipartUploadTask multipartUploadTask =new MultipartUploadTask("muiltTag",uploadTasks);
+              Disposable disposeable = new RxHttp.Builder()
+                        .baseUrl("https://shop.cxwos.com/admin/File/")
+                        .apiUrl("UploadFile?tentantId=16")
+                        .task(multipartUploadTask)
+                        .lifecycle(this)/*上传按需配置lifecycle*/
+                        .build()
+                        .upload(new UploadObserver() {
+                               @Override
+                               public void onSuccess(Object o) {
 
-                    }
+                               }
 
-                    @Override
-                    public void onError(ApiException t) {
+                              @Override
+                              public void onError(ApiException t) {
 
-                    }
-                    
-                   
-                });
+                              }
+     
+                       });
+                       
+                      
+           
+  #### 如何暂停和取消
+                
+            //取消发射，下载即为暂停（下载重启任务可以断点续传），其他任务是取消
+            disposeable.dispose();
                   
                   
- ####  关于进度  上传进度 和下载一样 通过继承RxBusActivity实现  同时开启多个任务的时候 可以通过任务中的tag区分                
+ ####  如何监听进度  
+ #####上传 和下载一样 用rxbus注解实现,当然你还可以查看实时传输速度哦 task.getSpeed()             
                      @RxSubscribe(observeOnThread = EventThread.MAIN) //监听下载进度 
-                     public void downloadProgress(DownloadTask downloadTask)
+                     public void downloadProgress(DownloadTask task)
                      {
-                         download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%");
+                         download.setText(task.getState().toString() + task.getProgress() + "%");
                      }
                  
                      @RxSubscribe(observeOnThread = EventThread.MAIN) //单文件上传
-                     public void uploadProgress(UploadTask uploadTask)
+                     public void uploadProgress(UploadTask task)
                      {
-                         upload.setText(uploadTask.getState().toString() + uploadTask.getProgress() + "%");
+                         upload.setText(task.getState().toString() + task.getProgress() + "%");
                      }
                  
                      @RxSubscribe(observeOnThread = EventThread.MAIN)//多文件上传
-                     public void uploadProgress(MultipartUploadTask multipartUploadTask)
+                     public void uploadProgress(MultipartUploadTask task)
                      {
-                         content.setText("总进度：" + multipartUploadTask.getProgress() + "%" + multipartUploadTask.getState().toString());
-                         if (multipartUploadTask.getUploadTasks().size() == 3) {//假设上传3个文件
-                             content1.setText("第一个：" + multipartUploadTask.getProgress(0) + "%" + multipartUploadTask.getState(0).toString());
-                             content2.setText("第二个：" + multipartUploadTask.getProgress(1) + "%" + multipartUploadTask.getState(1).toString());
-                             content3.setText("第三个：" + multipartUploadTask.getProgress(2) + "%" + multipartUploadTask.getState(2).toString());
+                         content.setText("总进度：" + task.getProgress() + "%" + task.getState().toString());
+                         if (task.getUploadTasks().size() == 3) {//假设上传3个文件
+                             content1.setText("第一个：" + task.getProgress(0) + "%" + task.getState(0).toString());
+                             content2.setText("第二个：" + task.getProgress(1) + "%" + task.getState(1).toString());
+                             content3.setText("第三个：" + task.getProgress(2) + "%" + task.getState(2).toString());
                          }
                      }
 
