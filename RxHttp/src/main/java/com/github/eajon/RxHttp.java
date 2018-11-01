@@ -52,9 +52,9 @@ public class RxHttp {
     /*请求方式*/
     private Method method;
     /*请求参数*/
-    private Map <String, Object> parameter;
+    private Map<String, Object> parameter;
     /*header*/
-    private Map <String, Object> header;
+    private Map<String, Object> header;
     /*json参数*/
     private RequestBody requestBody;
     /*LifecycleProvider*/
@@ -234,7 +234,7 @@ public class RxHttp {
         disposeParameter();
 
         /*处理文件*/
-        List <MultipartBody.Part> partList = new ArrayList <>();
+        List<MultipartBody.Part> partList = new ArrayList<>();
         File file;
         RequestBody requestBody;
         if (task instanceof UploadTask) {
@@ -271,16 +271,8 @@ public class RxHttp {
     }
 
     private Disposable subscribe(Observable observable) {
-        if (httpObserver != null) {
-            //自定义dilaog或者有dialog的context
-            if (dialog != null || dialogContext != null) {
-                dialogObserver(observable).subscribe(httpObserver);
-            } else {
-                observe(observable).subscribe(httpObserver);
-            }
-            return httpObserver;
-        } else {
-            HttpObserver busObserver = new HttpObserver() {
+        if (httpObserver == null) {
+            httpObserver = new HttpObserver() {
                 @Override
                 public void onSuccess(Object o) {
                     RxBusUtils.sendBus(eventId, isStick, o);
@@ -291,21 +283,19 @@ public class RxHttp {
                     RxBusUtils.sendBus(eventId, isStick, t);
                 }
             };
-            if (dialog != null || dialogContext != null) {
-                dialogObserver(observable).subscribe(busObserver);
-            } else {
-                observe(observable).subscribe(busObserver);
-            }
-            return busObserver;
         }
-
-
+        if (dialog != null || dialogContext != null) {
+            dialogObserver(observable).subscribe(httpObserver);
+        } else {
+            observe(observable).subscribe(httpObserver);
+        }
+        return httpObserver;
     }
 
 
     //dialog
     private Observable dialogObserver(final Observable observable) {
-        return Observable.using(new Callable <Dialog>() {
+        return Observable.using(new Callable<Dialog>() {
             @Override
             public Dialog call() {
                 if (dialog != null) {
@@ -314,27 +304,25 @@ public class RxHttp {
                 }
                 return ProgressDialog.show(dialogContext, null, message, true, cancelable);
             }
-        }, new Function <Dialog, Observable <? extends Object>>() {
+        }, new Function<Dialog, Observable<? extends Object>>() {
             @Override
-            public Observable <? extends Object> apply(final Dialog progressDialog) throws Exception {
-                final BehaviorSubject <Boolean> dialogSubject = BehaviorSubject.create();
-                return observe(observable).doOnSubscribe(new Consumer <Disposable>() {
+            public Observable<? extends Object> apply(final Dialog progressDialog) throws Exception {
+                final BehaviorSubject<Boolean> dialogSubject = BehaviorSubject.create();
+                return observe(observable).doOnSubscribe(new Consumer<Disposable>() {
                     @Override
                     public void accept(final Disposable disposable) throws Exception {
                         progressDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
                             @Override
                             public void onDismiss(DialogInterface dialog) {
-//                                LogUtils.e("dialog", "doOnSubscribe");
                                 dialogSubject.onNext(true);
                             }
                         });
                     }
                 }).takeUntil(dialogSubject);
             }
-        }, new Consumer <Dialog>() {
+        }, new Consumer<Dialog>() {
             @Override
             public void accept(Dialog dialog) throws Exception {
-//                LogUtils.e("dialog", "dismiss");
                 dialog.dismiss();
             }
         });
@@ -374,11 +362,11 @@ public class RxHttp {
 
         /*header空处理*/
         if (header == null) {
-            header = new TreeMap <>();
+            header = new TreeMap<>();
         }
 
         //添加基础 Header
-        Map <String, Object> baseHeader = getConfig().getBaseHeader();
+        Map<String, Object> baseHeader = getConfig().getBaseHeader();
         if (baseHeader != null && baseHeader.size() > 0) {
             header.putAll(baseHeader);
         }
@@ -396,10 +384,10 @@ public class RxHttp {
     private void disposeParameter() {
         /*空处理*/
         if (parameter == null) {
-            parameter = new TreeMap <>();
+            parameter = new TreeMap<>();
         }
         //添加基础 Parameter
-        Map <String, Object> baseParameter = getConfig().getBaseParameter();
+        Map<String, Object> baseParameter = getConfig().getBaseParameter();
         if (baseParameter != null && baseParameter.size() > 0) {
             parameter.putAll(baseParameter);
         }
@@ -414,9 +402,9 @@ public class RxHttp {
         /*请求方式*/
         Method method;
         /*请求参数*/
-        Map <String, Object> parameter;
+        Map<String, Object> parameter;
         /*header*/
-        Map <String, Object> header;
+        Map<String, Object> header;
         /*json参数*/
         RequestBody requestBody;
         /*LifecycleProvider*/
@@ -506,31 +494,31 @@ public class RxHttp {
         }
 
         /* 增加 Parameter 不断叠加参数 包括基础参数 */
-        public RxHttp.Builder addParameter(Map <String, Object> parameter) {
+        public RxHttp.Builder addParameter(Map<String, Object> parameter) {
             if (this.parameter == null) {
-                this.parameter = new TreeMap <>();
+                this.parameter = new TreeMap<>();
             }
             this.parameter.putAll(parameter);
             return this;
         }
 
         /*设置 Parameter 会覆盖 Parameter 包括基础参数*/
-        public RxHttp.Builder setParameter(Map <String, Object> parameter) {
+        public RxHttp.Builder setParameter(Map<String, Object> parameter) {
             this.parameter = parameter;
             return this;
         }
 
         /* 增加 Header 不断叠加 Header 包括基础 Header */
-        public RxHttp.Builder addHeader(Map <String, Object> header) {
+        public RxHttp.Builder addHeader(Map<String, Object> header) {
             if (this.header == null) {
-                this.header = new TreeMap <>();
+                this.header = new TreeMap<>();
             }
             this.header.putAll(header);
             return this;
         }
 
         /*设置 Header 会覆盖 Header 包括基础参数*/
-        public RxHttp.Builder setHeader(Map <String, Object> header) {
+        public RxHttp.Builder setHeader(Map<String, Object> header) {
             this.header = header;
             return this;
         }
