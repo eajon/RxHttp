@@ -71,9 +71,6 @@ public class DownloadTask extends BaseTask implements Serializable {
                 ", localUrl='" + localUrl + '\'' +
                 ", totalSize=" + totalSize +
                 ", currentSize=" + currentSize +
-                ", speed=" + speed +
-                ", state=" + state +
                 '}';
     }
-
 }

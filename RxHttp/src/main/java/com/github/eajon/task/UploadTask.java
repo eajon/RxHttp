@@ -7,11 +7,11 @@ import java.math.BigDecimal;
 public class UploadTask extends BaseTask implements Serializable {
 
 
-    private String name;
-    private String fileName;
-    private File file;
-    private long currentSize;
-    private long totalSize;
+    private String name;//上传的参数名
+    private String fileName;//上传的文件名
+    private File file;//文件
+    private long currentSize;//当前上传的大小
+    private long totalSize;//总文件大小
 
 
 
@@ -74,16 +74,14 @@ public class UploadTask extends BaseTask implements Serializable {
     }
 
 
-
-
     @Override
     public String toString() {
         return "UploadTask{" +
-                "fileName='" + fileName + '\'' +
+                "name='" + name + '\'' +
+                ", fileName='" + fileName + '\'' +
                 ", file=" + file +
                 ", currentSize=" + currentSize +
                 ", totalSize=" + totalSize +
-                ", state=" + state +
                 '}';
     }
 }
