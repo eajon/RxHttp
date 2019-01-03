@@ -241,16 +241,15 @@ public class RxHttp {
             UploadTask uploadTask = (UploadTask) task;
             file = uploadTask.getFile();
             requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
-            MultipartBody.Part part = MultipartBody.Part.createFormData(uploadTask.getFileName(), file.getName(), new UploadRequestBody(requestBody, eventId, isStick, uploadTask));
+            MultipartBody.Part part = MultipartBody.Part.createFormData(uploadTask.getName(), uploadTask.getFileName(), new UploadRequestBody(requestBody, eventId, isStick, uploadTask));
             observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).upload(disposeApiUrl(), parameter, header, part);
-
         } else {
             MultipartUploadTask multipartUploadTask = (MultipartUploadTask) task;
             for (int i = 0; i < multipartUploadTask.getUploadTasks().size(); i++) {
                 UploadTask task = multipartUploadTask.getUploadTasks().get(i);
                 file = task.getFile();
                 requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
-                MultipartBody.Part part = MultipartBody.Part.createFormData(task.getFileName(), file.getName(), new UploadRequestBody(requestBody, eventId, isStick, task, multipartUploadTask));
+                MultipartBody.Part part = MultipartBody.Part.createFormData(task.getName(), task.getFileName(), new UploadRequestBody(requestBody, eventId, isStick, task, multipartUploadTask));
                 partList.add(part);
             }
             observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).upload(disposeApiUrl(), parameter, header, partList);
@@ -458,43 +457,43 @@ public class RxHttp {
 
 
         /*GET*/
-        public RxHttp.Builder get() {
+        public Builder get() {
             this.method = Method.GET;
             return this;
         }
 
         /*POST*/
-        public RxHttp.Builder post() {
+        public Builder post() {
             this.method = Method.POST;
             return this;
         }
 
         /*DELETE*/
-        public RxHttp.Builder delete() {
+        public Builder delete() {
             this.method = Method.DELETE;
             return this;
         }
 
         /*PUT*/
-        public RxHttp.Builder put() {
+        public Builder put() {
             this.method = Method.PUT;
             return this;
         }
 
         /*基础URL*/
-        public RxHttp.Builder baseUrl(String baseUrl) {
+        public Builder baseUrl(String baseUrl) {
             this.baseUrl = baseUrl;
             return this;
         }
 
         /*API URL*/
-        public RxHttp.Builder apiUrl(String apiUrl) {
+        public Builder apiUrl(String apiUrl) {
             this.apiUrl = apiUrl;
             return this;
         }
 
         /* 增加 Parameter 不断叠加参数 包括基础参数 */
-        public RxHttp.Builder addParameter(Map<String, Object> parameter) {
+        public Builder addParameter(Map<String, Object> parameter) {
             if (this.parameter == null) {
                 this.parameter = new TreeMap<>();
             }
@@ -503,13 +502,13 @@ public class RxHttp {
         }
 
         /*设置 Parameter 会覆盖 Parameter 包括基础参数*/
-        public RxHttp.Builder setParameter(Map<String, Object> parameter) {
+        public Builder setParameter(Map<String, Object> parameter) {
             this.parameter = parameter;
             return this;
         }
 
         /* 增加 Header 不断叠加 Header 包括基础 Header */
-        public RxHttp.Builder addHeader(Map<String, Object> header) {
+        public Builder addHeader(Map<String, Object> header) {
             if (this.header == null) {
                 this.header = new TreeMap<>();
             }
@@ -518,49 +517,49 @@ public class RxHttp {
         }
 
         /*设置 Header 会覆盖 Header 包括基础参数*/
-        public RxHttp.Builder setHeader(Map<String, Object> header) {
+        public Builder setHeader(Map<String, Object> header) {
             this.header = header;
             return this;
         }
 
         /*设置RequestBody*/
-        public RxHttp.Builder setRequestBody(RequestBody requestBody) {
+        public Builder setRequestBody(RequestBody requestBody) {
             this.requestBody = requestBody;
             return this;
         }
 
         /*LifecycleProvider*/
-        public RxHttp.Builder lifecycle(LifecycleProvider lifecycle) {
+        public Builder lifecycle(LifecycleProvider lifecycle) {
             this.lifecycle = lifecycle;
             return this;
         }
 
         /*ActivityEvent*/
-        public RxHttp.Builder activityEvent(ActivityEvent activityEvent) {
+        public Builder activityEvent(ActivityEvent activityEvent) {
             this.activityEvent = activityEvent;
             return this;
         }
 
         /*FragmentEvent*/
-        public RxHttp.Builder fragmentEvent(FragmentEvent fragmentEvent) {
+        public Builder fragmentEvent(FragmentEvent fragmentEvent) {
             this.fragmentEvent = fragmentEvent;
             return this;
         }
 
         /*返回的实体类型，对下载无效*/
-        public RxHttp.Builder entity(Type type) {
+        public Builder entity(Type type) {
             this.type = type;
             return this;
         }
 
         /*下载上传任务*/
-        public RxHttp.Builder task(BaseTask baseTask) {
+        public Builder task(BaseTask baseTask) {
             this.task = baseTask;
             return this;
         }
 
         /*阻塞对话框*/
-        public RxHttp.Builder withDialog(Context context) {
+        public Builder withDialog(Context context) {
             this.dialogContext = context;
             this.message = "";
             this.cancelable = true;
@@ -568,7 +567,7 @@ public class RxHttp {
         }
 
         /*阻塞对话框*/
-        public RxHttp.Builder withDialog(Context context, String message) {
+        public Builder withDialog(Context context, String message) {
             this.dialogContext = context;
             this.message = message;
             this.cancelable = true;
@@ -576,7 +575,7 @@ public class RxHttp {
         }
 
         /*阻塞对话框*/
-        public RxHttp.Builder withDialog(Context context, String message, boolean cancelable) {
+        public Builder withDialog(Context context, String message, boolean cancelable) {
             this.dialogContext = context;
             this.message = message;
             this.cancelable = cancelable;
@@ -584,14 +583,14 @@ public class RxHttp {
         }
 
         /*阻塞对话框*/
-        public RxHttp.Builder withDialog(Dialog dialog) {
+        public Builder withDialog(Dialog dialog) {
             this.dialog = dialog;
             return this;
         }
 
 
         /*是否是粘性消息*/
-        public RxHttp.Builder isStick(boolean isStick) {
+        public Builder isStick(boolean isStick) {
             this.isStick = isStick;
             return this;
         }
@@ -603,13 +602,13 @@ public class RxHttp {
         }
 
         /*cacheKey*/
-        public RxHttp.Builder cacheKey(String cacheKey) {
+        public Builder cacheKey(String cacheKey) {
             this.cacheKey = cacheKey;
             return this;
         }
 
         /*重试次数*/
-        public RxHttp.Builder retryTime(int retryTime) {
+        public Builder retryTime(int retryTime) {
             this.retryTime = retryTime;
             return this;
         }

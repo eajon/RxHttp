@@ -8,7 +8,6 @@ import com.franmontiel.persistentcookiejar.PersistentCookieJar;
 import com.franmontiel.persistentcookiejar.cache.SetCookieCache;
 import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersistor;
 import com.github.eajon.RxHttp;
-import com.github.eajon.converter.GsonDiskConverter;
 import com.github.eajon.retrofit.RxConfig;
 import com.github.eajon.util.LogUtils;
 import com.github.eajon.util.NetUtils;
@@ -22,9 +21,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.logging.HttpLoggingInterceptor;
-
-import static com.github.eajon.model.CacheMode.CACHEANDREMOTEDISTINCT;
-import static com.github.eajon.model.CacheMode.FIRSTCACHE;
 
 public class App extends Application {
 
@@ -87,7 +83,12 @@ public class App extends Application {
                 .build();
 
 
-        RxConfig.get().logTag("RxHttps").okHttpClient(httpClient).rxCache(new File(getExternalCacheDir(), "rxcache"));
+        RxConfig
+                .get()
+                .logTag("RxHttps")
+                .baseUrl("http://172.17.12.42:8088/")
+                .okHttpClient(httpClient)
+                .rxCache(new File(getExternalCacheDir(), "rxcache"));
     }
 
 

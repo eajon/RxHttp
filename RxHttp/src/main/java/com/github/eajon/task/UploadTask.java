@@ -6,6 +6,8 @@ import java.math.BigDecimal;
 
 public class UploadTask extends BaseTask implements Serializable {
 
+
+    private String name;
     private String fileName;
     private File file;
     private long currentSize;
@@ -14,6 +16,22 @@ public class UploadTask extends BaseTask implements Serializable {
 
 
 
+
+    public UploadTask(String name,File file) {
+        this.name=name;
+        this.file = file;
+        this.fileName = file.getName();
+        this.totalSize = file.length();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public String getFileName() {
         return fileName;
     }
@@ -21,14 +39,6 @@ public class UploadTask extends BaseTask implements Serializable {
     public void setFileName(String fileName) {
         this.fileName = fileName;
     }
-
-    public UploadTask(File file) {
-        this.file = file;
-        this.fileName = file.getName();
-        this.totalSize = file.length();
-    }
-
-
     public File getFile() {
         return file;
     }

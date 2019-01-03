@@ -7,7 +7,7 @@ import java.math.BigDecimal;
 public class DownloadTask extends BaseTask implements Serializable {
 
 
-    private String fileName;
+    private String name;//存储在本地的文件名
     private String localUrl;//本地存储地址
     private long totalSize;//文件大小
     private long currentSize;//当前大小
@@ -15,18 +15,18 @@ public class DownloadTask extends BaseTask implements Serializable {
 
 
 
-    public DownloadTask(String fileName, String localUrl) {
-        this.fileName = fileName;
+    public DownloadTask(String name, String localUrl) {
+        this.name = name;
         this.localUrl = localUrl;
     }
 
 
-    public String getFileName() {
-        return fileName;
+    public String getName() {
+        return name;
     }
 
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getLocalUrl() {
@@ -67,7 +67,7 @@ public class DownloadTask extends BaseTask implements Serializable {
     @Override
     public String toString() {
         return "DownloadTask{" +
-                "fileName='" + fileName + '\'' +
+                "name='" + name + '\'' +
                 ", localUrl='" + localUrl + '\'' +
                 ", totalSize=" + totalSize +
                 ", currentSize=" + currentSize +

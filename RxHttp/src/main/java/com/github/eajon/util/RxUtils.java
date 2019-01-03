@@ -71,6 +71,7 @@ public class RxUtils {
 
 
     // 重试
+    @SuppressWarnings("unchecked")
     public static <T> ObservableTransformer <T, T> retryPolicy(final int time) {
         return new ObservableTransformer <T, T>() {
             @Override
@@ -83,11 +84,12 @@ public class RxUtils {
     }
 
     //返回数据转换
+    @SuppressWarnings("unchecked")
     public static <T> ObservableTransformer <T, T> map(final BaseTask task, final Type type) {
         return new ObservableTransformer <T, T>() {
             @Override
             public ObservableSource <T> apply(@NonNull Observable <T> upstream) {
-                if (task != null && task instanceof DownloadTask) {
+                if (task instanceof DownloadTask) {
                     return upstream.map(new DownloadResponseFunction((DownloadTask) task));
                 } else {
                     return upstream.map(new HttpResponseFunction(type));
@@ -97,6 +99,7 @@ public class RxUtils {
     }
 
     //返回数据转换
+    @SuppressWarnings("unchecked")
     public static <T> ObservableTransformer <T, T> lifeCycle(final LifecycleProvider lifecycle, final ActivityEvent activityEvent, final FragmentEvent fragmentEvent) {
         return new ObservableTransformer <T, T>() {
             @Override
@@ -110,9 +113,7 @@ public class RxUtils {
                         if (activityEvent != null) {
                             return upstream.compose(lifecycle.bindUntilEvent(activityEvent));
                         }
-                        if (fragmentEvent != null) {
-                            return upstream.compose(lifecycle.bindUntilEvent(fragmentEvent));
-                        }
+                        return upstream.compose(lifecycle.bindUntilEvent(fragmentEvent));
                     } else {
                         return upstream.compose(lifecycle.bindToLifecycle());
                     }
@@ -124,6 +125,7 @@ public class RxUtils {
 
 
     //缓存
+    @SuppressWarnings("unchecked")
     public static <T> ObservableTransformer <T, T> cache(final String cacheKey, final Type type, final boolean isRequest) {
         return new ObservableTransformer <T, T>() {
             @Override
@@ -141,6 +143,7 @@ public class RxUtils {
 
 
     //RXbus发射状态
+    @SuppressWarnings("unchecked")
     public static <T> ObservableTransformer <T, T> sendEvent(final BaseTask task, final String eventId, final boolean isStick) {
         return new ObservableTransformer <T, T>() {
             @Override

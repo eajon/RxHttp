@@ -12,6 +12,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.eajon.my.base.BaseActivity;
+import com.eajon.my.model.Token;
 import com.eajon.my.util.PhotoUtils;
 import com.eajon.my.util.Weather;
 import com.eajon.my.util.ZhihuImagePicker;
@@ -53,6 +54,9 @@ import io.reactivex.functions.Consumer;
 public class MainActivity extends BaseActivity {
     ArrayList <UploadTask> uploadTasks;
 
+
+    private String token;
+
     File file1 = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "WEIXIN" + ".apk");
     //    String url1 = "http://imtt.dd.qq.com/16891/50CC095EFBE6059601C6FB652547D737.apk?fsname=com.tencent.mm_6.6.7_1321.apk&csr=1bbd";
     DownloadTask downloadTask;
@@ -93,8 +97,8 @@ public class MainActivity extends BaseActivity {
 //            }
 //        });
         //RxHttp MVVM
-        WeatherModule2 weatherModule2 = ViewModelProviders.of(this).get(WeatherModule2.class);
-        weatherModule2.getWeather();
+//        WeatherModule2 weatherModule2 = ViewModelProviders.of(this).get(WeatherModule2.class);
+//        weatherModule2.getWeather();
 
     }
 
@@ -113,25 +117,24 @@ public class MainActivity extends BaseActivity {
 
     @Override
     protected void initLogic() {
-//        doRequest();
+        doRequest();
     }
 
     private void doRequest() {
         HashMap map = new HashMap();
-        map.put("city", "常熟");
+        map.put("username", "admin");
+        map.put("password", "12345678");
         new RxHttp.Builder()
-                .get()
-                .baseUrl("http://wthrcdn.etouch.cn/")
-                .apiUrl("weather_mini")
+                .post()
+                .apiUrl("user/login")
                 .addParameter(map)
-                .cacheKey("weather")
-                .eventId("weather")
-                .isStick(true)
+                .entity(Token.class)
                 .build()
-                .request(new HttpObserver() {
+                .request(new HttpObserver<Token>() {
                     @Override
-                    public void onSuccess(Object o) {
-                        content.setText(o.toString());
+                    public void onSuccess(Token o) {
+                        token=o.getData();
+                        content.setText(o.getData());
                     }
 
                     @Override
@@ -195,13 +198,21 @@ public class MainActivity extends BaseActivity {
 
 
     private void upload(ArrayList <UploadTask> uploadTasks) {
+        HashMap<String,Object> params=new HashMap<>();
+        params.put("folder","gallery");
+        params.put("host","gallery");
+        params.put("folderId",52L);
+        params.put("remark","androidTest");
+        HashMap<String,Object> header=new HashMap<>();
+        header.put("Authorization",token);
         MultipartUploadTask multipartUploadTask = new MultipartUploadTask(uploadTasks);
         new RxHttp.Builder()
-                .baseUrl("https://shop.cxwos.com/admin/File/")
-                .apiUrl("UploadFile?tentantId=16")
+                .apiUrl("image/upload")
                 .task(multipartUploadTask)
                 .isStick(true)
                 .eventId("upload")
+                .addHeader(header)
+                .addParameter(params)
                 .lifecycle(MainActivity.this)
                 .activityEvent(ActivityEvent.PAUSE)
                 .withDialog(new CProgressDialog(MainActivity.this, R.style.CustomDialog))
@@ -285,21 +296,7 @@ public class MainActivity extends BaseActivity {
                 requestGalleryPermissions();
                 break;
             case R.id.request:
-                HashMap map = new HashMap();
-                map.put("city", "上海");
-                new RxHttp.Builder()
-                        .get()
-                        .baseUrl("http://wthrcdn.etouch.cn/")
-                        .apiUrl("weather_mini")
-                        .addParameter(map)
-                        .eventId("weather")
-                        .withDialog(new CProgressDialog(MainActivity.this, R.style.CustomDialog))
-                        .cacheKey("HAHAHAHA")
-//                        .retryTime(2)
-                        .entity(Weather.class)
-                        .isStick(true)
-                        .build()
-                        .request();
+               doRequest();
                 break;
             case R.id.stick:
                 intent = new Intent(this, SecondActivity.class);
@@ -351,7 +348,7 @@ public class MainActivity extends BaseActivity {
 
                                         @Override
                                         public void onNext(Result result) {
-                                            uploadTasks.add(new UploadTask(new File(PhotoUtils.getPath(MainActivity.this, result.getUri()))));
+                                            uploadTasks.add(new UploadTask("files",new File(PhotoUtils.getPath(MainActivity.this, result.getUri()))));
                                         }
 
                                         @Override
