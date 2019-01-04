@@ -10,6 +10,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.eajon.my.base.BaseActivity;
+import com.eajon.my.model.BaseResponse;
 import com.eajon.my.model.CommonResponse;
 import com.eajon.my.util.PhotoUtils;
 import com.eajon.my.util.Weather;
@@ -46,6 +47,8 @@ import butterknife.OnClick;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
 
 
 public class MainActivity extends BaseActivity {
@@ -128,6 +131,30 @@ public class MainActivity extends BaseActivity {
                         HashMap<String,Object> header=new HashMap<>();
                         header.put("Authorization",o.getData());
                         RxHttp.getConfig().baseHeader(header);
+                        content.setText(o.getData().toString());
+                    }
+
+                    @Override
+                    public void onError(ApiException t) {
+
+                    }
+                });
+    }
+
+    private void doJsonRequest() {
+        BaseResponse baseResponse=new BaseResponse();
+        baseResponse.setCode(1);
+        baseResponse.setMessage("HAHAH");
+        RequestBody body=RequestBody.create(MediaType.parse("application/json"),new Gson().toJson(baseResponse));
+        new RxHttp.Builder()
+                .post()
+                .apiUrl("test/json")
+                .setRequestBody(body)
+                .entity(CommonResponse.class)
+                .build()
+                .request(new HttpObserver<CommonResponse>() {
+                    @Override
+                    public void onSuccess(CommonResponse o) {
                         content.setText(o.getData().toString());
                     }
 
@@ -288,7 +315,8 @@ public class MainActivity extends BaseActivity {
                 requestGalleryPermissions();
                 break;
             case R.id.request:
-               doRequest();
+//               doRequest();
+                doJsonRequest();
                 break;
             case R.id.stick:
                 intent = new Intent(this, SecondActivity.class);
