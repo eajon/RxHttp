@@ -26,10 +26,12 @@ import com.google.gson.JsonSyntaxException;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.json.JSONException;
 
+import java.io.IOException;
 import java.io.NotSerializableException;
 import java.net.ConnectException;
 import java.net.UnknownHostException;
 
+import okhttp3.ResponseBody;
 import retrofit2.HttpException;
 
 
@@ -67,12 +69,13 @@ public class ApiException extends Exception {
         this.message = throwable.getMessage();
     }
 
+
     public int getCode() {
         return code;
     }
 
     public String getDisplayMessage() {
-        return message +"(code:" + code + ")";
+        return "(HttpCode:" + code + ")"+ message ;
     }
 
 
@@ -80,6 +83,7 @@ public class ApiException extends Exception {
         ApiException ex;
         if (e instanceof HttpException) {
             HttpException httpException = (HttpException) e;
+            ResponseBody responseBody = httpException.response().errorBody();
             ex = new ApiException(httpException, httpException.code());
             /*switch (httpException.code()) {
                 case BADREQUEST:
@@ -95,7 +99,13 @@ public class ApiException extends Exception {
                     ex.message = "网络错误,Code:"+httpException.code()+" ,err:"+httpException.getMessage();
                     break;
             }*/
-            ex.message = httpException.getMessage();
+
+            try {
+                ex.message = responseBody.string();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+
             return ex;
         } else if (e instanceof JsonParseException
                 || e instanceof JSONException
