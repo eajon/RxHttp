@@ -24,7 +24,7 @@ public class FileUtils {
      * @throws IOException
      */
     public static void write2File(ResponseBody responseBody, DownloadTask downloadTask) throws IOException {
-        File file = new File(downloadTask.getLocalUrl());
+        File file = new File(downloadTask.getLocalDir(),downloadTask.getName());
         BufferedSource source = null;
         BufferedSink sink = null;
         try {

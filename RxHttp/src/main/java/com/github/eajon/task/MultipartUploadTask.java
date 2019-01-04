@@ -33,7 +33,7 @@ public class MultipartUploadTask extends BaseTask implements Serializable {
         for (int i = 0; i < uploadTasks.size(); i++) {
             currentSize += uploadTasks.get(i).getCurrentSize();
         }
-        if (totalSize != 0) {
+        if (totalSize != 0L) {
             float progress = (float) currentSize / (float) totalSize;
             return (int) (progress * 100);
         } else {

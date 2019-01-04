@@ -1,6 +1,6 @@
 package com.eajon.my.model;
 
-public class Response {
+public class BaseResponse {
 
     int code;
     String message;

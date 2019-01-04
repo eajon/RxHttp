@@ -6,9 +6,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.text.TextUtils;
 
-
-import com.github.eajon.exception.ApiException;
 import com.github.eajon.download.DownloadInterceptor;
+import com.github.eajon.exception.ApiException;
 import com.github.eajon.observer.HttpObserver;
 import com.github.eajon.retrofit.Method;
 import com.github.eajon.retrofit.RxConfig;
@@ -28,9 +27,10 @@ import com.trello.rxlifecycle2.android.FragmentEvent;
 import java.io.File;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.concurrent.Callable;
 
 import io.reactivex.Observable;
@@ -242,7 +242,8 @@ public class RxHttp {
             file = uploadTask.getFile();
             requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
             MultipartBody.Part part = MultipartBody.Part.createFormData(uploadTask.getName(), uploadTask.getFileName(), new UploadRequestBody(requestBody, eventId, isStick, uploadTask));
-            observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).upload(disposeApiUrl(), parameter, header, part);
+
+            observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).upload(disposeApiUrl(), convertParameter(), header, part);
         } else {
             MultipartUploadTask multipartUploadTask = (MultipartUploadTask) task;
             for (int i = 0; i < multipartUploadTask.getUploadTasks().size(); i++) {
@@ -252,7 +253,7 @@ public class RxHttp {
                 MultipartBody.Part part = MultipartBody.Part.createFormData(task.getName(), task.getFileName(), new UploadRequestBody(requestBody, eventId, isStick, task, multipartUploadTask));
                 partList.add(part);
             }
-            observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).upload(disposeApiUrl(), parameter, header, partList);
+            observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).upload(disposeApiUrl(), convertParameter(), header, partList);
         }
 
         /*请求处理*/
@@ -269,6 +270,7 @@ public class RxHttp {
 
     }
 
+    @SuppressWarnings("unchecked")
     private Disposable subscribe(Observable observable) {
         if (httpObserver == null) {
             httpObserver = new HttpObserver() {
@@ -293,6 +295,7 @@ public class RxHttp {
 
 
     //dialog
+    @SuppressWarnings("unchecked")
     private Observable dialogObserver(final Observable observable) {
         return Observable.using(new Callable<Dialog>() {
             @Override
@@ -329,6 +332,7 @@ public class RxHttp {
 
 
     //构建数据发射器
+    @SuppressWarnings("unchecked")
     public Observable observe(Observable observable) {
         return observable
                 .compose(RxUtils.map(task, type))
@@ -361,7 +365,7 @@ public class RxHttp {
 
         /*header空处理*/
         if (header == null) {
-            header = new TreeMap<>();
+            header = new HashMap<>();
         }
 
         //添加基础 Header
@@ -383,13 +387,24 @@ public class RxHttp {
     private void disposeParameter() {
         /*空处理*/
         if (parameter == null) {
-            parameter = new TreeMap<>();
+            parameter = new HashMap<>();
         }
         //添加基础 Parameter
         Map<String, Object> baseParameter = getConfig().getBaseParameter();
         if (baseParameter != null && baseParameter.size() > 0) {
             parameter.putAll(baseParameter);
         }
+    }
+
+    /*处理 Parameter为body*/
+    private Map<String,RequestBody> convertParameter() {
+        Map<String,RequestBody> map =new HashMap<>();
+        for (String key : parameter.keySet()) {
+            if(!(parameter.get(key) instanceof RequestBody)) {
+                map.put(key, RequestBody.create(MediaType.parse("text/plain"), String.valueOf(parameter.get(key))));
+            }
+        }
+        return map;
     }
 
 
@@ -495,7 +510,7 @@ public class RxHttp {
         /* 增加 Parameter 不断叠加参数 包括基础参数 */
         public Builder addParameter(Map<String, Object> parameter) {
             if (this.parameter == null) {
-                this.parameter = new TreeMap<>();
+                this.parameter = new HashMap<>();
             }
             this.parameter.putAll(parameter);
             return this;
@@ -510,7 +525,7 @@ public class RxHttp {
         /* 增加 Header 不断叠加 Header 包括基础 Header */
         public Builder addHeader(Map<String, Object> header) {
             if (this.header == null) {
-                this.header = new TreeMap<>();
+                this.header = new HashMap<>();
             }
             this.header.putAll(header);
             return this;

@@ -1,23 +1,27 @@
 package com.github.eajon.task;
 
+import android.os.Environment;
+
 import java.io.Serializable;
-import java.math.BigDecimal;
 
 
 public class DownloadTask extends BaseTask implements Serializable {
 
 
     private String name;//存储在本地的文件名
-    private String localUrl;//本地存储地址
+    private String localDir;//本地存储目录
     private long totalSize;//文件大小
     private long currentSize;//当前大小
 
 
-
-
-    public DownloadTask(String name, String localUrl) {
+    public DownloadTask(String name) {
         this.name = name;
-        this.localUrl = localUrl;
+        this.localDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
+    }
+
+    public DownloadTask(String name, String localDir) {
+        this.name = name;
+        this.localDir = localDir;
     }
 
 
@@ -29,12 +33,12 @@ public class DownloadTask extends BaseTask implements Serializable {
         this.name = name;
     }
 
-    public String getLocalUrl() {
-        return localUrl == null ? "" : localUrl;
+    public String getLocalDir() {
+        return localDir == null ? "" : localDir;
     }
 
-    public void setLocalUrl(String localUrl) {
-        this.localUrl = localUrl;
+    public void setLocalDir(String localDir) {
+        this.localDir = localDir;
     }
 
     public long getTotalSize() {
@@ -68,7 +72,7 @@ public class DownloadTask extends BaseTask implements Serializable {
     public String toString() {
         return "DownloadTask{" +
                 "name='" + name + '\'' +
-                ", localUrl='" + localUrl + '\'' +
+                ", localDir='" + localDir + '\'' +
                 ", totalSize=" + totalSize +
                 ", currentSize=" + currentSize +
                 '}';

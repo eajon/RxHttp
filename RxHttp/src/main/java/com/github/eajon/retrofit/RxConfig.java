@@ -1,7 +1,5 @@
 package com.github.eajon.retrofit;
 
-import android.content.Context;
-
 import com.github.eajon.cache.RxCacheProvider;
 import com.github.eajon.model.CacheMode;
 import com.github.eajon.util.LogUtils;

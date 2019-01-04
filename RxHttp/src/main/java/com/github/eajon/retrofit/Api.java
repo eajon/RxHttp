@@ -63,7 +63,6 @@ public interface Api {
      * @param info  请求参数JSON
      * @return
      */
-    @Headers({"Content-Type: application/json","Accept: application/json"})
     @POST
     Observable <JsonElement> post(@Url String url, @Body RequestBody info, @HeaderMap Map <String, Object> header);
 
@@ -107,7 +106,7 @@ public interface Api {
      */
     @Multipart
     @POST
-    Observable<JsonElement> upload(@Url String url, @PartMap Map <String, Object> parameter, @HeaderMap Map <String, Object> header,  @Part MultipartBody.Part file);
+    Observable<JsonElement> upload(@Url String url, @PartMap Map<String, RequestBody> parameter, @HeaderMap Map <String, Object> header,  @Part MultipartBody.Part file);
 
     /**
      * 多文件上传
@@ -121,7 +120,7 @@ public interface Api {
      */
     @Multipart
     @POST
-    Observable<JsonElement> upload(@Url String url, @PartMap Map <String, Object> parameter, @HeaderMap Map <String, Object> header, @Part List <MultipartBody.Part> fileList);
+    Observable<JsonElement> upload(@Url String url, @PartMap Map<String, RequestBody> parameter, @HeaderMap Map <String, Object> header, @Part List <MultipartBody.Part> fileList);
 
 
 

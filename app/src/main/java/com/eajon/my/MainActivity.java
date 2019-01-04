@@ -2,21 +2,18 @@ package com.eajon.my;
 
 
 import android.Manifest;
-import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Environment;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
 import com.eajon.my.base.BaseActivity;
-import com.eajon.my.model.Token;
+import com.eajon.my.model.CommonResponse;
 import com.eajon.my.util.PhotoUtils;
 import com.eajon.my.util.Weather;
 import com.eajon.my.util.ZhihuImagePicker;
-import com.eajon.my.viewModel.WeatherModule2;
 import com.eajon.my.widget.CProgressDialog;
 import com.github.eajon.RxHttp;
 import com.github.eajon.exception.ApiException;
@@ -53,12 +50,6 @@ import io.reactivex.functions.Consumer;
 
 public class MainActivity extends BaseActivity {
     ArrayList <UploadTask> uploadTasks;
-
-
-    private String token;
-
-    File file1 = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "WEIXIN" + ".apk");
-    //    String url1 = "http://imtt.dd.qq.com/16891/50CC095EFBE6059601C6FB652547D737.apk?fsname=com.tencent.mm_6.6.7_1321.apk&csr=1bbd";
     DownloadTask downloadTask;
     Disposable downloadDisposable;
     @BindView(R.id.request)
@@ -111,7 +102,8 @@ public class MainActivity extends BaseActivity {
     protected void initData(Bundle savedInstanceState) {
         rxImagePicker = RxImagePicker.INSTANCE
                 .create(ZhihuImagePicker.class);
-        downloadTask = new DownloadTask(file1.getName(), file1.getAbsolutePath());
+        //默认下载地址为Download目录
+        downloadTask = new DownloadTask("wechat.apk");
 
     }
 
@@ -128,13 +120,15 @@ public class MainActivity extends BaseActivity {
                 .post()
                 .apiUrl("user/login")
                 .addParameter(map)
-                .entity(Token.class)
+                .entity(CommonResponse.class)
                 .build()
-                .request(new HttpObserver<Token>() {
+                .request(new HttpObserver<CommonResponse>() {
                     @Override
-                    public void onSuccess(Token o) {
-                        token=o.getData();
-                        content.setText(o.getData());
+                    public void onSuccess(CommonResponse o) {
+                        HashMap<String,Object> header=new HashMap<>();
+                        header.put("Authorization",o.getData());
+                        RxHttp.getConfig().baseHeader(header);
+                        content.setText(o.getData().toString());
                     }
 
                     @Override
@@ -203,34 +197,32 @@ public class MainActivity extends BaseActivity {
         params.put("host","gallery");
         params.put("folderId",52L);
         params.put("remark","androidTest");
-        HashMap<String,Object> header=new HashMap<>();
-        header.put("Authorization",token);
         MultipartUploadTask multipartUploadTask = new MultipartUploadTask(uploadTasks);
         new RxHttp.Builder()
                 .apiUrl("image/upload")
                 .task(multipartUploadTask)
                 .isStick(true)
                 .eventId("upload")
-                .addHeader(header)
                 .addParameter(params)
                 .lifecycle(MainActivity.this)
                 .activityEvent(ActivityEvent.PAUSE)
+                .entity(CommonResponse.class)
                 .withDialog(new CProgressDialog(MainActivity.this, R.style.CustomDialog))
                 .build()
-                .upload(new UploadObserver() {
+                .upload(new UploadObserver<CommonResponse>() {
                     @Override
                     public void onCancel() {
 
                     }
 
                     @Override
-                    public void onSuccess(Object o) {
-
+                    public void onSuccess(CommonResponse o) {
+                        content.setText(o.getData().toString());
                     }
 
                     @Override
                     public void onError(ApiException t) {
-
+                        content.setText(t.getDisplayMessage());
                     }
                 });
 
