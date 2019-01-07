@@ -92,7 +92,7 @@
                 .request(new HttpObserver<Login>() {
                 
                         @Override
-                        public void onSuccess(Response o) {
+                        public void onSuccess(Login o) {
             
                         }
             
@@ -214,7 +214,7 @@
               UploadTask uploadTask2 = new UploadTask(new File(path2));
               uploadTasks.add(uploadTask);
               uploadTasks.add(uploadTask2);
-              MultipartUploadTask multiUploadTask =new MultipartUploadTask("muiltTag",uploadTasks);
+              MultiUploadTask multiUploadTask =new MultiUploadTask("muiltTag",uploadTasks);
               Disposable disposeable = new RxHttp.Builder()
                         .baseUrl("https://shop.cxwos.com/admin/File/")
                         .apiUrl("UploadFile?tentantId=16")
