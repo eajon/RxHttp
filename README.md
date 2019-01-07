@@ -1,5 +1,3 @@
-![image](https://github.com/eajon/RxHttp/blob/master/app/src/main/res/drawable/demo.gif)  
-
 # RxHttp
          本框架 是对 RXJAVA2 + Retrofit + RxBus2 + OkHttp3 + lifecycle的架构的封装
          1.采用链式调用一点到底
@@ -16,6 +14,7 @@
 	     12.支持LifeCycle,所有请求可以配置生命周期与当前页面生命周期绑定
 	     13.支持RXBUS 使用注解获取数据 并且支持粘性消息 可以替代Intent
          14.支持自动重试
+	 15.支持背压
          具体功能使用方法参看demo
          
 	   
