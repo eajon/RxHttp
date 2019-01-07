@@ -3,7 +3,7 @@ package com.github.eajon.task;
 import java.io.Serializable;
 import java.util.ArrayList;
 
-public class MultipartUploadTask extends BaseTask implements Serializable {
+public class MultiUploadTask extends BaseTask implements Serializable {
 
     private ArrayList <UploadTask> uploadTasks;
 
@@ -15,7 +15,7 @@ public class MultipartUploadTask extends BaseTask implements Serializable {
         }
     }
 
-    public MultipartUploadTask(ArrayList <UploadTask> uploadTasks) {
+    public MultiUploadTask(ArrayList <UploadTask> uploadTasks) {
 
         this.uploadTasks = uploadTasks;
     }
@@ -56,7 +56,7 @@ public class MultipartUploadTask extends BaseTask implements Serializable {
 
     @Override
     public String toString() {
-        return "MultipartUploadTask{" +
+        return "MultiUploadTask{" +
                 "uploadTasks=" + uploadTasks +
                 ", state=" + state +
                 '}';

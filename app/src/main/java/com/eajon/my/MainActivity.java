@@ -22,7 +22,7 @@ import com.github.eajon.observer.DownloadObserver;
 import com.github.eajon.observer.HttpObserver;
 import com.github.eajon.observer.UploadObserver;
 import com.github.eajon.task.DownloadTask;
-import com.github.eajon.task.MultipartUploadTask;
+import com.github.eajon.task.MultiUploadTask;
 import com.github.eajon.task.UploadTask;
 import com.github.eajon.util.LogUtils;
 import com.google.gson.Gson;
@@ -200,12 +200,12 @@ public class MainActivity extends BaseActivity {
 
     @RxSubscribe(observeOnThread = EventThread.MAIN, eventId = "upload")
     @SuppressWarnings("unused")
-    public void uploadProgress(MultipartUploadTask multipartUploadTask) {
-        content.setText("总进度：" + multipartUploadTask.getProgress() + "%" + multipartUploadTask.getState().toString()+multipartUploadTask.getSpeedKB());
-        if (multipartUploadTask.getUploadTasks().size() >= 3) {//假设选择3个
-            content1.setText("第一个：" + multipartUploadTask.getProgress(0) + "%" + multipartUploadTask.getState(0).toString()+multipartUploadTask.getSpeedKB());
-            content2.setText("第二个：" + multipartUploadTask.getProgress(1) + "%" + multipartUploadTask.getState(1).toString()+multipartUploadTask.getSpeedKB());
-            content3.setText("第三个：" + multipartUploadTask.getProgress(2) + "%" + multipartUploadTask.getState(2).toString()+multipartUploadTask.getSpeedKB());
+    public void uploadProgress(MultiUploadTask multiUploadTask) {
+        content.setText("总进度：" + multiUploadTask.getProgress() + "%" + multiUploadTask.getState().toString()+ multiUploadTask.getSpeedKB());
+        if (multiUploadTask.getUploadTasks().size() >= 3) {//假设选择3个
+            content1.setText("第一个：" + multiUploadTask.getProgress(0) + "%" + multiUploadTask.getState(0).toString()+ multiUploadTask.getSpeedKB());
+            content2.setText("第二个：" + multiUploadTask.getProgress(1) + "%" + multiUploadTask.getState(1).toString()+ multiUploadTask.getSpeedKB());
+            content3.setText("第三个：" + multiUploadTask.getProgress(2) + "%" + multiUploadTask.getState(2).toString()+ multiUploadTask.getSpeedKB());
         }
     }
 
@@ -224,10 +224,10 @@ public class MainActivity extends BaseActivity {
         params.put("host","gallery");
         params.put("folderId",52L);
         params.put("remark","androidTest");
-        MultipartUploadTask multipartUploadTask = new MultipartUploadTask(uploadTasks);
+        MultiUploadTask multiUploadTask = new MultiUploadTask(uploadTasks);
         new RxHttp.Builder()
                 .apiUrl("image/upload")
-                .task(multipartUploadTask)
+                .task(multiUploadTask)
                 .isStick(true)
                 .eventId("upload")
                 .addParameter(params)

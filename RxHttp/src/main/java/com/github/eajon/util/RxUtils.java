@@ -28,7 +28,7 @@ import com.github.eajon.function.HttpResponseFunction;
 import com.github.eajon.function.RetryExceptionFunction;
 import com.github.eajon.task.BaseTask;
 import com.github.eajon.task.DownloadTask;
-import com.github.eajon.task.MultipartUploadTask;
+import com.github.eajon.task.MultiUploadTask;
 import com.github.eajon.task.UploadTask;
 import com.trello.rxlifecycle2.LifecycleProvider;
 import com.trello.rxlifecycle2.android.ActivityEvent;
@@ -57,10 +57,10 @@ public class RxUtils {
 
 
     //线程调度
-    public static <T> ObservableTransformer <T, T> io_main() {
-        return new ObservableTransformer <T, T>() {
+    public static <T> ObservableTransformer<T, T> io_main() {
+        return new ObservableTransformer<T, T>() {
             @Override
-            public ObservableSource <T> apply(@NonNull Observable <T> upstream) {
+            public ObservableSource<T> apply(@NonNull Observable<T> upstream) {
                 return upstream
                         .subscribeOn(Schedulers.io())
                         .unsubscribeOn(Schedulers.io())
@@ -72,10 +72,10 @@ public class RxUtils {
 
     // 重试
     @SuppressWarnings("unchecked")
-    public static <T> ObservableTransformer <T, T> retryPolicy(final int time) {
-        return new ObservableTransformer <T, T>() {
+    public static <T> ObservableTransformer<T, T> retryPolicy(final int time) {
+        return new ObservableTransformer<T, T>() {
             @Override
-            public ObservableSource <T> apply(@NonNull Observable <T> upstream) {
+            public ObservableSource<T> apply(@NonNull Observable<T> upstream) {
                 return upstream
                         .onErrorResumeNext(new ErrorResponseFunction())
                         .retryWhen(new RetryExceptionFunction(time));
@@ -85,10 +85,10 @@ public class RxUtils {
 
     //返回数据转换
     @SuppressWarnings("unchecked")
-    public static <T> ObservableTransformer <T, T> map(final BaseTask task, final Type type) {
-        return new ObservableTransformer <T, T>() {
+    public static <T> ObservableTransformer<T, T> map(final BaseTask task, final Type type) {
+        return new ObservableTransformer<T, T>() {
             @Override
-            public ObservableSource <T> apply(@NonNull Observable <T> upstream) {
+            public ObservableSource<T> apply(@NonNull Observable<T> upstream) {
                 if (task instanceof DownloadTask) {
                     return upstream.map(new DownloadResponseFunction((DownloadTask) task));
                 } else {
@@ -100,20 +100,18 @@ public class RxUtils {
 
     //返回数据转换
     @SuppressWarnings("unchecked")
-    public static <T> ObservableTransformer <T, T> lifeCycle(final LifecycleProvider lifecycle, final ActivityEvent activityEvent, final FragmentEvent fragmentEvent) {
-        return new ObservableTransformer <T, T>() {
+    public static <T> ObservableTransformer<T, T> lifeCycle(final LifecycleProvider lifecycle, final ActivityEvent activityEvent, final FragmentEvent fragmentEvent) {
+        return new ObservableTransformer<T, T>() {
             @Override
-            public ObservableSource <T> apply(@NonNull Observable <T> upstream) {
+            public ObservableSource<T> apply(@NonNull Observable<T> upstream) {
                 if (lifecycle != null) {
                     if (activityEvent != null || fragmentEvent != null) {
                         //两个同时存在,以 activity 为准
-                        if (activityEvent != null && fragmentEvent != null) {
-                            return upstream.compose(lifecycle.bindUntilEvent(activityEvent));
-                        }
                         if (activityEvent != null) {
                             return upstream.compose(lifecycle.bindUntilEvent(activityEvent));
+                        } else {
+                            return upstream.compose(lifecycle.bindUntilEvent(fragmentEvent));
                         }
-                        return upstream.compose(lifecycle.bindUntilEvent(fragmentEvent));
                     } else {
                         return upstream.compose(lifecycle.bindToLifecycle());
                     }
@@ -126,10 +124,10 @@ public class RxUtils {
 
     //缓存
     @SuppressWarnings("unchecked")
-    public static <T> ObservableTransformer <T, T> cache(final String cacheKey, final Type type, final boolean isRequest) {
-        return new ObservableTransformer <T, T>() {
+    public static <T> ObservableTransformer<T, T> cache(final String cacheKey, final Type type, final boolean isRequest) {
+        return new ObservableTransformer<T, T>() {
             @Override
-            public ObservableSource <T> apply(@NonNull Observable <T> upstream) {
+            public ObservableSource<T> apply(@NonNull Observable<T> upstream) {
                 if (!isRequest || !RxCacheProvider.isInit() || TextUtils.isEmpty(cacheKey)) {
                     return upstream;
                 } else {
@@ -144,11 +142,11 @@ public class RxUtils {
 
     //RXbus发射状态
     @SuppressWarnings("unchecked")
-    public static <T> ObservableTransformer <T, T> sendEvent(final BaseTask task, final String eventId, final boolean isStick) {
-        return new ObservableTransformer <T, T>() {
+    public static <T> ObservableTransformer<T, T> sendEvent(final BaseTask task, final String eventId, final boolean isStick) {
+        return new ObservableTransformer<T, T>() {
             @Override
-            public ObservableSource <T> apply(@NonNull Observable <T> upstream) {
-                return upstream.doOnSubscribe(new Consumer <Disposable>() {
+            public ObservableSource<T> apply(@NonNull Observable<T> upstream) {
+                return upstream.doOnSubscribe(new Consumer<Disposable>() {
                     @Override
                     public void accept(Disposable disposable) throws Exception {
 //                        LogUtils.e("dialog", "doOnSubscribe");
@@ -162,14 +160,14 @@ public class RxUtils {
                     public void run() throws Exception {
 //                        LogUtils.e("dialog", "doOnDispose");
                     }
-                }).doOnError(new Consumer <Throwable>() {
+                }).doOnError(new Consumer<Throwable>() {
                     @Override
                     public void accept(Throwable throwable) throws Exception {
 //                        LogUtils.e("dialog", "doOnError");
                         if (task != null) {
                             task.setState(UploadTask.State.ERROR);
-                            if (task instanceof MultipartUploadTask) {
-                                for (UploadTask uploadTask : ((MultipartUploadTask) task).getUploadTasks()) {
+                            if (task instanceof MultiUploadTask) {
+                                for (UploadTask uploadTask : ((MultiUploadTask) task).getUploadTasks()) {
                                     uploadTask.setState(UploadTask.State.ERROR);
                                 }
                             }
@@ -194,9 +192,9 @@ public class RxUtils {
                                 task.setState(BaseTask.State.PAUSE);
                             } else if (task instanceof UploadTask) {
                                 task.setState(BaseTask.State.CANCEL);
-                            } else if (task instanceof MultipartUploadTask) {
+                            } else if (task instanceof MultiUploadTask) {
                                 task.setState(BaseTask.State.CANCEL);
-                                for (UploadTask uploadTask : ((MultipartUploadTask) task).getUploadTasks()) {
+                                for (UploadTask uploadTask : ((MultiUploadTask) task).getUploadTasks()) {
                                     uploadTask.setState(UploadTask.State.CANCEL);
                                 }
                             }

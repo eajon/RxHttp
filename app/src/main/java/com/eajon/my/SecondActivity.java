@@ -6,7 +6,7 @@ import android.widget.TextView;
 import com.eajon.my.base.BaseActivity;
 import com.eajon.my.util.Weather;
 import com.github.eajon.task.DownloadTask;
-import com.github.eajon.task.MultipartUploadTask;
+import com.github.eajon.task.MultiUploadTask;
 import com.github.eajon.util.LogUtils;
 import com.google.gson.Gson;
 import com.threshold.rxbus2.annotation.RxSubscribe;
@@ -72,11 +72,11 @@ public class SecondActivity extends BaseActivity {
 
     @RxSubscribe(observeOnThread = EventThread.MAIN, isSticky = true, eventId = "upload")
     @SuppressWarnings("unused")
-    public void uploadProgress(MultipartUploadTask multipartUploadTask) {
+    public void uploadProgress(MultiUploadTask multiUploadTask) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                content1.setText("上传进度：" + multipartUploadTask.getProgress() + "%" + multipartUploadTask.getState().toString());
+                content1.setText("上传进度：" + multiUploadTask.getProgress() + "%" + multiUploadTask.getState().toString());
             }
         });
     }

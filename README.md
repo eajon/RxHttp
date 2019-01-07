@@ -213,11 +213,11 @@
               UploadTask uploadTask2 = new UploadTask(new File(path2));
               uploadTasks.add(uploadTask);
               uploadTasks.add(uploadTask2);
-              MultipartUploadTask multipartUploadTask =new MultipartUploadTask("muiltTag",uploadTasks);
+              MultipartUploadTask multiUploadTask =new MultipartUploadTask("muiltTag",uploadTasks);
               Disposable disposeable = new RxHttp.Builder()
                         .baseUrl("https://shop.cxwos.com/admin/File/")
                         .apiUrl("UploadFile?tentantId=16")
-                        .task(multipartUploadTask)
+                        .task(multiUploadTask)
                         .lifecycle(this)/*上传按需配置lifecycle*/
                         .build()
                         .upload(new UploadObserver() {

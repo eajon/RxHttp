@@ -1,17 +1,11 @@
 package com.github.eajon.upload;
 
 
-import com.github.eajon.RxHttp;
-import com.github.eajon.task.MultipartUploadTask;
+import com.github.eajon.task.MultiUploadTask;
 import com.github.eajon.task.UploadTask;
-import com.github.eajon.util.LogUtils;
 
 import java.io.IOException;
 
-import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.functions.Consumer;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import okio.Buffer;
@@ -34,7 +28,7 @@ public class UploadRequestBody extends RequestBody {
 
     private UploadTask uploadTask;
 
-    private MultipartUploadTask multipartUploadTask;
+    private MultiUploadTask multiUploadTask;
 
     private boolean isStick;
 
@@ -52,12 +46,12 @@ public class UploadRequestBody extends RequestBody {
 
     }
 
-    public UploadRequestBody(RequestBody requestBody, String eventId, boolean isStick, UploadTask uploadTask, MultipartUploadTask multipartUploadTask) {
+    public UploadRequestBody(RequestBody requestBody, String eventId, boolean isStick, UploadTask uploadTask, MultiUploadTask multiUploadTask) {
         this.requestBody = requestBody;
         this.eventId = eventId;
         this.isStick = isStick;
         this.uploadTask = uploadTask;
-        this.multipartUploadTask = multipartUploadTask;
+        this.multiUploadTask = multiUploadTask;
     }
 
 
@@ -122,8 +116,8 @@ public class UploadRequestBody extends RequestBody {
                 long millis = System.currentTimeMillis() - time;
                 if (millis >= 500) {
                     uploadTask.setSpeed(secondBytesCount * 1000 / millis);
-                    if (multipartUploadTask != null) {
-                        multipartUploadTask.setSpeed(secondBytesCount * 1000 / millis);
+                    if (multiUploadTask != null) {
+                        multiUploadTask.setSpeed(secondBytesCount * 1000 / millis);
                     }
                     secondBytesCount = 0;
                     time = System.currentTimeMillis();
@@ -137,8 +131,8 @@ public class UploadRequestBody extends RequestBody {
                 } else {
                     uploadTask.setState(UploadTask.State.LOADING);
                 }
-                if (multipartUploadTask != null) {
-                    multipartUploadTask.sendBus(eventId, isStick);
+                if (multiUploadTask != null) {
+                    multiUploadTask.sendBus(eventId, isStick);
                 } else {
                     uploadTask.sendBus(eventId, isStick);
                 }

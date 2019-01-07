@@ -13,7 +13,7 @@ import com.github.eajon.retrofit.Method;
 import com.github.eajon.retrofit.RxConfig;
 import com.github.eajon.task.BaseTask;
 import com.github.eajon.task.DownloadTask;
-import com.github.eajon.task.MultipartUploadTask;
+import com.github.eajon.task.MultiUploadTask;
 import com.github.eajon.task.UploadTask;
 import com.github.eajon.upload.UploadRequestBody;
 import com.github.eajon.util.NetUtils;
@@ -27,7 +27,6 @@ import com.trello.rxlifecycle2.android.FragmentEvent;
 import java.io.File;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -245,12 +244,12 @@ public class RxHttp {
 
             observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).upload(disposeApiUrl(), convertParameter(), header, part);
         } else {
-            MultipartUploadTask multipartUploadTask = (MultipartUploadTask) task;
-            for (int i = 0; i < multipartUploadTask.getUploadTasks().size(); i++) {
-                UploadTask task = multipartUploadTask.getUploadTasks().get(i);
+            MultiUploadTask multiUploadTask = (MultiUploadTask) task;
+            for (int i = 0; i < multiUploadTask.getUploadTasks().size(); i++) {
+                UploadTask task = multiUploadTask.getUploadTasks().get(i);
                 file = task.getFile();
                 requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
-                MultipartBody.Part part = MultipartBody.Part.createFormData(task.getName(), task.getFileName(), new UploadRequestBody(requestBody, eventId, isStick, task, multipartUploadTask));
+                MultipartBody.Part part = MultipartBody.Part.createFormData(task.getName(), task.getFileName(), new UploadRequestBody(requestBody, eventId, isStick, task, multiUploadTask));
                 partList.add(part);
             }
             observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).upload(disposeApiUrl(), convertParameter(), header, partList);
@@ -396,12 +395,12 @@ public class RxHttp {
         }
     }
 
-    /*处理 Parameter为body*/
+    /*上传其他参数使用post提交 ,Parameter不是requestbody的话，需要转为requestbody*/
     private Map<String,RequestBody> convertParameter() {
         Map<String,RequestBody> map =new HashMap<>();
         for (String key : parameter.keySet()) {
             if(!(parameter.get(key) instanceof RequestBody)) {
-                map.put(key, RequestBody.create(MediaType.parse("text/plain"), String.valueOf(parameter.get(key))));
+                map.put(key, RequestBody.create(null, String.valueOf(parameter.get(key))));
             }
         }
         return map;
