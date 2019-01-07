@@ -2,14 +2,13 @@ package com.github.eajon.task;
 
 import java.io.File;
 import java.io.Serializable;
-import java.math.BigDecimal;
 
 public class UploadTask extends BaseTask implements Serializable {
 
 
     private String name;//上传的参数名
-    private String fileName;//上传的文件名
     private File file;//文件
+    private String fileName;//上传的文件名
     private long currentSize;//当前上传的大小
     private long totalSize;//总文件大小
 

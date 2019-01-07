@@ -18,7 +18,6 @@ package com.github.eajon.function;
 
 
 import com.github.eajon.exception.ApiException;
-import com.github.eajon.retrofit.RxConfig;
 import com.github.eajon.util.LogUtils;
 
 import java.net.ConnectException;
@@ -61,7 +60,7 @@ public class RetryExceptionFunction implements Function <Observable <? extends T
             @Override
             public ObservableSource <?> apply(@NonNull Wrapper wrapper) throws Exception {
                 if (wrapper.index > 1)
-                    LogUtils.d(RxConfig.get().getLogTag(), "retryTime：" + (wrapper.index));
+                    LogUtils.d("retryTime：" + (wrapper.index));
                 int errCode = 0;
                 if (wrapper.throwable instanceof ApiException) {
                     ApiException exception = (ApiException) wrapper.throwable;

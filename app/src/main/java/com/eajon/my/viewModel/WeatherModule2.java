@@ -1,12 +1,9 @@
 package com.eajon.my.viewModel;
 
 import android.arch.lifecycle.ViewModel;
-import android.view.View;
 
 import com.eajon.my.util.Weather;
 import com.github.eajon.RxHttp;
-import com.github.eajon.exception.ApiException;
-import com.github.eajon.observer.HttpObserver;
 
 import java.util.HashMap;
 

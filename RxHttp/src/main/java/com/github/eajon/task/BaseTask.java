@@ -2,7 +2,6 @@ package com.github.eajon.task;
 
 import android.text.TextUtils;
 
-import com.github.eajon.util.LogUtils;
 import com.threshold.rxbus2.RxBus;
 
 import java.math.BigDecimal;
@@ -22,9 +21,9 @@ public class BaseTask {
         CANCEL,         //取消
     }
 
-    public State state = State.NONE;//下载状态
+    private State state = State.NONE;//下载状态
 
-    public long speed;
+    private long speed;
 
     public State getState() {
         return state;

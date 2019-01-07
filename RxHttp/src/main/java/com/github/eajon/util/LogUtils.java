@@ -16,7 +16,7 @@ import java.util.Date;
 public class LogUtils {
     private static Boolean LOG_SWITCH = true; // 日志文件总开关
     private static Boolean LOG_TO_FILE = false; // 日志写入文件开关
-    private static String LOG_TAG = "eajon"; // 默认的tag
+    private static String LOG_TAG = "RxHttp"; // 默认的tag
     private static char LOG_TYPE = 'v';// 输入日志类型，v代表输出所有信息,w则只输出警告...
     private static int LOG_SAVE_DAYS = 7;// sd卡中日志文件的最多保存天数
 
@@ -25,10 +25,14 @@ public class LogUtils {
     private static String LOG_FILE_PATH; // 日志文件保存路径
     private static String LOG_FILE_NAME;// 日志文件保存名称
 
-    public static void init(Context context) { // 在Application中初始化
-        LOG_FILE_PATH = Environment.getExternalStorageDirectory().getPath() + File.separator +context.getPackageName();
-        LOG_FILE_NAME = "Log";
+    public static void init(Context context, String tag, boolean logSwitch, boolean logToFile) { // 在Application中初始化
+        LOG_FILE_PATH = Environment.getExternalStorageDirectory().getPath() + File.separator + context.getPackageName();
+        LOG_TAG = tag;
+        LOG_SWITCH = logSwitch;
+        LOG_TO_FILE = logToFile;
+        LOG_FILE_NAME = "log";
     }
+
 
     /****************************
      * Warn

@@ -2,8 +2,10 @@ package com.eajon.my;
 
 
 import android.Manifest;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -15,6 +17,8 @@ import com.eajon.my.model.CommonResponse;
 import com.eajon.my.util.PhotoUtils;
 import com.eajon.my.util.Weather;
 import com.eajon.my.util.ZhihuImagePicker;
+import com.eajon.my.viewModel.WeatherModule;
+import com.eajon.my.viewModel.WeatherModule2;
 import com.eajon.my.widget.CProgressDialog;
 import com.github.eajon.RxHttp;
 import com.github.eajon.exception.ApiException;
@@ -83,16 +87,16 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void initView() {
         //官方MVVM
-//        WeatherModule weatherModule= ViewModelProviders.of(this).get(WeatherModule.class);
-//        weatherModule.getWeather().observe(this, new android.arch.lifecycle.Observer <Weather>() {
-//            @Override
-//            public void onChanged(@Nullable Weather weather) {
-//                content.setText(new Gson().toJson(weather));
-//            }
-//        });
+        WeatherModule weatherModule = ViewModelProviders.of(this).get(WeatherModule.class);
+        weatherModule.getWeather().observe(this, new android.arch.lifecycle.Observer<Weather>() {
+            @Override
+            public void onChanged(@Nullable Weather weather) {
+                content.setText(new Gson().toJson(weather));
+            }
+        });
         //RxHttp MVVM
-//        WeatherModule2 weatherModule2 = ViewModelProviders.of(this).get(WeatherModule2.class);
-//        weatherModule2.getWeather();
+        WeatherModule2 weatherModule2 = ViewModelProviders.of(this).get(WeatherModule2.class);
+        weatherModule2.getWeather();
 
     }
 
@@ -287,13 +291,12 @@ public class MainActivity extends BaseActivity {
 
                                                     @Override
                                                     public void onSuccess(DownloadTask downloadTask) {
-                                                        LogUtils.e(RxHttp.getConfig().getLogTag(), downloadTask.getState());
+                                                        LogUtils.e(downloadTask.getState());
                                                     }
 
                                                     @Override
                                                     public void onError(ApiException t) {
-                                                        LogUtils.e("dialog", "onError");
-                                                        LogUtils.e(RxHttp.getConfig().getLogTag(), downloadTask.getState());
+                                                        LogUtils.e(downloadTask.getState());
                                                     }
                                                 });
 

@@ -52,13 +52,10 @@ public class MultiUploadTask extends BaseTask implements Serializable {
     }
 
 
-
-
     @Override
     public String toString() {
         return "MultiUploadTask{" +
                 "uploadTasks=" + uploadTasks +
-                ", state=" + state +
                 '}';
     }
 }

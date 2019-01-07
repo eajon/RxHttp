@@ -37,7 +37,7 @@ public class RxConfig {
         RxJavaPlugins.setErrorHandler(new Consumer <Throwable>() {
             @Override
             public void accept(Throwable throwable) throws Exception {
-                LogUtils.e(config.getLogTag(), throwable);
+                LogUtils.e(throwable);
             }
         });
 
@@ -52,9 +52,6 @@ public class RxConfig {
 
 
     OkHttpClient okHttpClient;
-
-
-    String logTag = "RxHttp";
 
 
     private RxConfig() {
@@ -90,16 +87,6 @@ public class RxConfig {
 
     public Map <String, Object> getBaseHeader() {
         return header;
-    }
-
-    /*logTag*/
-    public RxConfig logTag(String logTag) {
-        this.logTag = logTag;
-        return this;
-    }
-
-    public String getLogTag() {
-        return logTag;
     }
 
 
