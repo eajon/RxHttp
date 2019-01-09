@@ -305,9 +305,9 @@ public class RxHttp {
                 }
                 return ProgressDialog.show(dialogContext, null, message, true, cancelable);
             }
-        }, new Function<Dialog, Observable<? extends Object>>() {
+        }, new Function<Dialog, Observable<Object>>() {
             @Override
-            public Observable<? extends Object> apply(final Dialog progressDialog) throws Exception {
+            public Observable<Object> apply(final Dialog progressDialog) throws Exception {
                 final BehaviorSubject<Boolean> dialogSubject = BehaviorSubject.create();
                 return observe(observable).doOnSubscribe(new Consumer<Disposable>() {
                     @Override
