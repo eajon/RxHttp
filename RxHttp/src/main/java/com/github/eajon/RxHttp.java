@@ -334,8 +334,8 @@ public class RxHttp {
     @SuppressWarnings("unchecked")
     public Observable observe(Observable observable) {
         return observable
-                .compose(RxUtils.map(task, type))
-                .compose(RxUtils.cache(cacheKey, type, isRequest()))
+                .compose(RxUtils.map(isDownload(), type))
+                .compose(RxUtils.cache(isRequest(), cacheKey, type))
                 .compose(RxUtils.lifeCycle(lifecycle, activityEvent, fragmentEvent))
                 .compose(RxUtils.retryPolicy(retryTime))
                 .compose(RxUtils.sendEvent(task, eventId, isStick))
@@ -345,6 +345,10 @@ public class RxHttp {
 
     private boolean isRequest() {
         return task == null;
+    }
+
+    private boolean isDownload() {
+        return task instanceof DownloadTask;
     }
 
 

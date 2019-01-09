@@ -1,16 +1,10 @@
 package com.github.eajon.download;
 
 
-import com.github.eajon.task.BaseTask;
 import com.github.eajon.task.DownloadTask;
-import com.github.eajon.util.LogUtils;
 
 import java.io.IOException;
 
-import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
-import io.reactivex.ObservableOnSubscribe;
-import io.reactivex.functions.Consumer;
 import okhttp3.MediaType;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
@@ -22,13 +16,9 @@ import okio.Source;
 
 
 /**
- * 作者：Tailyou （祝文飞）
- * <p>
- * 时间：2016/5/30 16:19
- * <p>
- * 邮箱：tailyou@163.com
- * <p>
- * 描述：
+ * 下载返回Body
+ *
+ *  @author WENGYIJIONG
  */
 
 public class DownloadResponseBody extends ResponseBody {
@@ -50,6 +40,10 @@ public class DownloadResponseBody extends ResponseBody {
         this.eventId = eventId;
         this.isStick = isStick;
         this.downloadTask = downloadTask;
+    }
+
+    public DownloadTask getDownloadTask() {
+        return downloadTask;
     }
 
 

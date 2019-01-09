@@ -212,9 +212,9 @@ public class LogUtils {
      * @return
      */
     private static Date getDateBefore() {
-        Date nowtime = new Date();
+        Date nowTime = new Date();
         Calendar now = Calendar.getInstance();
-        now.setTime(nowtime);
+        now.setTime(nowTime);
         now.set(Calendar.DATE, now.get(Calendar.DATE) - LOG_SAVE_DAYS);
         return now.getTime();
     }

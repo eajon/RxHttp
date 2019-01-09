@@ -1,8 +1,11 @@
 package com.github.eajon.exception;
 
 /**
- * Created by holenzhou on 2018/5/16.
- */
+ * http 缓存结果为空处理
+ *
+ * @author WENGYIJIONG
+ *
+ **/
 
 public class RxCacheNullException extends RuntimeException {
 

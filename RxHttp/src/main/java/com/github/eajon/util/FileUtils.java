@@ -1,12 +1,12 @@
 package com.github.eajon.util;
 
 
+import com.github.eajon.download.DownloadResponseBody;
 import com.github.eajon.task.DownloadTask;
 
 import java.io.File;
 import java.io.IOException;
 
-import okhttp3.ResponseBody;
 import okhttp3.internal.Util;
 import okio.Buffer;
 import okio.BufferedSink;
@@ -20,10 +20,10 @@ public class FileUtils {
      * 写入文件
      *
      * @param responseBody
-     * @param downloadTask
      * @throws IOException
      */
-    public static void write2File(ResponseBody responseBody, DownloadTask downloadTask) throws IOException {
+    public static void write2File(DownloadResponseBody responseBody) throws IOException {
+        DownloadTask downloadTask = responseBody.getDownloadTask();
         File file = new File(downloadTask.getLocalDir(),downloadTask.getName());
         BufferedSource source = null;
         BufferedSink sink = null;

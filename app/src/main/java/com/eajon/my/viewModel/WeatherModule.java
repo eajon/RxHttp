@@ -1,13 +1,10 @@
 package com.eajon.my.viewModel;
 
-import android.app.Application;
-import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.ViewModel;
-import android.support.annotation.NonNull;
 
-import com.eajon.my.util.Weather;
+import com.eajon.my.model.Weather;
 import com.github.eajon.RxHttp;
 import com.github.eajon.exception.ApiException;
 import com.github.eajon.observer.HttpObserver;

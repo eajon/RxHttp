@@ -30,7 +30,7 @@ import io.reactivex.functions.Function;
  */
 public class CacheResultFunction<T> implements Function<CacheResult<T>, T> {
     @Override
-    public T apply(@NonNull CacheResult<T> tCacheResult) throws Exception {
-        return tCacheResult.data;
+    public T apply(@NonNull CacheResult<T> cacheResult) {
+        return cacheResult.data;
     }
 }

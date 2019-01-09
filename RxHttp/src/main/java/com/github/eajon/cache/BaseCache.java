@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.github.eajon.core;
+package com.github.eajon.cache;
 
 import com.github.eajon.model.RealEntity;
 
@@ -45,7 +45,7 @@ public abstract class BaseCache {
      */
     final <T> RealEntity<T> load(Type type, String key, long existTime) {
         //1.先检查key
-        ObjectHelper.requireNonNull(key,"key == null");
+        ObjectHelper.requireNonNull(key, "key == null");
 
         //2.判断key是否存在,key不存在去读缓存没意义
         if (!containsKey(key)) {
@@ -77,7 +77,7 @@ public abstract class BaseCache {
      */
     final <T> boolean save(String key, T value) {
         //1.先检查key
-        ObjectHelper.requireNonNull(key,"key == null");
+        ObjectHelper.requireNonNull(key, "key == null");
 
         //2.如果要保存的值为空,则删除
         if (value == null) {

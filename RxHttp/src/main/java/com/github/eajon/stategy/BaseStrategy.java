@@ -21,6 +21,7 @@ import android.util.Log;
 
 import com.github.eajon.cache.RxCache;
 import com.github.eajon.model.CacheResult;
+import com.github.eajon.util.LogUtils;
 
 import java.lang.reflect.Type;
 import java.util.ConcurrentModificationException;
@@ -75,15 +76,15 @@ public abstract class BaseStrategy implements IStrategy {
                                 .subscribe(new Consumer<Boolean>() {
                                     @Override
                                     public void accept(@NonNull Boolean status) throws Exception {
-                                        Log.i(TAG, "save status => " + status);
+                                        LogUtils.i(TAG, "save status => " + status);
                                     }
                                 }, new Consumer<Throwable>() {
                                     @Override
                                     public void accept(@NonNull Throwable throwable) throws Exception {
                                         if (throwable instanceof ConcurrentModificationException) {
-                                            Log.i(TAG, "Save failed, please use a synchronized cache strategy :", throwable);
+                                            LogUtils.i(TAG, "Save failed, please use a synchronized cache strategy :", throwable);
                                         } else {
-                                            Log.i(TAG, throwable.getMessage());
+                                            LogUtils.i(TAG, throwable.getMessage());
                                         }
                                     }
                                 });
@@ -111,13 +112,13 @@ public abstract class BaseStrategy implements IStrategy {
                         return  rxCache.save(key, t).map(new Function<Boolean, CacheResult<T>>() {
                             @Override
                             public CacheResult<T> apply(@NonNull Boolean aBoolean) throws Exception {
-                                Log.i(TAG, "save status => " + aBoolean);
+                                LogUtils.i(TAG, "save status => " + aBoolean);
                                 return new CacheResult<T>(false, t);
                             }
                         }).onErrorReturn(new Function<Throwable, CacheResult<T>>() {
                             @Override
                             public CacheResult<T> apply(@NonNull Throwable throwable) throws Exception {
-                                Log.i(TAG, "save status => " + throwable);
+                                LogUtils.i(TAG, "save status => " + throwable);
                                 return new CacheResult<T>(false, t);
                             }
                         });

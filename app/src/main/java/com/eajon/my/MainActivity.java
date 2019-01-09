@@ -14,8 +14,8 @@ import android.widget.TextView;
 import com.eajon.my.base.BaseActivity;
 import com.eajon.my.model.BaseResponse;
 import com.eajon.my.model.CommonResponse;
+import com.eajon.my.model.Weather;
 import com.eajon.my.util.PhotoUtils;
-import com.eajon.my.util.Weather;
 import com.eajon.my.util.ZhihuImagePicker;
 import com.eajon.my.viewModel.WeatherModule;
 import com.eajon.my.viewModel.WeatherModule2;
@@ -318,7 +318,6 @@ public class MainActivity extends BaseActivity {
                 requestGalleryPermissions();
                 break;
             case R.id.request:
-//               doRequest();
                 doJsonRequest();
                 break;
             case R.id.stick:

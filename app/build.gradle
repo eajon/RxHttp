@@ -29,6 +29,11 @@ android {
                     details.useVersion '27.1.1'
                 }
             }
+            if (requested.group == 'com.squareup.okhttp3') {
+                if (!requested.name.startsWith("multidex")) {
+                    details.useVersion '3.8.0'
+                }
+            }
         }
     }
 }
@@ -49,7 +54,7 @@ dependencies {
     annotationProcessor 'com.github.bumptech.glide:compiler:4.7.1'
     implementation 'com.github.bumptech.glide:okhttp3-integration:4.7.1'
     implementation 'jp.wasabeef:glide-transformations:3.3.0'
-    //权限控制
+//    //权限控制
     implementation 'com.github.tbruyelle:rxpermissions:0.10.2'
     /*图片选择*/
     implementation 'com.github.qingmei2:rximagepicker:2.2.0'

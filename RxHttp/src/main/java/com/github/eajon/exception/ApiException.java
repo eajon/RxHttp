@@ -22,7 +22,6 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializer;
 import com.google.gson.JsonSyntaxException;
 
-
 import org.apache.http.conn.ConnectTimeoutException;
 import org.json.JSONException;
 
@@ -34,12 +33,10 @@ import java.net.UnknownHostException;
 import okhttp3.ResponseBody;
 import retrofit2.HttpException;
 
-
 /**
- * <p>描述：统一处理了API异常错误</p>
- * 作者： zhouyou<br>
- * 日期： 2016/12/15 16:50 <br>
- * 版本： v1.0<br>
+ * http结果异常处理
+ *
+ * @author WENGYIJIONG
  */
 
 public class ApiException extends Exception {

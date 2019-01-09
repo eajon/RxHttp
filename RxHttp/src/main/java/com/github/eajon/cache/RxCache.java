@@ -21,8 +21,6 @@ import android.util.Log;
 
 import com.github.eajon.converter.GsonDiskConverter;
 import com.github.eajon.converter.IDiskConverter;
-import com.github.eajon.core.CacheCore;
-import com.github.eajon.core.LruDiskCache;
 import com.github.eajon.exception.RxCacheNullException;
 import com.github.eajon.model.CacheMode;
 import com.github.eajon.model.CacheResult;
@@ -35,7 +33,6 @@ import com.github.eajon.stategy.IStrategy;
 import com.github.eajon.stategy.NoStrategy;
 import com.github.eajon.stategy.OnlyCacheStrategy;
 import com.github.eajon.stategy.OnlyRemoteStrategy;
-
 
 import java.io.File;
 import java.lang.reflect.Type;

@@ -24,7 +24,6 @@ public class RxCacheProvider {
     private static final String TAG = "RxCacheProvider";
     private static volatile RxCacheProvider singleton = null;
     private RxCache.Builder rxCacheBuilder;
-    private RxCache rxCache;
     public static final int DEFAULT_CACHE_NEVER_EXPIRE = -1;          //缓存过期时间，默认永久缓存//Okhttp缓存对象
     private CacheMode mCacheMode = CacheMode.DEFAULT;                 //缓存类型
     private long mCacheTime = -1;                                     //缓存时间
@@ -188,7 +187,7 @@ public class RxCacheProvider {
      * @return
      */
     public static <T> T get(String key, Class <T> clazz) {
-        return getInstance().rxCache.get(key, (Type) clazz);
+        return getRxCache().get(key, ( Type ) clazz);
     }
 
 
@@ -201,7 +200,7 @@ public class RxCacheProvider {
      * @return
      */
     public static <T> T get(String key, Type type) {
-        return getInstance().rxCache.get(key, type);
+        return getRxCache().get(key, type);
     }
 
     /**
@@ -222,7 +221,7 @@ public class RxCacheProvider {
      * @param key  缓存key
      */
     public static <T> Observable <T> load(String key, Type type) {
-        return getInstance().rxCache.load(key, type);
+        return getRxCache().load(key, type);
     }
 
     /**
@@ -246,7 +245,7 @@ public class RxCacheProvider {
      * @param cacheTime 毫秒ms
      */
     public static <T> boolean put(String key, T value, long cacheTime) {
-        return getInstance().rxCache.put(key, value, cacheTime);
+        return getRxCache().put(key, value, cacheTime);
     }
 
     /**
@@ -260,7 +259,7 @@ public class RxCacheProvider {
     }
 
     public static <T> Observable <Boolean> save(String key, T value, long cacheTime) {
-        return getInstance().rxCache.save(key, value, cacheTime);
+        return getRxCache().save(key, value, cacheTime);
     }
 
     /**

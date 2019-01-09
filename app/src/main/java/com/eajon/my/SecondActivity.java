@@ -4,7 +4,7 @@ import android.os.Bundle;
 import android.widget.TextView;
 
 import com.eajon.my.base.BaseActivity;
-import com.eajon.my.util.Weather;
+import com.eajon.my.model.Weather;
 import com.github.eajon.task.DownloadTask;
 import com.github.eajon.task.MultiUploadTask;
 import com.github.eajon.util.LogUtils;

@@ -11,7 +11,7 @@ import io.reactivex.functions.Function;
 /**
  * http结果处理函数
  *
- * @author WENGHYIJIONG
+ * @author WENGYIJIONG
  */
 public class ErrorResponseFunction<T> implements Function <Throwable, Observable> {
     @Override

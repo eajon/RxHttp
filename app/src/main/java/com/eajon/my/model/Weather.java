@@ -1,4 +1,4 @@
-package com.eajon.my.util;
+package com.eajon.my.model;
 
 import java.util.List;
 
@@ -52,7 +52,7 @@ public class Weather {
         private String city;
         private String ganmao;
         private String wendu;
-        private List <ForecastBean> forecast;
+        private List<ForecastBean> forecast;
 
         public YesterdayBean getYesterday() {
             return yesterday;
@@ -86,11 +86,11 @@ public class Weather {
             this.wendu = wendu;
         }
 
-        public List <ForecastBean> getForecast() {
+        public List<ForecastBean> getForecast() {
             return forecast;
         }
 
-        public void setForecast(List <ForecastBean> forecast) {
+        public void setForecast(List<ForecastBean> forecast) {
             this.forecast = forecast;
         }
 

@@ -85,12 +85,12 @@ public class RxUtils {
 
     //返回数据转换
     @SuppressWarnings("unchecked")
-    public static <T> ObservableTransformer<T, T> map(final BaseTask task, final Type type) {
+    public static <T> ObservableTransformer<T, T> map(final boolean isDownload, final Type type) {
         return new ObservableTransformer<T, T>() {
             @Override
             public ObservableSource<T> apply(@NonNull Observable<T> upstream) {
-                if (task instanceof DownloadTask) {
-                    return upstream.map(new DownloadResponseFunction((DownloadTask) task));
+                if (isDownload) {
+                    return upstream.map(new DownloadResponseFunction());
                 } else {
                     return upstream.map(new HttpResponseFunction(type));
                 }
@@ -98,7 +98,7 @@ public class RxUtils {
         };
     }
 
-    //返回数据转换
+    //生命周期关联
     @SuppressWarnings("unchecked")
     public static <T> ObservableTransformer<T, T> lifeCycle(final LifecycleProvider lifecycle, final ActivityEvent activityEvent, final FragmentEvent fragmentEvent) {
         return new ObservableTransformer<T, T>() {
@@ -124,7 +124,7 @@ public class RxUtils {
 
     //缓存
     @SuppressWarnings("unchecked")
-    public static <T> ObservableTransformer<T, T> cache(final String cacheKey, final Type type, final boolean isRequest) {
+    public static <T> ObservableTransformer<T, T> cache(final boolean isRequest, final String cacheKey, final Type type) {
         return new ObservableTransformer<T, T>() {
             @Override
             public ObservableSource<T> apply(@NonNull Observable<T> upstream) {

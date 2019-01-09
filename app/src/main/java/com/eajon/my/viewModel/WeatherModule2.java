@@ -2,7 +2,7 @@ package com.eajon.my.viewModel;
 
 import android.arch.lifecycle.ViewModel;
 
-import com.eajon.my.util.Weather;
+import com.eajon.my.model.Weather;
 import com.github.eajon.RxHttp;
 
 import java.util.HashMap;

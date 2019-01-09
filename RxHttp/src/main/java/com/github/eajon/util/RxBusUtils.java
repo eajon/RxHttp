@@ -7,7 +7,7 @@ import com.threshold.rxbus2.RxBus;
 public class RxBusUtils {
 
 
-    //默认发射粘性消息只保留最后一个
+    //默认发射粘性消息只同类型保留最后一个
     public static void sendBus(String eventId, boolean isStick, Object object) {
         if (isStick) {
             RxBus.getDefault().removeStickyEventType(object.getClass());

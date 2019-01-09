@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package com.github.eajon.core;
+package com.github.eajon.cache;
 
 
 import android.util.Log;
 
 import com.github.eajon.model.RealEntity;
+
 import java.lang.reflect.Type;
 
 import io.reactivex.internal.functions.ObjectHelper;
@@ -51,7 +52,7 @@ public class CacheCore {
 
     public CacheCore(LruDiskCache disk) {
 
-        this.disk =  ObjectHelper.requireNonNull(disk,"disk == null");
+        this.disk = ObjectHelper.requireNonNull(disk, "disk == null");
     }
 
 

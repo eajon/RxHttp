@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-package com.github.eajon.core;
+package com.github.eajon.cache;
 
 
 import com.github.eajon.converter.IDiskConverter;
 import com.github.eajon.model.RealEntity;
 import com.jakewharton.disklrucache.DiskLruCache;
-
 
 import java.io.File;
 import java.io.IOException;
@@ -37,11 +36,11 @@ import okhttp3.internal.Util;
  * 作者： zhouyou<br>
  * 日期： 2016/12/24 10:35<br>
  * 版本： v2.0<br>
- *
+ * <p>
  * 修改者： zhouyou<br>
  * 日期： 2016/01/07 10:35<br>
- *  1.为了更好的扩展功能，统一使用BasicCache<br>
- *  2.将来做内存管理也可以继承BasicCache来统一处理<br>
+ * 1.为了更好的扩展功能，统一使用BasicCache<br>
+ * 2.将来做内存管理也可以继承BasicCache来统一处理<br>
  */
 public class LruDiskCache extends BaseCache {
     private IDiskConverter mDiskConverter;
@@ -50,7 +49,7 @@ public class LruDiskCache extends BaseCache {
 
     public LruDiskCache(IDiskConverter diskConverter, File diskDir, int appVersion, long diskMaxSize) {
 
-        this.mDiskConverter = ObjectHelper.requireNonNull(diskConverter,"diskConverter==null");
+        this.mDiskConverter = ObjectHelper.requireNonNull(diskConverter, "diskConverter==null");
         try {
             mDiskLruCache = DiskLruCache.open(diskDir, appVersion, 1, diskMaxSize);
         } catch (IOException e) {
@@ -72,7 +71,7 @@ public class LruDiskCache extends BaseCache {
             InputStream source = edit.newInputStream(0);
             RealEntity<T> value;
             if (source != null) {
-                value = mDiskConverter.load(source,type);
+                value = mDiskConverter.load(source, type);
                 Util.closeQuietly(source);
                 edit.commit();
                 return value;
@@ -172,5 +171,5 @@ public class LruDiskCache extends BaseCache {
         long existTime = System.currentTimeMillis() - dataFile.lastModified();
         return existTime > time;
     }
-    
+
 }
