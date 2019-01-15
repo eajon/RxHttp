@@ -8,8 +8,8 @@ android {
     defaultConfig {
         minSdkVersion 15
         targetSdkVersion 27
-        versionCode 1
-        versionName "1.0"
+        versionCode 15
+        versionName "v1.5.2"
 
 
     }
@@ -37,7 +37,7 @@ dependencies {
     //lifecycle
     api 'com.trello.rxlifecycle2:rxlifecycle:2.2.2'
     api 'com.trello.rxlifecycle2:rxlifecycle-components:2.2.2'
-    api 'android.arch.lifecycle:extensions:1.1.0'
+    api 'android.arch.lifecycle:extensions:1.1.1'
 
 
     // rxbus
