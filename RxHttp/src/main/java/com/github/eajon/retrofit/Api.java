@@ -134,5 +134,9 @@ public interface Api {
      */
     @Streaming
     @GET
-    Observable<ResponseBody> download(@Url String url, @Header("RANGE") String range, @QueryMap Map<String, Object> parameter, @HeaderMap Map<String, Object> header);
+    Observable<ResponseBody> getDownload(@Url String url, @Header("RANGE") String range, @QueryMap Map<String, Object> parameter, @HeaderMap Map<String, Object> header);
+
+    @Streaming
+    @POST
+    Observable<ResponseBody> postDownload(@Url String url, @Header("RANGE") String range, @FieldMap Map<String, Object> parameter, @HeaderMap Map<String, Object> header);
 }

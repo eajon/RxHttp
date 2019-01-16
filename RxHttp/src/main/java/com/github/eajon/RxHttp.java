@@ -229,13 +229,13 @@ public class RxHttp {
         File file;
         RequestBody requestBody;
         if (task instanceof UploadTask) {
-            UploadTask uploadTask = (UploadTask) task;
+            UploadTask uploadTask = ( UploadTask ) task;
             file = uploadTask.getFile();
             requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
             MultipartBody.Part part = MultipartBody.Part.createFormData(uploadTask.getName(), uploadTask.getFileName(), new UploadRequestBody(requestBody, eventId, isStick, uploadTask));
             observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).upload(disposeApiUrl(), convertParameter(), header, part);
         } else {
-            MultiUploadTask multiUploadTask = (MultiUploadTask) task;
+            MultiUploadTask multiUploadTask = ( MultiUploadTask ) task;
             for (int i = 0; i < multiUploadTask.getUploadTasks().size(); i++) {
                 UploadTask task = multiUploadTask.getUploadTasks().get(i);
                 file = task.getFile();
@@ -251,14 +251,31 @@ public class RxHttp {
     }
 
     private Disposable doDownload() {
+        Observable observable;
+
         /*header处理*/
         disposeHeader();
 
         /*Parameter处理*/
         disposeParameter();
 
-        DownloadTask downloadTask = (DownloadTask) task;
-        Observable observable = RetrofitUtils.get().getRetrofit(getBaseUrl(), new DownloadInterceptor(eventId, isStick, downloadTask)).download(disposeApiUrl(), "bytes=" + downloadTask.getCurrentSize() + "-", parameter, header);
+        DownloadTask downloadTask = ( DownloadTask ) task;
+        /*请求方式处理*/
+        if (method == null) {
+            method = Method.POST;
+        }
+        switch (method) {
+            case GET:
+                observable = RetrofitUtils.get().getRetrofit(getBaseUrl(), new DownloadInterceptor(eventId, isStick, downloadTask)).getDownload(disposeApiUrl(), "bytes=" + downloadTask.getCurrentSize() + "-", parameter, header);
+                break;
+            case POST:
+                observable = RetrofitUtils.get().getRetrofit(getBaseUrl(), new DownloadInterceptor(eventId, isStick, downloadTask)).postDownload(disposeApiUrl(), "bytes=" + downloadTask.getCurrentSize() + "-", parameter, header);
+                break;
+            default:
+                observable = RetrofitUtils.get().getRetrofit(getBaseUrl(), new DownloadInterceptor(eventId, isStick, downloadTask)).getDownload(disposeApiUrl(), "bytes=" + downloadTask.getCurrentSize() + "-", parameter, header);
+                break;
+        }
+
         /*请求处理*/
         return subscribe(observable);
 
@@ -396,10 +413,10 @@ public class RxHttp {
     }
 
     /*上传其他参数使用post提交 ,Parameter不是requestbody的话，需要转为requestbody*/
-    private Map<String,RequestBody> convertParameter() {
-        Map<String,RequestBody> map =new HashMap<>();
+    private Map<String, RequestBody> convertParameter() {
+        Map<String, RequestBody> map = new HashMap<>();
         for (String key : parameter.keySet()) {
-            if(!(parameter.get(key) instanceof RequestBody)) {
+            if (!(parameter.get(key) instanceof RequestBody)) {
                 map.put(key, RequestBody.create(null, String.valueOf(parameter.get(key))));
             }
         }
