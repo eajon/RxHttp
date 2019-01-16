@@ -1,7 +1,7 @@
 package com.github.eajon.util;
 
 
-import com.github.eajon.retrofit.RxConfig;
+import com.github.eajon.RxConfig;
 
 import java.util.concurrent.TimeUnit;
 

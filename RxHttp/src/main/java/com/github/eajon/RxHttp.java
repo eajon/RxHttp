@@ -10,12 +10,12 @@ import com.github.eajon.download.DownloadInterceptor;
 import com.github.eajon.exception.ApiException;
 import com.github.eajon.observer.HttpObserver;
 import com.github.eajon.retrofit.Method;
-import com.github.eajon.retrofit.RxConfig;
 import com.github.eajon.task.BaseTask;
 import com.github.eajon.task.DownloadTask;
 import com.github.eajon.task.MultiUploadTask;
 import com.github.eajon.task.UploadTask;
 import com.github.eajon.upload.UploadRequestBody;
+import com.github.eajon.util.GsonUtils;
 import com.github.eajon.util.NetUtils;
 import com.github.eajon.util.RetrofitUtils;
 import com.github.eajon.util.RxBusUtils;
@@ -519,9 +519,25 @@ public class RxHttp {
             return this;
         }
 
+        /* 增加 Parameter 不断叠加参数 包括基础参数 自动转化为Map*/
+        public Builder addObjectParameter(Object object) {
+            if (this.parameter == null) {
+                this.parameter = new HashMap<>();
+            }
+            this.parameter.putAll(GsonUtils.objectToMap(object));
+            return this;
+        }
+
         /*设置 Parameter 会覆盖 Parameter 包括基础参数*/
         public Builder setParameter(Map<String, Object> parameter) {
             this.parameter = parameter;
+            return this;
+        }
+
+        /*设置 Parameter 会覆盖 Parameter 包括基础参数 自动转化为Map*/
+        public Builder setObjectParameter(Object object) {
+            this.parameter = GsonUtils.objectToMap(object);
+            ;
             return this;
         }
 
@@ -534,11 +550,27 @@ public class RxHttp {
             return this;
         }
 
+        /* 增加 Header 不断叠加 Header 包括基础 Header 自动转化为Map*/
+        public Builder addObjectHeader(Object object) {
+            if (this.header == null) {
+                this.header = new HashMap<>();
+            }
+            this.header.putAll(GsonUtils.objectToMap(object));
+            return this;
+        }
+
         /*设置 Header 会覆盖 Header 包括基础参数*/
         public Builder setHeader(Map<String, Object> header) {
             this.header = header;
             return this;
         }
+
+        /*设置 Header 会覆盖 Header 包括基础参数 自动转化为Map*/
+        public Builder setObjectHeader(Object object) {
+            this.header = GsonUtils.objectToMap(object);
+            return this;
+        }
+
 
         /*设置RequestBody*/
         public Builder setRequestBody(RequestBody requestBody) {

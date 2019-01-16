@@ -1,7 +1,8 @@
-package com.github.eajon.retrofit;
+package com.github.eajon;
 
 import com.github.eajon.cache.RxCacheProvider;
 import com.github.eajon.model.CacheMode;
+import com.github.eajon.util.GsonUtils;
 import com.github.eajon.util.LogUtils;
 import com.github.eajon.util.OkHttpUtils;
 import com.threshold.rxbus2.RxBus;
@@ -75,6 +76,13 @@ public class RxConfig {
         return this;
     }
 
+    /*基础参数*/
+    public RxConfig baseObjectParameter(Object object) {
+        this.parameter = GsonUtils.objectToMap(object);
+        ;
+        return this;
+    }
+
     public Map <String, Object> getBaseParameter() {
         return parameter;
     }
@@ -82,6 +90,12 @@ public class RxConfig {
     /*基础Header*/
     public RxConfig baseHeader(Map <String, Object> header) {
         this.header = header;
+        return this;
+    }
+
+    /*基础Header*/
+    public RxConfig baseObjectHeader(Object object) {
+        this.header = GsonUtils.objectToMap(object);
         return this;
     }
 

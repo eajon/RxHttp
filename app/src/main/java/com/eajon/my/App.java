@@ -7,7 +7,7 @@ import com.franmontiel.persistentcookiejar.ClearableCookieJar;
 import com.franmontiel.persistentcookiejar.PersistentCookieJar;
 import com.franmontiel.persistentcookiejar.cache.SetCookieCache;
 import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersistor;
-import com.github.eajon.retrofit.RxConfig;
+import com.github.eajon.RxHttp;
 import com.github.eajon.util.LogUtils;
 import com.github.eajon.util.NetUtils;
 
@@ -82,8 +82,8 @@ public class App extends Application {
                 .build();
 
 
-        RxConfig
-                .get()
+        RxHttp
+                .getConfig()
                 .baseUrl("http://172.17.12.42:8088/")
                 .okHttpClient(httpClient)
                 .rxCache(new File(getExternalCacheDir(), "rxcache"));
