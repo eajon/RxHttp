@@ -143,11 +143,7 @@ public class RxHttp {
         if (httpObserver == null) {
             throw new NullPointerException("UploadObserve must not null!");
         } else {
-            if (task != null && !(task instanceof DownloadTask)) {
-                return doUpload();
-            } else {
-                throw new NullPointerException("UploadTask must not null!");
-            }
+            return doUpload();
 
         }
     }
@@ -167,11 +163,7 @@ public class RxHttp {
         if (httpObserver == null) {
             throw new NullPointerException("DownloadObserver must not null!");
         } else {
-            if (task != null && task instanceof DownloadTask) {
-                return doDownload();
-            } else {
-                throw new NullPointerException("DownloadTask must not null!");
-            }
+            return download();
         }
     }
 
@@ -241,7 +233,6 @@ public class RxHttp {
             file = uploadTask.getFile();
             requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
             MultipartBody.Part part = MultipartBody.Part.createFormData(uploadTask.getName(), uploadTask.getFileName(), new UploadRequestBody(requestBody, eventId, isStick, uploadTask));
-
             observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).upload(disposeApiUrl(), convertParameter(), header, part);
         } else {
             MultiUploadTask multiUploadTask = (MultiUploadTask) task;
@@ -260,14 +251,19 @@ public class RxHttp {
     }
 
     private Disposable doDownload() {
+        /*header处理*/
+        disposeHeader();
+
+        /*Parameter处理*/
+        disposeParameter();
 
         DownloadTask downloadTask = (DownloadTask) task;
-        Observable observable = RetrofitUtils.get().getRetrofit(getBaseUrl(), new DownloadInterceptor(eventId, isStick, downloadTask)).download(disposeApiUrl(), "bytes=" + downloadTask.getCurrentSize() + "-");
+        Observable observable = RetrofitUtils.get().getRetrofit(getBaseUrl(), new DownloadInterceptor(eventId, isStick, downloadTask)).download(disposeApiUrl(), "bytes=" + downloadTask.getCurrentSize() + "-", parameter, header);
         /*请求处理*/
         return subscribe(observable);
 
-
     }
+
 
     @SuppressWarnings("unchecked")
     private Disposable subscribe(Observable observable) {
