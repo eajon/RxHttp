@@ -31,7 +31,7 @@ android {
             }
             if (requested.group == 'com.squareup.okhttp3') {
                 if (!requested.name.startsWith("multidex")) {
-                    details.useVersion '3.8.0'
+                    details.useVersion '3.12.0'
                 }
             }
         }

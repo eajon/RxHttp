@@ -1,6 +1,8 @@
 package com.github.eajon.util;
 
 
+import android.text.TextUtils;
+
 import com.github.eajon.download.DownloadResponseBody;
 import com.github.eajon.task.DownloadTask;
 
@@ -24,7 +26,7 @@ public class FileUtils {
      */
     public static void write2File(DownloadResponseBody responseBody) throws IOException {
         DownloadTask downloadTask = responseBody.getDownloadTask();
-        File file = new File(downloadTask.getLocalDir(),downloadTask.getName());
+        File file = new File(downloadTask.getLocalDir(), TextUtils.isEmpty(downloadTask.getName()) ? downloadTask.getOriginalName() : downloadTask.getName());
         BufferedSource source = null;
         BufferedSink sink = null;
         try {

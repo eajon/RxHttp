@@ -9,11 +9,14 @@ public class DownloadTask extends BaseTask implements Serializable {
 
 
     private String name;//存储在本地的文件名
+    private String originalName;//存储在本地的文件名
     private String localDir;//本地存储目录
     private long totalSize;//文件大小
     private long currentSize;//当前大小
 
-
+    public DownloadTask() {
+        this.localDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
+    }
     public DownloadTask(String name) {
         this.name = name;
         this.localDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
@@ -31,6 +34,14 @@ public class DownloadTask extends BaseTask implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getOriginalName() {
+        return originalName;
+    }
+
+    public void setOriginalName(String originalName) {
+        this.originalName = originalName;
     }
 
     public String getLocalDir() {

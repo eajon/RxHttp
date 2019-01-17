@@ -111,7 +111,7 @@ public class MainActivity extends BaseActivity {
         rxImagePicker = RxImagePicker.INSTANCE
                 .create(ZhihuImagePicker.class);
         //默认下载地址为Download目录
-        downloadTask = new DownloadTask("wechat.apk");
+        downloadTask = new DownloadTask();
 
     }
 

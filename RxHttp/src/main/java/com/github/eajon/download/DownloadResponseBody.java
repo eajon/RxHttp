@@ -1,6 +1,8 @@
 package com.github.eajon.download;
 
 
+import android.text.TextUtils;
+
 import com.github.eajon.task.DownloadTask;
 
 import java.io.IOException;
@@ -18,11 +20,13 @@ import okio.Source;
 /**
  * 下载返回Body
  *
- *  @author WENGYIJIONG
+ * @author WENGYIJIONG
  */
 
 public class DownloadResponseBody extends ResponseBody {
 
+
+    private static final String FILENAME = "filename=";
 
     Response originalResponse;
 
@@ -40,6 +44,23 @@ public class DownloadResponseBody extends ResponseBody {
         this.eventId = eventId;
         this.isStick = isStick;
         this.downloadTask = downloadTask;
+        this.downloadTask.setOriginalName(getFileOriginalName());
+    }
+
+    private String getFileOriginalName() {
+        String disposition = originalResponse.header("Content-Disposition");
+        if (!TextUtils.isEmpty(disposition)) {
+            int index = disposition.indexOf(FILENAME);
+            if (index >= 0) {
+                String name = disposition.substring(index + FILENAME.length(), disposition.length());
+                name = name.replace("UTF-8", "");
+                name = name.replace("\"", "");
+                if (!TextUtils.isEmpty(name)) {
+                    return name;
+                }
+            }
+        }
+        return FILENAME + System.currentTimeMillis();
     }
 
     public DownloadTask getDownloadTask() {

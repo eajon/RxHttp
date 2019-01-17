@@ -8,7 +8,6 @@ import com.franmontiel.persistentcookiejar.PersistentCookieJar;
 import com.franmontiel.persistentcookiejar.cache.SetCookieCache;
 import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersistor;
 import com.github.eajon.RxHttp;
-import com.github.eajon.interceptor.HttpLoggingInterceptor;
 import com.github.eajon.util.LogUtils;
 import com.github.eajon.util.NetUtils;
 
@@ -20,6 +19,7 @@ import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import okhttp3.logging.HttpLoggingInterceptor;
 
 public class App extends Application {
 
