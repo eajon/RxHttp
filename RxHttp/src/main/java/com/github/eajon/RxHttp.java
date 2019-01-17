@@ -277,7 +277,7 @@ public class RxHttp {
         DownloadTask downloadTask = ( DownloadTask ) task;
         /*请求方式处理*/
         if (method == null) {
-            method = Method.POST;
+            method = Method.GET;
         }
 
         Observable observable = RetrofitUtils.get().getRetrofit(getBaseUrl(), new DownloadInterceptor(eventId, isStick, downloadTask), new RequestInterceptor(method, parameter, header, requestBody)).download(disposeApiUrl(), "bytes=" + downloadTask.getCurrentSize() + "-");

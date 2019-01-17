@@ -44,6 +44,7 @@ import com.trello.rxlifecycle2.android.ActivityEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -274,11 +275,16 @@ public class MainActivity extends BaseActivity {
                                         downloadDisposable.dispose();
                                         download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%");
                                     } else {
+                                        Map<String, Object> map = new HashMap();
+                                        map.put("fsname", "com.tencent.mm_6.6.7_1321.apk");
+                                        map.put("csr", "1bbd");
                                         downloadDisposable = new RxHttp.Builder()
                                                 .baseUrl("http://imtt.dd.qq.com/")
-                                                .apiUrl("16891/50CC095EFBE6059601C6FB652547D737.apk?fsname=com.tencent.mm_6.6.7_1321.apk&csr=1bbd")
+                                                .apiUrl("16891/50CC095EFBE6059601C6FB652547D737.apk")
                                                 .lifecycle(MainActivity.this)
                                                 .eventId("download")
+                                                .get()
+                                                .addParameter(map)
                                                 .withDialog(new CProgressDialog(MainActivity.this, R.style.CustomDialog))
                                                 .activityEvent(ActivityEvent.PAUSE)
                                                 .task(downloadTask)
