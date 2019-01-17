@@ -6,8 +6,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.text.TextUtils;
 
-import com.github.eajon.download.DownloadInterceptor;
 import com.github.eajon.exception.ApiException;
+import com.github.eajon.interceptor.DownloadInterceptor;
+import com.github.eajon.interceptor.RequestInterceptor;
 import com.github.eajon.observer.HttpObserver;
 import com.github.eajon.retrofit.Method;
 import com.github.eajon.task.BaseTask;
@@ -180,7 +181,7 @@ public class RxHttp {
     /*执行请求*/
     private Disposable doRequest() {
 
-        Observable observable;
+        Observable observable = null;
         /*header处理*/
         disposeHeader();
 
@@ -203,13 +204,28 @@ public class RxHttp {
                 }
                 break;
             case DELETE:
-                observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).delete(disposeApiUrl(), parameter, header);
+                if (requestBody != null) {
+                    observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).delete(disposeApiUrl(), requestBody, header);
+                } else {
+                    observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).delete(disposeApiUrl(), parameter, header);
+                }
                 break;
             case PUT:
-                observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).put(disposeApiUrl(), parameter, header);
+                if (requestBody != null) {
+                    observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).put(disposeApiUrl(), requestBody, header);
+                } else {
+                    observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).put(disposeApiUrl(), parameter, header);
+                }
                 break;
-            default:
-                observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).post(disposeApiUrl(), parameter, header);
+            case PATCH:
+                if (requestBody != null) {
+                    observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).patch(disposeApiUrl(), requestBody, header);
+                } else {
+                    observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).patch(disposeApiUrl(), parameter, header);
+                }
+                break;
+            case HEAD:
+                observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).head(disposeApiUrl(), parameter, header);
                 break;
         }
         return subscribe(observable);
@@ -251,7 +267,6 @@ public class RxHttp {
     }
 
     private Disposable doDownload() {
-        Observable observable;
 
         /*header处理*/
         disposeHeader();
@@ -264,17 +279,9 @@ public class RxHttp {
         if (method == null) {
             method = Method.POST;
         }
-        switch (method) {
-            case GET:
-                observable = RetrofitUtils.get().getRetrofit(getBaseUrl(), new DownloadInterceptor(eventId, isStick, downloadTask)).getDownload(disposeApiUrl(), "bytes=" + downloadTask.getCurrentSize() + "-", parameter, header);
-                break;
-            case POST:
-                observable = RetrofitUtils.get().getRetrofit(getBaseUrl(), new DownloadInterceptor(eventId, isStick, downloadTask)).postDownload(disposeApiUrl(), "bytes=" + downloadTask.getCurrentSize() + "-", parameter, header);
-                break;
-            default:
-                observable = RetrofitUtils.get().getRetrofit(getBaseUrl(), new DownloadInterceptor(eventId, isStick, downloadTask)).getDownload(disposeApiUrl(), "bytes=" + downloadTask.getCurrentSize() + "-", parameter, header);
-                break;
-        }
+
+        Observable observable = RetrofitUtils.get().getRetrofit(getBaseUrl(), new DownloadInterceptor(eventId, isStick, downloadTask), new RequestInterceptor(method, parameter, header, requestBody)).download(disposeApiUrl(), "bytes=" + downloadTask.getCurrentSize() + "-");
+
 
         /*请求处理*/
         return subscribe(observable);
@@ -510,6 +517,19 @@ public class RxHttp {
             this.method = Method.PUT;
             return this;
         }
+
+        /*PATCH*/
+        public Builder patch() {
+            this.method = Method.PATCH;
+            return this;
+        }
+
+        /*HEAD*/
+        public Builder head() {
+            this.method = Method.HEAD;
+            return this;
+        }
+
 
         /*基础URL*/
         public Builder baseUrl(String baseUrl) {

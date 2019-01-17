@@ -1,5 +1,6 @@
-package com.github.eajon.download;
+package com.github.eajon.interceptor;
 
+import com.github.eajon.download.DownloadResponseBody;
 import com.github.eajon.task.DownloadTask;
 
 import java.io.IOException;
@@ -14,7 +15,7 @@ public class DownloadInterceptor implements Interceptor {
     boolean isStick;
     String eventId;
 
-    public DownloadInterceptor(String eventId,boolean isStick, DownloadTask downloadTask) {
+    public DownloadInterceptor(String eventId, boolean isStick, DownloadTask downloadTask) {
         this.eventId=eventId;
         this.isStick = isStick;
         this.downloadTask = downloadTask;

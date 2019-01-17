@@ -8,8 +8,8 @@ android {
     defaultConfig {
         minSdkVersion 15
         targetSdkVersion 27
-        versionCode 17
-        versionName "v1.5.4"
+        versionCode 18
+        versionName "v1.6.0"
 
 
     }
@@ -31,8 +31,6 @@ dependencies {
     api 'com.squareup.retrofit2:converter-scalars:2.3.0'
     api 'com.squareup.retrofit2:adapter-rxjava2:2.3.0'
 
-    //okhttp 拦截器
-    api 'com.squareup.okhttp3:logging-interceptor:3.8.0'
 
     //lifecycle
     api 'com.trello.rxlifecycle2:rxlifecycle:2.2.2'

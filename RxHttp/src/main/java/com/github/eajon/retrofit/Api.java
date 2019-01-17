@@ -14,9 +14,11 @@ import retrofit2.http.DELETE;
 import retrofit2.http.FieldMap;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
+import retrofit2.http.HEAD;
 import retrofit2.http.Header;
 import retrofit2.http.HeaderMap;
 import retrofit2.http.Multipart;
+import retrofit2.http.PATCH;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Part;
@@ -58,7 +60,8 @@ public interface Api {
      * JSON POST 请求
      *
      * @param url       api接口url
-     * @param info  请求参数JSON
+     * @param info      请求参数JSON
+     * @param header    请求头map
      * @return
      */
     @POST
@@ -76,6 +79,17 @@ public interface Api {
     @DELETE
     Observable<JsonElement> delete(@Url String url, @FieldMap Map <String, Object> parameter, @HeaderMap Map <String, Object> header);
 
+    /**
+     * DELETE 请求
+     *
+     * @param url    api接口url
+     * @param info   请求参数JSON
+     * @param header 请求头map
+     * @return
+     */
+    @DELETE
+    Observable<JsonElement> delete(@Url String url, @Body RequestBody info, @HeaderMap Map<String, Object> header);
+
 
     /**
      * PUT 请求
@@ -90,7 +104,50 @@ public interface Api {
     Observable<JsonElement> put(@Url String url, @FieldMap Map <String, Object> parameter, @HeaderMap Map <String, Object> header);
 
 
+    /**
+     * PUT 请求
+     *
+     * @param url       api接口url
+     * @param info      请求参数JSON
+     * @param header    请求头map
+     * @return
+     */
+    @PUT
+    Observable<JsonElement> put(@Url String url, @Body RequestBody info, @HeaderMap Map<String, Object> header);
 
+    /**
+     * PATCH 请求
+     *
+     * @param url       api接口url
+     * @param parameter 请求参数map
+     * @param header    请求头map
+     * @return
+     */
+    @FormUrlEncoded
+    @PATCH
+    Observable<JsonElement> patch(@Url String url, @FieldMap Map<String, Object> parameter, @HeaderMap Map<String, Object> header);
+
+    /**
+     * PATCH 请求
+     *
+     * @param url    api接口url
+     * @param info   请求参数JSON
+     * @param header 请求头map
+     * @return
+     */
+    @PATCH
+    Observable<JsonElement> patch(@Url String url, @Body RequestBody info, @HeaderMap Map<String, Object> header);
+
+    /**
+     * Head 请求
+     *
+     * @param url       api接口url
+     * @param parameter 请求参数map
+     * @param header    请求头map
+     * @return
+     */
+    @HEAD
+    Observable<JsonElement> head(@Url String url, @QueryMap Map<String, Object> parameter, @HeaderMap Map<String, Object> header);
 
     /**
      * 单文件上传
@@ -104,7 +161,7 @@ public interface Api {
      */
     @Multipart
     @POST
-    Observable<JsonElement> upload(@Url String url, @PartMap Map<String, RequestBody> parameter, @HeaderMap Map <String, Object> header,  @Part MultipartBody.Part file);
+    Observable<JsonElement> upload(@Url String url, @PartMap Map<String, RequestBody> parameter, @HeaderMap Map <String, Object> header, @Part MultipartBody.Part file);
 
     /**
      * 多文件上传
@@ -134,9 +191,6 @@ public interface Api {
      */
     @Streaming
     @GET
-    Observable<ResponseBody> getDownload(@Url String url, @Header("RANGE") String range, @QueryMap Map<String, Object> parameter, @HeaderMap Map<String, Object> header);
+    Observable<ResponseBody> download(@Url String url, @Header("RANGE") String range);
 
-    @Streaming
-    @POST
-    Observable<ResponseBody> postDownload(@Url String url, @Header("RANGE") String range, @FieldMap Map<String, Object> parameter, @HeaderMap Map<String, Object> header);
 }
