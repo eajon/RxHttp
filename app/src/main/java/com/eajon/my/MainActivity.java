@@ -191,8 +191,8 @@ public class MainActivity extends BaseActivity {
     @RxSubscribe(observeOnThread = EventThread.MAIN, eventId = "download")
     @SuppressWarnings("unused")
     public void downloadProgress(DownloadTask downloadTask) {
-        LogUtils.d("download1", downloadTask.getState().toString() + downloadTask.getProgress() + "%"+downloadTask.getSpeedKB());
-        download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%"+downloadTask.getSpeedKB());
+        LogUtils.d("download1", downloadTask.getState().toString() + downloadTask.getProgress() + "%" + downloadTask.getSpeedFormat());
+        download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%" + downloadTask.getSpeedFormat());
     }
 
 
@@ -206,11 +206,11 @@ public class MainActivity extends BaseActivity {
     @RxSubscribe(observeOnThread = EventThread.MAIN, eventId = "upload")
     @SuppressWarnings("unused")
     public void uploadProgress(MultiUploadTask multiUploadTask) {
-        content.setText("总进度：" + multiUploadTask.getProgress() + "%" + multiUploadTask.getState().toString()+ multiUploadTask.getSpeedKB());
+        content.setText("总进度：" + multiUploadTask.getProgress() + "%" + multiUploadTask.getState().toString() + multiUploadTask.getSpeedFormat());
         if (multiUploadTask.getUploadTasks().size() >= 3) {//假设选择3个
-            content1.setText("第一个：" + multiUploadTask.getProgress(0) + "%" + multiUploadTask.getState(0).toString()+ multiUploadTask.getSpeedKB());
-            content2.setText("第二个：" + multiUploadTask.getProgress(1) + "%" + multiUploadTask.getState(1).toString()+ multiUploadTask.getSpeedKB());
-            content3.setText("第三个：" + multiUploadTask.getProgress(2) + "%" + multiUploadTask.getState(2).toString()+ multiUploadTask.getSpeedKB());
+            content1.setText("第一个：" + multiUploadTask.getProgress(0) + "%" + multiUploadTask.getState(0).toString() + multiUploadTask.getSpeedFormat());
+            content2.setText("第二个：" + multiUploadTask.getProgress(1) + "%" + multiUploadTask.getState(1).toString() + multiUploadTask.getSpeedFormat());
+            content3.setText("第三个：" + multiUploadTask.getProgress(2) + "%" + multiUploadTask.getState(2).toString() + multiUploadTask.getSpeedFormat());
         }
     }
 

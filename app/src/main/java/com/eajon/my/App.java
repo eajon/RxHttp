@@ -35,9 +35,9 @@ public class App extends Application {
             public Response intercept(Chain chain) throws IOException {
                 Request request = chain.request();
                 Response response = chain.proceed(request);
-                int onlineCacheTime = 30;//在线的时候的缓存过期时间，如果想要不缓存，直接时间设置为0
+                int age = 30;//在线的时候的缓存过期时间，如果想要不缓存，直接时间设置为0
                 return response.newBuilder()
-                        .header("Cache-Control", "public, max-age=" + onlineCacheTime)
+                        .header("Cache-Control", "public, max-age=" + age)
                         .removeHeader("Pragma")
                         .build();
             }
@@ -47,17 +47,12 @@ public class App extends Application {
             @Override
             public Response intercept(Chain chain) throws IOException {
                 Request request = chain.request();
-                try {
-                    if (!NetUtils.isAvailable(getContext())) {
-                        int offlineCacheTime = 30;//离线的时候的缓存的过期时间
-                        request = request.newBuilder()
-                                .header("Cache-Control", "public, only-if-cached, max-stale=" + offlineCacheTime)
-                                .build();
-                    }
-                } catch (Exception e) {
-
+                if (!NetUtils.isAvailable(getContext())) {
+                    int age = 30;//离线的时候的缓存的过期时间
+                    request = request.newBuilder()
+                            .header("Cache-Control", "public, only-if-cached, max-stale=" + age)
+                            .build();
                 }
-
                 return chain.proceed(request);
             }
         };

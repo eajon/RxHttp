@@ -21,7 +21,7 @@ import android.util.Log;
 
 import com.github.eajon.converter.GsonDiskConverter;
 import com.github.eajon.converter.IDiskConverter;
-import com.github.eajon.exception.RxCacheNullException;
+import com.github.eajon.exception.CacheNullException;
 import com.github.eajon.model.CacheMode;
 import com.github.eajon.model.CacheResult;
 import com.github.eajon.model.RealEntity;
@@ -161,13 +161,13 @@ public final class RxCache {
                         if (((RealEntity) data).getData() != null) {
                             subscriber.onNext(data);
                         } else {
-                            subscriber.onError(new RxCacheNullException());
+                            subscriber.onError(new CacheNullException());
                         }
                     } else {
                         if (data != null) {
                             subscriber.onNext(data);
                         } else {
-                            subscriber.onError(new RxCacheNullException());
+                            subscriber.onError(new CacheNullException());
                         }
                     }
                 }

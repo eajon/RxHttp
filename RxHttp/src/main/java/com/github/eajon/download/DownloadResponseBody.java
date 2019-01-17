@@ -44,10 +44,10 @@ public class DownloadResponseBody extends ResponseBody {
         this.eventId = eventId;
         this.isStick = isStick;
         this.downloadTask = downloadTask;
-        this.downloadTask.setOriginalName(getFileOriginalName());
+        getFileOriginalName();
     }
 
-    private String getFileOriginalName() {
+    private void getFileOriginalName() {
         String disposition = originalResponse.header("Content-Disposition");
         if (!TextUtils.isEmpty(disposition)) {
             int index = disposition.indexOf(FILENAME);
@@ -56,11 +56,10 @@ public class DownloadResponseBody extends ResponseBody {
                 name = name.replace("UTF-8", "");
                 name = name.replace("\"", "");
                 if (!TextUtils.isEmpty(name)) {
-                    return name;
+                    downloadTask.setOriginalName(name);
                 }
             }
         }
-        return FILENAME + System.currentTimeMillis();
     }
 
     public DownloadTask getDownloadTask() {

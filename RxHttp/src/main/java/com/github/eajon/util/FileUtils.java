@@ -26,7 +26,7 @@ public class FileUtils {
      */
     public static void write2File(DownloadResponseBody responseBody) throws IOException {
         DownloadTask downloadTask = responseBody.getDownloadTask();
-        File file = new File(downloadTask.getLocalDir(), TextUtils.isEmpty(downloadTask.getName()) ? downloadTask.getOriginalName() : downloadTask.getName());
+        File file = new File(downloadTask.getLocalDir(), checkFileName(downloadTask.getName(), downloadTask.getOriginalName()));
         BufferedSource source = null;
         BufferedSink sink = null;
         try {
@@ -62,5 +62,15 @@ public class FileUtils {
             }
         }
 
+    }
+
+    private static String checkFileName(String saveFileName, String OriginalName) {
+        if (!TextUtils.isEmpty(saveFileName)) {
+            return saveFileName;
+        } else if (!TextUtils.isEmpty(OriginalName)) {
+            return OriginalName;
+        } else {
+            return System.currentTimeMillis() + ".file";
+        }
     }
 }

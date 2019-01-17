@@ -55,34 +55,6 @@ import io.reactivex.schedulers.Schedulers;
  */
 public class RxUtils {
 
-
-    //线程调度
-    public static <T> ObservableTransformer<T, T> io_main() {
-        return new ObservableTransformer<T, T>() {
-            @Override
-            public ObservableSource<T> apply(@NonNull Observable<T> upstream) {
-                return upstream
-                        .subscribeOn(Schedulers.io())
-                        .unsubscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread());
-            }
-        };
-    }
-
-
-    // 重试
-    @SuppressWarnings("unchecked")
-    public static <T> ObservableTransformer<T, T> retryPolicy(final int time) {
-        return new ObservableTransformer<T, T>() {
-            @Override
-            public ObservableSource<T> apply(@NonNull Observable<T> upstream) {
-                return upstream
-                        .onErrorResumeNext(new ErrorResponseFunction())
-                        .retryWhen(new RetryExceptionFunction(time));
-            }
-        };
-    }
-
     //返回数据转换
     @SuppressWarnings("unchecked")
     public static <T> ObservableTransformer<T, T> map(final boolean isDownload, final Type type) {
@@ -93,6 +65,24 @@ public class RxUtils {
                     return upstream.map(new DownloadResponseFunction());
                 } else {
                     return upstream.map(new HttpResponseFunction(type));
+                }
+            }
+        };
+    }
+
+
+    //缓存
+    @SuppressWarnings("unchecked")
+    public static <T> ObservableTransformer<T, T> cache(final boolean isRequest, final String cacheKey, final Type type) {
+        return new ObservableTransformer<T, T>() {
+            @Override
+            public ObservableSource<T> apply(@NonNull Observable<T> upstream) {
+                if (!isRequest || !RxCacheProvider.isInit() || TextUtils.isEmpty(cacheKey)) {
+                    return upstream;
+                } else {
+                    return upstream
+                            .compose(RxCache.generateRxCache(cacheKey).transformer(RxCacheProvider.getCacheMode(), type == null ? String.class : type))
+                            .map(new CacheResultFunction());
                 }
             }
         };
@@ -121,24 +111,18 @@ public class RxUtils {
         };
     }
 
-
-    //缓存
+    // 重试
     @SuppressWarnings("unchecked")
-    public static <T> ObservableTransformer<T, T> cache(final boolean isRequest, final String cacheKey, final Type type) {
+    public static <T> ObservableTransformer<T, T> retryPolicy(final int time) {
         return new ObservableTransformer<T, T>() {
             @Override
             public ObservableSource<T> apply(@NonNull Observable<T> upstream) {
-                if (!isRequest || !RxCacheProvider.isInit() || TextUtils.isEmpty(cacheKey)) {
-                    return upstream;
-                } else {
-                    return upstream
-                            .compose(RxCache.generateRxCache(cacheKey).transformer(RxCacheProvider.getCacheMode(), type == null ? String.class : type))
-                            .map(new CacheResultFunction());
-                }
+                return upstream
+                        .onErrorResumeNext(new ErrorResponseFunction())
+                        .retryWhen(new RetryExceptionFunction(time));
             }
         };
     }
-
 
     //RXbus发射状态
     @SuppressWarnings("unchecked")
@@ -154,11 +138,6 @@ public class RxUtils {
                             task.setState(BaseTask.State.LOADING);
                             task.sendBus(eventId, isStick);
                         }
-                    }
-                }).doOnDispose(new Action() {
-                    @Override
-                    public void run() throws Exception {
-//                        LogUtils.e("dialog", "doOnDispose");
                     }
                 }).doOnError(new Consumer<Throwable>() {
                     @Override
@@ -202,6 +181,19 @@ public class RxUtils {
                         }
                     }
                 });
+            }
+        };
+    }
+
+    //线程调度
+    public static <T> ObservableTransformer<T, T> io_main() {
+        return new ObservableTransformer<T, T>() {
+            @Override
+            public ObservableSource<T> apply(@NonNull Observable<T> upstream) {
+                return upstream
+                        .subscribeOn(Schedulers.io())
+                        .unsubscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread());
             }
         };
     }

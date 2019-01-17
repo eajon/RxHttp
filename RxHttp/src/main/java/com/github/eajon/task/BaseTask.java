@@ -2,9 +2,10 @@ package com.github.eajon.task;
 
 import android.text.TextUtils;
 
+import com.github.eajon.util.SpeedUtils;
 import com.threshold.rxbus2.RxBus;
 
-import java.math.BigDecimal;
+import java.util.concurrent.TimeUnit;
 
 public class BaseTask {
 
@@ -44,13 +45,13 @@ public class BaseTask {
         this.speed = speed;
     }
 
-    public double getSpeedMB() {
-        return new BigDecimal((double) speed / (1024 * 1024)).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+    public String getSpeedFormat() {
+        return SpeedUtils.formatSpeedPerSecond(speed);
 
     }
 
-    public double getSpeedKB() {
-        return new BigDecimal((double) speed / 1024).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+    public String getSpeedFormat(TimeUnit timeUnit) {
+        return SpeedUtils.formatSpeed(speed, timeUnit);
     }
 
     public boolean isFinish() {

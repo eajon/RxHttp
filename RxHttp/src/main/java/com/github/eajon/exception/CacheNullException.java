@@ -7,9 +7,9 @@ package com.github.eajon.exception;
  *
  **/
 
-public class RxCacheNullException extends RuntimeException {
+public class CacheNullException extends RuntimeException {
 
-    public RxCacheNullException() {
+    public CacheNullException() {
         super("cache is null");
     }
 
