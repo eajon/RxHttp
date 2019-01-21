@@ -56,7 +56,7 @@
 	
 ## 在Application中设置基础配置
 
-        RxHttp.getConfig()
+          RxHttp.getConfig()
                 .baseUrl(...)/*基础路径，这里配置了请求中可以不单独配置*/
                 .baseHeader(...)/*公用请求头*/
                 .baseParameter(...)/*公用请参数*/
