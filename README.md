@@ -90,7 +90,7 @@
                 .cacheKey(...)/*缓存Key*/
                 .retryTime(...)/*重试次数*/
                 .build()
-                .requestType(new HttpObserver<Login>() {
+                .request(new HttpObserver<Login>() {
                 
                         @Override
                         public void onSuccess(Login o) {
@@ -127,7 +127,7 @@
                 .cacheKey(...)/*缓存Key*/
                 .retryTime(...)/*重试次数*/
                 .build()
-                .requestType();
+                .request();
                        
                        
                 //tag 和 entity设置对应即可，方法名随意
@@ -160,7 +160,7 @@
                 .task(downloadTask)
                 .withDailog(this)
                 .build()
-                .download(new DownlaodObserver() {
+                .request(new DownlaodObserver() {
                     @Override
                     public void onSuccess(DownloadTask downloadTask) {
      
@@ -195,7 +195,7 @@
                         .task(uploadTask)/* 单文件必填*/
                         .lifecycle(this)
                         .build()
-                        .upload(new HttpObserver() {
+                        .request(new HttpObserver() {
                                @Override
                                public void onSuccess(Object o) {
 
@@ -222,7 +222,7 @@
                         .task(multiUploadTask)
                         .lifecycle(this)/*上传按需配置lifecycle*/
                         .build()
-                        .upload(new UploadObserver() {
+                        .request(new UploadObserver() {
                                @Override
                                public void onSuccess(Object o) {
 
