@@ -3,8 +3,12 @@ package com.github.eajon;
 import com.github.eajon.cache.RxCacheProvider;
 import com.github.eajon.model.CacheMode;
 import com.github.eajon.util.GsonUtils;
-import com.github.eajon.util.LogUtils;
+import com.github.eajon.util.LoggerUtils;
 import com.github.eajon.util.OkHttpUtils;
+import com.orhanobut.logger.AndroidLogAdapter;
+import com.orhanobut.logger.FormatStrategy;
+import com.orhanobut.logger.Logger;
+import com.orhanobut.logger.PrettyFormatStrategy;
 import com.threshold.rxbus2.RxBus;
 
 import java.io.File;
@@ -25,8 +29,6 @@ public class RxConfig {
             synchronized (RxConfig.class) {
                 if (config == null) {
                     config = new RxConfig();
-                    setRxJava2ErrorHandler();
-                    RxBus.setMainScheduler(AndroidSchedulers.mainThread());
                 }
             }
         }
@@ -34,11 +36,11 @@ public class RxConfig {
     }
 
 
-    private static void setRxJava2ErrorHandler() {
+    private void setRxJava2ErrorHandler() {
         RxJavaPlugins.setErrorHandler(new Consumer <Throwable>() {
             @Override
             public void accept(Throwable throwable) throws Exception {
-                LogUtils.e(throwable);
+                LoggerUtils.error(throwable, throwable.getMessage());
             }
         });
 
@@ -51,8 +53,9 @@ public class RxConfig {
     /*header*/
     Map <String, Object> header;
 
-
     OkHttpClient okHttpClient;
+
+    String logTag = "RxHttp";
 
 
     private RxConfig() {
@@ -145,6 +148,21 @@ public class RxConfig {
                 .setCacheMode(cacheMode)
                 .setCacheVersion(cacheVersion);
         return this;
+    }
+
+    public RxConfig log(boolean isDebug, String logTag) {
+        LoggerUtils.init(isDebug);
+        this.logTag = logTag;
+        return this;
+    }
+
+    public void build() {
+        setRxJava2ErrorHandler();
+        RxBus.setMainScheduler(AndroidSchedulers.mainThread());
+        FormatStrategy formatStrategy = PrettyFormatStrategy.newBuilder()
+                .tag(logTag)
+                .build();
+        Logger.addLogAdapter(new AndroidLogAdapter(formatStrategy));
     }
 
 }

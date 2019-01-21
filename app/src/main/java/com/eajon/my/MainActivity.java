@@ -28,7 +28,7 @@ import com.github.eajon.observer.UploadObserver;
 import com.github.eajon.task.DownloadTask;
 import com.github.eajon.task.MultiUploadTask;
 import com.github.eajon.task.UploadTask;
-import com.github.eajon.util.LogUtils;
+import com.github.eajon.util.LoggerUtils;
 import com.google.gson.Gson;
 import com.qingmei2.rximagepicker.core.RxImagePicker;
 import com.qingmei2.rximagepicker.entity.Result;
@@ -171,7 +171,7 @@ public class MainActivity extends BaseActivity {
     }
 
 
-    @RxSubscribe(observeOnThread = EventThread.IO, isSticky = true, eventId = "weather")
+    @RxSubscribe(observeOnThread = EventThread.IO, isSticky = true, tag = "weather")
     public void weatherCallBack(Weather weather) {
         runOnUiThread(new Runnable() {
             @Override
@@ -182,16 +182,16 @@ public class MainActivity extends BaseActivity {
 
     }
 
-    @RxSubscribe(observeOnThread = EventThread.MAIN, isSticky = true, eventId = "weather")//异常捕获
+    @RxSubscribe(observeOnThread = EventThread.MAIN, isSticky = true, tag = "weather")//异常捕获
     public void weatherCallBack(ApiException e) {
         content.setText(new Gson().toJson(e));
     }
 
     //下载监听
-    @RxSubscribe(observeOnThread = EventThread.MAIN, eventId = "download")
+    @RxSubscribe(observeOnThread = EventThread.MAIN, tag = "download")
     @SuppressWarnings("unused")
     public void downloadProgress(DownloadTask downloadTask) {
-        LogUtils.d("download1", downloadTask.getState().toString() + downloadTask.getProgress() + "%" + downloadTask.getSpeedFormat());
+        LoggerUtils.info("download1", downloadTask.getState().toString() + downloadTask.getProgress() + "%" + downloadTask.getSpeedFormat());
         download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%" + downloadTask.getSpeedFormat());
     }
 
@@ -203,7 +203,7 @@ public class MainActivity extends BaseActivity {
         upload.setText(uploadTask.getState().toString() + uploadTask.getProgress() + "%");
     }
 
-    @RxSubscribe(observeOnThread = EventThread.MAIN, eventId = "upload")
+    @RxSubscribe(observeOnThread = EventThread.MAIN, tag = "upload")
     @SuppressWarnings("unused")
     public void uploadProgress(MultiUploadTask multiUploadTask) {
         content.setText("总进度：" + multiUploadTask.getProgress() + "%" + multiUploadTask.getState().toString() + multiUploadTask.getSpeedFormat());
@@ -234,14 +234,14 @@ public class MainActivity extends BaseActivity {
                 .apiUrl("image/upload")
                 .task(multiUploadTask)
                 .isStick(true)
-                .eventId("upload")
+                .tag("upload")
                 .addParameter(params)
                 .lifecycle(MainActivity.this)
                 .activityEvent(ActivityEvent.PAUSE)
                 .entity(CommonResponse.class)
                 .withDialog(new CProgressDialog(MainActivity.this, R.style.CustomDialog))
                 .build()
-                .upload(new UploadObserver<CommonResponse>() {
+                .request(new UploadObserver<CommonResponse>() {
                     @Override
                     public void onCancel() {
 
@@ -272,7 +272,10 @@ public class MainActivity extends BaseActivity {
                             public void accept(Permission permission) throws Exception {
                                 if (permission.granted) {
                                     if (downloadTask.getState() == DownloadTask.State.LOADING) {
+                                        //直接取消
                                         downloadDisposable.dispose();
+                                        //或者可以使用管理器取消
+                                        //RxManager.getDownloadManager().cancel("download");
                                         download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%");
                                     } else {
                                         Map<String, Object> map = new HashMap();
@@ -282,29 +285,31 @@ public class MainActivity extends BaseActivity {
                                                 .baseUrl("http://imtt.dd.qq.com/")
                                                 .apiUrl("16891/50CC095EFBE6059601C6FB652547D737.apk")
                                                 .lifecycle(MainActivity.this)
-                                                .eventId("download")
+                                                .tag("download")
                                                 .get()
                                                 .addParameter(map)
                                                 .withDialog(new CProgressDialog(MainActivity.this, R.style.CustomDialog))
                                                 .activityEvent(ActivityEvent.PAUSE)
                                                 .task(downloadTask)
                                                 .build()
-                                                .download(new DownloadObserver <DownloadTask>() {
+                                                .request(new DownloadObserver<DownloadTask>() {
                                                     @Override
                                                     public void onPause(DownloadTask downloadTask) {
-                                                        LogUtils.d("onPause", downloadTask.getProgress());
+                                                        LoggerUtils.info("onPause", downloadTask.getProgress());
                                                     }
 
                                                     @Override
                                                     public void onSuccess(DownloadTask downloadTask) {
-                                                        LogUtils.e(downloadTask.getState());
+                                                        LoggerUtils.info(downloadTask.getState().name());
                                                     }
 
                                                     @Override
                                                     public void onError(ApiException t) {
-                                                        LogUtils.e(downloadTask.getState());
+                                                        LoggerUtils.error(downloadTask.getState().name());
                                                     }
                                                 });
+                                        //加入管理器
+                                        //RxManager.getDownloadManager().add("download",downloadDisposable);
 
 
                                     }
@@ -324,7 +329,9 @@ public class MainActivity extends BaseActivity {
                 requestGalleryPermissions();
                 break;
             case R.id.request:
-                doJsonRequest();
+//                doJsonRequest();
+                WeatherModule2 weatherModule2 = ViewModelProviders.of(this).get(WeatherModule2.class);
+                weatherModule2.getWeather();
                 break;
             case R.id.stick:
                 intent = new Intent(this, SecondActivity.class);

@@ -32,23 +32,23 @@ public class UploadRequestBody extends RequestBody {
 
     private boolean isStick;
 
-    private String eventId;
+    private String tag;
 
     private long time;
     private long secondBytesCount;
 
 
-    public UploadRequestBody(RequestBody requestBody, String eventId, boolean isStick, UploadTask uploadTask) {
+    public UploadRequestBody(RequestBody requestBody, String tag, boolean isStick, UploadTask uploadTask) {
         this.requestBody = requestBody;
-        this.eventId = eventId;
+        this.tag = tag;
         this.isStick = isStick;
         this.uploadTask = uploadTask;
 
     }
 
-    public UploadRequestBody(RequestBody requestBody, String eventId, boolean isStick, UploadTask uploadTask, MultiUploadTask multiUploadTask) {
+    public UploadRequestBody(RequestBody requestBody, String tag, boolean isStick, UploadTask uploadTask, MultiUploadTask multiUploadTask) {
         this.requestBody = requestBody;
-        this.eventId = eventId;
+        this.tag = tag;
         this.isStick = isStick;
         this.uploadTask = uploadTask;
         this.multiUploadTask = multiUploadTask;
@@ -132,9 +132,9 @@ public class UploadRequestBody extends RequestBody {
                     uploadTask.setState(UploadTask.State.LOADING);
                 }
                 if (multiUploadTask != null) {
-                    multiUploadTask.sendBus(eventId, isStick);
+                    multiUploadTask.sendBus(tag, isStick);
                 } else {
-                    uploadTask.sendBus(eventId, isStick);
+                    uploadTask.sendBus(tag, isStick);
                 }
             }
         };

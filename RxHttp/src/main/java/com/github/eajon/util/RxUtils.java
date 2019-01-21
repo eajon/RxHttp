@@ -21,6 +21,7 @@ import android.text.TextUtils;
 
 import com.github.eajon.cache.RxCache;
 import com.github.eajon.cache.RxCacheProvider;
+import com.github.eajon.enums.RequestType;
 import com.github.eajon.function.CacheResultFunction;
 import com.github.eajon.function.DownloadResponseFunction;
 import com.github.eajon.function.ErrorResponseFunction;
@@ -57,11 +58,11 @@ public class RxUtils {
 
     //返回数据转换
     @SuppressWarnings("unchecked")
-    public static <T> ObservableTransformer<T, T> map(final boolean isDownload, final Type type) {
+    public static <T> ObservableTransformer<T, T> map(final RequestType requestType, final Type type) {
         return new ObservableTransformer<T, T>() {
             @Override
             public ObservableSource<T> apply(@NonNull Observable<T> upstream) {
-                if (isDownload) {
+                if (requestType == RequestType.DOWNLOAD) {
                     return upstream.map(new DownloadResponseFunction());
                 } else {
                     return upstream.map(new HttpResponseFunction(type));
@@ -73,11 +74,11 @@ public class RxUtils {
 
     //缓存
     @SuppressWarnings("unchecked")
-    public static <T> ObservableTransformer<T, T> cache(final boolean isRequest, final String cacheKey, final Type type) {
+    public static <T> ObservableTransformer<T, T> cache(final RequestType requestType, final Type type, final String cacheKey) {
         return new ObservableTransformer<T, T>() {
             @Override
             public ObservableSource<T> apply(@NonNull Observable<T> upstream) {
-                if (!isRequest || !RxCacheProvider.isInit() || TextUtils.isEmpty(cacheKey)) {
+                if (requestType != RequestType.REQUEST || !RxCacheProvider.isInit() || TextUtils.isEmpty(cacheKey)) {
                     return upstream;
                 } else {
                     return upstream
@@ -126,46 +127,46 @@ public class RxUtils {
 
     //RXbus发射状态
     @SuppressWarnings("unchecked")
-    public static <T> ObservableTransformer<T, T> sendEvent(final BaseTask task, final String eventId, final boolean isStick) {
+    public static <T> ObservableTransformer<T, T> sendEvent(final BaseTask task, final String tag, final boolean isStick) {
         return new ObservableTransformer<T, T>() {
             @Override
             public ObservableSource<T> apply(@NonNull Observable<T> upstream) {
                 return upstream.doOnSubscribe(new Consumer<Disposable>() {
                     @Override
                     public void accept(Disposable disposable) throws Exception {
-//                        LogUtils.e("dialog", "doOnSubscribe");
+//                        LoggerUtils.e("dialog", "doOnSubscribe");
                         if (task != null) {
                             task.setState(BaseTask.State.LOADING);
-                            task.sendBus(eventId, isStick);
+                            task.sendBus(tag, isStick);
                         }
                     }
                 }).doOnError(new Consumer<Throwable>() {
                     @Override
                     public void accept(Throwable throwable) throws Exception {
-//                        LogUtils.e("dialog", "doOnError");
+//                        LoggerUtils.e("dialog", "doOnError");
                         if (task != null) {
                             task.setState(UploadTask.State.ERROR);
                             if (task instanceof MultiUploadTask) {
-                                for (UploadTask uploadTask : ((MultiUploadTask) task).getUploadTasks()) {
+                                for (UploadTask uploadTask : (( MultiUploadTask ) task).getUploadTasks()) {
                                     uploadTask.setState(UploadTask.State.ERROR);
                                 }
                             }
-                            task.sendBus(eventId, isStick);
+                            task.sendBus(tag, isStick);
                         }
                     }
                 }).doOnNext(new Consumer() {
                     @Override
                     public void accept(Object o) throws Exception {
-//                        LogUtils.e("dialog", "doOnNext");
+//                        LoggerUtils.e("dialog", "doOnNext");
                         if (task != null) {
                             task.setState(BaseTask.State.FINISH);
-                            task.sendBus(eventId, isStick);
+                            task.sendBus(tag, isStick);
                         }
                     }
                 }).doFinally(new Action() {
                     @Override
                     public void run() throws Exception {
-//                        LogUtils.e("dialog", "doFinally");
+//                        LoggerUtils.e("dialog", "doFinally");
                         if (task != null && !task.isFinish() && !task.isError()) {
                             if (task instanceof DownloadTask) {
                                 task.setState(BaseTask.State.PAUSE);
@@ -173,11 +174,11 @@ public class RxUtils {
                                 task.setState(BaseTask.State.CANCEL);
                             } else if (task instanceof MultiUploadTask) {
                                 task.setState(BaseTask.State.CANCEL);
-                                for (UploadTask uploadTask : ((MultiUploadTask) task).getUploadTasks()) {
+                                for (UploadTask uploadTask : (( MultiUploadTask ) task).getUploadTasks()) {
                                     uploadTask.setState(UploadTask.State.CANCEL);
                                 }
                             }
-                            task.sendBus(eventId, isStick);
+                            task.sendBus(tag, isStick);
                         }
                     }
                 });

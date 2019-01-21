@@ -20,7 +20,7 @@ public class OkHttpUtils {
             .addNetworkInterceptor(new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
                 @Override
                 public void log(String message) {
-                    LogUtils.e(message);
+                    LoggerUtils.info(message);
                 }
             })
                     .setLevel(HttpLoggingInterceptor.Level.BASIC))

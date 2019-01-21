@@ -17,11 +17,9 @@
 package com.github.eajon.stategy;
 
 
-import android.util.Log;
-
 import com.github.eajon.cache.RxCache;
 import com.github.eajon.model.CacheResult;
-import com.github.eajon.util.LogUtils;
+import com.github.eajon.util.LoggerUtils;
 
 import java.lang.reflect.Type;
 import java.util.ConcurrentModificationException;
@@ -41,7 +39,6 @@ import io.reactivex.schedulers.Schedulers;
  * 版本： v2.0<br>
  */
 public abstract class BaseStrategy implements IStrategy {
-    private static final String TAG = "BaseStrategy";
 
     <T> Observable<CacheResult<T>> loadCache(final RxCache rxCache, Type type, final String key, final long time, final boolean needEmpty) {
         Observable<CacheResult<T>> observable = rxCache.<T>load(key, type, time).flatMap(new Function<T, ObservableSource<CacheResult<T>>>() {
@@ -71,20 +68,20 @@ public abstract class BaseStrategy implements IStrategy {
                 .map(new Function<T, CacheResult<T>>() {
                     @Override
                     public CacheResult<T> apply(@NonNull T t) throws Exception {
-                        Log.i(TAG,"loadRemote result=" + t);
+                        LoggerUtils.info("loadRemote result=" + t);
                         rxCache.save(key, t).subscribeOn(Schedulers.io())
                                 .subscribe(new Consumer<Boolean>() {
                                     @Override
                                     public void accept(@NonNull Boolean status) throws Exception {
-                                        LogUtils.i(TAG, "save status => " + status);
+                                        LoggerUtils.info("save status => " + status);
                                     }
                                 }, new Consumer<Throwable>() {
                                     @Override
                                     public void accept(@NonNull Throwable throwable) throws Exception {
                                         if (throwable instanceof ConcurrentModificationException) {
-                                            LogUtils.i(TAG, "Save failed, please use a synchronized cache strategy :", throwable);
+                                            LoggerUtils.info("Save failed, please use a synchronized cache strategy :", throwable);
                                         } else {
-                                            LogUtils.i(TAG, throwable.getMessage());
+                                            LoggerUtils.info(throwable.getMessage());
                                         }
                                     }
                                 });
@@ -112,13 +109,13 @@ public abstract class BaseStrategy implements IStrategy {
                         return  rxCache.save(key, t).map(new Function<Boolean, CacheResult<T>>() {
                             @Override
                             public CacheResult<T> apply(@NonNull Boolean aBoolean) throws Exception {
-                                LogUtils.i(TAG, "save status => " + aBoolean);
+                                LoggerUtils.info("save status => " + aBoolean);
                                 return new CacheResult<T>(false, t);
                             }
                         }).onErrorReturn(new Function<Throwable, CacheResult<T>>() {
                             @Override
                             public CacheResult<T> apply(@NonNull Throwable throwable) throws Exception {
-                                LogUtils.i(TAG, "save status => " + throwable);
+                                LoggerUtils.info("save status => " + throwable);
                                 return new CacheResult<T>(false, t);
                             }
                         });

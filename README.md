@@ -56,13 +56,14 @@
 	
 ## 在Application中设置基础配置
 
-        RxConfig.get()
+        RxHttp.getConfig()
                 .baseUrl(...)/*基础路径，这里配置了请求中可以不单独配置*/
                 .baseHeader(...)/*公用请求头*/
                 .baseParameter(...)/*公用请参数*/
                 .okHttpClient(...)/*自定义okHttpClient*/
-                .logTag(...)/*自定义Log名称*/
-                .rxCache(...);/* 配置cache, 不配置默认使用okhttp的缓存*/
+                .log(...)/*自定义Log名称*/
+                .rxCache(...)/* 配置cache, 不配置默认使用okhttp的缓存*/
+                .build();
                 
                 
                 
@@ -85,11 +86,11 @@
                 .activityEvent(...)/*具体指定生命周期的动作*
                 .isStick(...)/*是否是粘性消息，默认每种类型只保存最后一个*/
                 .withDialog(...)/*是否加入阻塞对话框，可以自定义diolog*/
-                .eventId(...)/*rxbus发射的id*/
+                .tag(...)/*rxbus发射的id*/
                 .cacheKey(...)/*缓存Key*/
                 .retryTime(...)/*重试次数*/
                 .build()
-                .request(new HttpObserver<Login>() {
+                .requestType(new HttpObserver<Login>() {
                 
                         @Override
                         public void onSuccess(Login o) {
@@ -122,15 +123,15 @@
                 .activityEvent(...)/*具体指定生命周期的动作*/
                 .isStick(...)/*是否是粘性消息，默认每种类型只保存最后一个*/
                 .withDialog(...)/*是否加入阻塞对话框，可以自定义diolog*/
-                .eventId(...)/*rxbus发射的id*/
+                .tag(...)/*rxbus发射的id*/
                 .cacheKey(...)/*缓存Key*/
                 .retryTime(...)/*重试次数*/
                 .build()
-                .request();
+                .requestType();
                        
                        
-                //eventid 和 entity设置对应即可，方法名随意
-                @RxSubscribe(observeOnThread = EventThread.MAIN，eventId ="test")
+                //tag 和 entity设置对应即可，方法名随意
+                @RxSubscribe(observeOnThread = EventThread.MAIN，tag ="test")
                 public void weatherCallBack(Weather weather) {
                            content.setText(new Gson().toJson(weather));
                     }
@@ -154,7 +155,7 @@
                 .Builder()
                 .baseUrl("http://imtt.dd.qq.com/")
                 .apiUrl("16891/50CC095EFBE6059601C6FB652547D737.apk?fsname=com.tencent.mm_6.6.7_1321.apk&csr=1bbd")
-                .eventId("download")
+                .tag("download")
                 .lifecycle(this)
                 .task(downloadTask)
                 .withDailog(this)

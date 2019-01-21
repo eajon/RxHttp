@@ -18,7 +18,7 @@ public class WeatherModule2 extends ViewModel {
                 .apiUrl("weather_mini")
                 .addParameter(map)
                 .entity(Weather.class)
-                .eventId("weather")
+                .tag("weather")
                 .cacheKey("HAHAHAHA")
                 .build()
                 .request();

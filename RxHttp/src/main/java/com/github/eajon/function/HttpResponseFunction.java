@@ -1,6 +1,6 @@
 package com.github.eajon.function;
 
-import com.github.eajon.util.LogUtils;
+import com.github.eajon.util.LoggerUtils;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 
@@ -26,7 +26,7 @@ public class HttpResponseFunction<T> implements Function <JsonElement, Object> {
     @Override
     public Object apply(@NonNull JsonElement response) throws Exception {
         //打印服务器回传结果
-        LogUtils.e(response.toString());
+        LoggerUtils.json(response.toString());
         /*此处不再处理业务相关逻辑交由开发者重写httpCallback*/
         if (type == null) {
             return new Gson().toJson(response);

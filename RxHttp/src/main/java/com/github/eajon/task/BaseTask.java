@@ -7,7 +7,7 @@ import com.threshold.rxbus2.RxBus;
 
 import java.util.concurrent.TimeUnit;
 
-public class BaseTask {
+public abstract class BaseTask {
 
     /**
      * 枚举状态
@@ -62,19 +62,19 @@ public class BaseTask {
         return state == State.ERROR;
     }
 
-    public void sendBus(String eventId, boolean isStick) {
+    public void sendBus(String tag, boolean isStick) {
         if (isStick) {
             RxBus.getDefault().removeStickyEventType(this.getClass());
-            if (TextUtils.isEmpty(eventId)) {
+            if (TextUtils.isEmpty(tag)) {
                 RxBus.getDefault().postSticky(this);
             } else {
-                RxBus.getDefault().postSticky(eventId, this);
+                RxBus.getDefault().postSticky(tag, this);
             }
         } else {
-            if (TextUtils.isEmpty(eventId)) {
+            if (TextUtils.isEmpty(tag)) {
                 RxBus.getDefault().post(this);
             } else {
-                RxBus.getDefault().post(eventId, this);
+                RxBus.getDefault().post(tag, this);
             }
         }
     }

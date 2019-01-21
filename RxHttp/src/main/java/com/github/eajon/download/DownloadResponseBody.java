@@ -35,13 +35,13 @@ public class DownloadResponseBody extends ResponseBody {
     private BufferedSource bufferedSource;
 
     private boolean isStick;
-    private String eventId;
+    private String tag;
     private long time;
     private long secondBytesCount;
 
-    public DownloadResponseBody(Response originalResponse, String eventId, boolean isStick, DownloadTask downloadTask) {
+    public DownloadResponseBody(Response originalResponse, String tag, boolean isStick, DownloadTask downloadTask) {
         this.originalResponse = originalResponse;
-        this.eventId = eventId;
+        this.tag = tag;
         this.isStick = isStick;
         this.downloadTask = downloadTask;
         getFileOriginalName();
@@ -110,7 +110,7 @@ public class DownloadResponseBody extends ResponseBody {
                 }
                 downloadTask.setCurrentSize(readBytesCount);
                 downloadTask.setTotalSize(totalBytesCount);
-                downloadTask.sendBus(eventId, isStick);
+                downloadTask.sendBus(tag, isStick);
                 return bytesRead;
             }
         };

@@ -7,7 +7,7 @@ import com.eajon.my.base.BaseActivity;
 import com.eajon.my.model.Weather;
 import com.github.eajon.task.DownloadTask;
 import com.github.eajon.task.MultiUploadTask;
-import com.github.eajon.util.LogUtils;
+import com.github.eajon.util.LoggerUtils;
 import com.google.gson.Gson;
 import com.threshold.rxbus2.annotation.RxSubscribe;
 import com.threshold.rxbus2.util.EventThread;
@@ -57,9 +57,9 @@ public class SecondActivity extends BaseActivity {
         ButterKnife.bind(this);
     }
 
-    @RxSubscribe(observeOnThread = EventThread.MAIN, isSticky = true, eventId = "download")
+    @RxSubscribe(observeOnThread = EventThread.MAIN, isSticky = true, tag = "download")
     private void download(DownloadTask downloadTask) {
-        LogUtils.d("download", downloadTask.getProgress());
+        LoggerUtils.info("download", downloadTask.getProgress());
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -70,7 +70,7 @@ public class SecondActivity extends BaseActivity {
     }
 
 
-    @RxSubscribe(observeOnThread = EventThread.MAIN, isSticky = true, eventId = "upload")
+    @RxSubscribe(observeOnThread = EventThread.MAIN, isSticky = true, tag = "upload")
     @SuppressWarnings("unused")
     public void uploadProgress(MultiUploadTask multiUploadTask) {
         runOnUiThread(new Runnable() {
@@ -82,7 +82,7 @@ public class SecondActivity extends BaseActivity {
     }
 
 
-    @RxSubscribe(observeOnThread = EventThread.MAIN, isSticky = true, eventId = "weather")
+    @RxSubscribe(observeOnThread = EventThread.MAIN, isSticky = true, tag = "weather")
     public void weatherCallBack(Weather weather) {
         runOnUiThread(new Runnable() {
             @Override

@@ -1,6 +1,6 @@
 package com.github.eajon.interceptor;
 
-import com.github.eajon.retrofit.Method;
+import com.github.eajon.enums.RequestMethod;
 
 import java.io.IOException;
 import java.util.Map;
@@ -13,15 +13,15 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 
 public class RequestInterceptor implements Interceptor {
-    private Method method;
+    private RequestMethod requestMethod;
     /*请求参数*/
     private Map<String, Object> parameter;
     /*header*/
     private Map<String, Object> header;
     private RequestBody requestBody;
 
-    public RequestInterceptor(Method method, Map parameter, Map header, RequestBody requestBody) {
-        this.method = method;
+    public RequestInterceptor(RequestMethod requestMethod, Map parameter, Map header, RequestBody requestBody) {
+        this.requestMethod = requestMethod;
         this.parameter = parameter;
         this.header = header;
         this.requestBody = requestBody;
@@ -31,7 +31,7 @@ public class RequestInterceptor implements Interceptor {
     public Response intercept(Interceptor.Chain chain) throws IOException {
         Request oldRequest = chain.request();
         Request.Builder newRequestBuilder = null;
-        switch (method) {
+        switch (requestMethod) {
             case GET:
             case HEAD:
                 //添加参数
@@ -42,7 +42,7 @@ public class RequestInterceptor implements Interceptor {
                     }
                 }
                 newRequestBuilder = oldRequest.newBuilder().get()
-                        .method(method.toString(), null)
+                        .method(requestMethod.toString(), null)
                         .url(urlBuilder.build());
                 break;
             case POST:
@@ -56,7 +56,7 @@ public class RequestInterceptor implements Interceptor {
                     }
                 }
                 newRequestBuilder = oldRequest.newBuilder().get()
-                        .method(method.toString(), requestBody != null ? requestBody : formBuilder.build());
+                        .method(requestMethod.toString(), requestBody != null ? requestBody : formBuilder.build());
                 break;
 
         }

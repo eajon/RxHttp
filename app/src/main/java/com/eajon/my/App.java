@@ -8,7 +8,7 @@ import com.franmontiel.persistentcookiejar.PersistentCookieJar;
 import com.franmontiel.persistentcookiejar.cache.SetCookieCache;
 import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersistor;
 import com.github.eajon.RxHttp;
-import com.github.eajon.util.LogUtils;
+import com.github.eajon.util.LoggerUtils;
 import com.github.eajon.util.NetUtils;
 
 import java.io.File;
@@ -66,7 +66,7 @@ public class App extends Application {
                 .addNetworkInterceptor(new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
                     @Override
                     public void log(String message) {
-                        LogUtils.e(message);
+                        LoggerUtils.info(message);
                     }
                 })
                         .setLevel(HttpLoggingInterceptor.Level.BASIC))
@@ -81,9 +81,10 @@ public class App extends Application {
                 .getConfig()
                 .baseUrl("http://172.17.12.42:8088/")
                 .okHttpClient(httpClient)
-                .rxCache(new File(getExternalCacheDir(), "rxcache"));
+                .rxCache(new File(getExternalCacheDir(), "rxcache"))
+                .log(true, "RxLog")
+                .build();
 
-        LogUtils.init(this, "eajon", true, false);
     }
 
 

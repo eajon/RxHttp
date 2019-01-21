@@ -31,7 +31,7 @@ public class WeatherModule extends ViewModel {
                 .apiUrl("weather_mini")
                 .addParameter(map)
                 .entity(Weather.class)
-                .eventId("weather")
+                .tag("weather")
                 .isStick(true)
                 .build()
                 .request(new HttpObserver <Weather>() {

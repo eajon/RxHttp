@@ -1,11 +1,11 @@
-package com.github.eajon.retrofit;
+package com.github.eajon.enums;
 
 /**
  * Http请求方式
  *
  * @author WENGYIJIONG
  */
-public enum Method {
+public enum RequestMethod {
     GET,
     POST,
     DELETE,

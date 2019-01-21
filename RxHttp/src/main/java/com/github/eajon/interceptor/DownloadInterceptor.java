@@ -13,10 +13,10 @@ public class DownloadInterceptor implements Interceptor {
 
     DownloadTask downloadTask;
     boolean isStick;
-    String eventId;
+    String tag;
 
-    public DownloadInterceptor(String eventId, boolean isStick, DownloadTask downloadTask) {
-        this.eventId=eventId;
+    public DownloadInterceptor(String tag, boolean isStick, DownloadTask downloadTask) {
+        this.tag = tag;
         this.isStick = isStick;
         this.downloadTask = downloadTask;
     }
@@ -25,7 +25,7 @@ public class DownloadInterceptor implements Interceptor {
     public Response intercept(Chain chain) throws IOException {
         Response response = chain.proceed(chain.request());
         return response.newBuilder()
-                .body(new DownloadResponseBody(response,eventId, isStick, downloadTask))
+                .body(new DownloadResponseBody(response, tag, isStick, downloadTask))
                 .build();
     }
 }
