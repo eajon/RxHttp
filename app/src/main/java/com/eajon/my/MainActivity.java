@@ -122,21 +122,19 @@ public class MainActivity extends BaseActivity {
 
     private void doRequest() {
         HashMap map = new HashMap();
-        map.put("username", "admin");
-        map.put("password", "12345678");
+        map.put("id", 4L);
         new RxHttp.Builder()
-                .post()
-                .apiUrl("user/login")
+                .get()
+                .apiUrl("test/wechat/token")
                 .addParameter(map)
-                .entity(CommonResponse.class)
                 .build()
-                .request(new HttpObserver<CommonResponse>() {
+                .request(new HttpObserver() {
                     @Override
-                    public void onSuccess(CommonResponse o) {
+                    public void onSuccess(Object o) {
                         HashMap<String,Object> header=new HashMap<>();
-                        header.put("Authorization",o.getData());
+                        header.put("Authorization", o.toString());
                         RxHttp.getConfig().baseHeader(header);
-                        content.setText(o.getData().toString());
+                        content.setText(o.toString());
                     }
 
                     @Override
@@ -166,6 +164,25 @@ public class MainActivity extends BaseActivity {
                     @Override
                     public void onError(ApiException t) {
 
+                    }
+                });
+    }
+
+    private void doProfile() {
+        new RxHttp.Builder()
+                .get()
+                .apiUrl("api/user/profile")
+                .entity(CommonResponse.class)
+                .build()
+                .request(new HttpObserver<CommonResponse>() {
+                    @Override
+                    public void onSuccess(CommonResponse o) {
+                        content.setText(o.getData().toString());
+                    }
+
+                    @Override
+                    public void onError(ApiException t) {
+                        LoggerUtils.error(t.getBodyMessage());
                     }
                 });
     }
@@ -254,7 +271,7 @@ public class MainActivity extends BaseActivity {
 
                     @Override
                     public void onError(ApiException t) {
-                        content.setText(t.getDisplayMessage());
+                        content.setText(t.getBodyMessage());
                     }
                 });
 
@@ -330,8 +347,7 @@ public class MainActivity extends BaseActivity {
                 break;
             case R.id.request:
 //                doJsonRequest();
-                WeatherModule2 weatherModule2 = ViewModelProviders.of(this).get(WeatherModule2.class);
-                weatherModule2.getWeather();
+                doProfile();
                 break;
             case R.id.stick:
                 intent = new Intent(this, SecondActivity.class);
