@@ -21,7 +21,7 @@ public abstract class HttpObserver<T> extends DisposableObserver <T> {
 
     @Override
     public void onError(Throwable e) {
-        onError(e);
+        onError(( ApiException ) e);
         dispose();
     }
 
