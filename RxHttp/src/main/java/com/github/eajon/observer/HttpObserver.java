@@ -1,7 +1,6 @@
 package com.github.eajon.observer;
 
 import com.github.eajon.exception.ApiException;
-import com.github.eajon.util.LoggerUtils;
 
 import io.reactivex.observers.DisposableObserver;
 
@@ -22,14 +21,12 @@ public abstract class HttpObserver<T> extends DisposableObserver <T> {
 
     @Override
     public void onError(Throwable e) {
-        LoggerUtils.error("error:" + e.getMessage());
-        onError(ApiException.handleException(e));
+        onError(e);
         dispose();
     }
 
     @Override
     public void onComplete() {
-        LoggerUtils.info("onComplete");
         dispose();
     }
 }
