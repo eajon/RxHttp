@@ -17,7 +17,6 @@
 package com.github.eajon.function;
 
 
-import com.github.eajon.exception.ApiException;
 import com.github.eajon.util.LoggerUtils;
 
 import java.net.ConnectException;
@@ -50,7 +49,7 @@ public class RetryExceptionFunction implements Function <Observable <? extends T
 
 
     @Override
-    public Observable  apply(@NonNull Observable <? extends Throwable> observable) throws Exception {
+    public Observable apply(@NonNull Observable<? extends Throwable> observable) {
         return observable.zipWith(Observable.range(1, count + 1), new BiFunction <Throwable, Integer, Wrapper>() {
             @Override
             public Wrapper apply(@NonNull Throwable throwable, @NonNull Integer integer) throws Exception {
@@ -59,17 +58,10 @@ public class RetryExceptionFunction implements Function <Observable <? extends T
         }).flatMap(new Function <Wrapper, ObservableSource <?>>() {
             @Override
             public ObservableSource <?> apply(@NonNull Wrapper wrapper) throws Exception {
-                if (wrapper.index > 1)
+                if (wrapper.index > 1) {
                     LoggerUtils.info("retryTime：" + (wrapper.index));
-                int errCode = 0;
-                if (wrapper.throwable instanceof ApiException) {
-                    ApiException exception = (ApiException) wrapper.throwable;
-                    errCode = exception.getCode();
                 }
                 if ((wrapper.throwable instanceof ConnectException
-                        || wrapper.throwable instanceof SocketTimeoutException
-                        || errCode == ApiException.ERROR.NETWORD_ERROR
-                        || errCode == ApiException.ERROR.TIMEOUT_ERROR
                         || wrapper.throwable instanceof SocketTimeoutException
                         || wrapper.throwable instanceof TimeoutException)
                         && wrapper.index < count + 1) { //如果超出重试次数也抛出错误，否则默认是会进入onCompleted
