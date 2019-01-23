@@ -14,6 +14,7 @@ import android.widget.TextView;
 import com.eajon.my.base.BaseActivity;
 import com.eajon.my.model.BaseResponse;
 import com.eajon.my.model.CommonResponse;
+import com.eajon.my.model.Profile;
 import com.eajon.my.model.Weather;
 import com.eajon.my.util.PhotoUtils;
 import com.eajon.my.util.ZhihuImagePicker;
@@ -30,6 +31,7 @@ import com.github.eajon.task.MultiUploadTask;
 import com.github.eajon.task.UploadTask;
 import com.github.eajon.util.LoggerUtils;
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.qingmei2.rximagepicker.core.RxImagePicker;
 import com.qingmei2.rximagepicker.entity.Result;
 import com.qingmei2.rximagepicker_extension.MimeType;
@@ -42,6 +44,7 @@ import com.threshold.rxbus2.util.EventThread;
 import com.trello.rxlifecycle2.android.ActivityEvent;
 
 import java.io.File;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -87,7 +90,7 @@ public class MainActivity extends BaseActivity {
 
     @Override
     protected void initView() {
-        //官方MVVM
+//        官方MVVM
         WeatherModule weatherModule = ViewModelProviders.of(this).get(WeatherModule.class);
         weatherModule.getWeather().observe(this, new android.arch.lifecycle.Observer<Weather>() {
             @Override
@@ -95,7 +98,7 @@ public class MainActivity extends BaseActivity {
                 content.setText(new Gson().toJson(weather));
             }
         });
-        //RxHttp MVVM
+//        RxHttp MVVM
         WeatherModule2 weatherModule2 = ViewModelProviders.of(this).get(WeatherModule2.class);
         weatherModule2.getWeather();
 
@@ -172,12 +175,14 @@ public class MainActivity extends BaseActivity {
         new RxHttp.Builder()
                 .get()
                 .apiUrl("api/user/profile")
-                .entity(CommonResponse.class)
                 .build()
-                .request(new HttpObserver<CommonResponse>() {
+                .request(new HttpObserver<String>() {
                     @Override
-                    public void onSuccess(CommonResponse o) {
-                        content.setText(o.getData().toString());
+                    public void onSuccess(String o) {
+                        Type type = new TypeToken<CommonResponse<Profile>>() {
+                        }.getType();
+                        CommonResponse<Profile> profile = new Gson().fromJson(o, type);
+                        content.setText(profile.getData().getNickname());
                     }
 
                     @Override

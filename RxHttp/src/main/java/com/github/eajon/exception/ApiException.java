@@ -92,7 +92,8 @@ public class ApiException extends Exception {
                 || e instanceof JsonSyntaxException
                 || e instanceof JsonSerializer
                 || e instanceof NotSerializableException
-                || e instanceof ParseException) {
+                || e instanceof ParseException
+                || e instanceof UnsupportedOperationException) {
             ex = new ApiException(e, ERROR.PARSE_ERROR);
             ex.bodyMessage = "解析错误";
             return ex;

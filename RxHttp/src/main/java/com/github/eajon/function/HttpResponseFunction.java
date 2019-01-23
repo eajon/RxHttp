@@ -14,7 +14,7 @@ import io.reactivex.functions.Function;
  *
  * @author wengyijiong
  */
-public class HttpResponseFunction<T> implements Function <JsonElement, Object> {
+public class HttpResponseFunction<T> implements Function<JsonElement, Object> {
 
 
     private Type type;
@@ -29,7 +29,11 @@ public class HttpResponseFunction<T> implements Function <JsonElement, Object> {
         LoggerUtils.json(response.toString());
         /*此处不再处理业务相关逻辑交由开发者重写httpCallback*/
         if (type == null) {
-            return new Gson().toJson(response);
+            if (response.isJsonObject()) {
+                return response.toString();
+            } else {
+                return response.getAsString();
+            }
         }
         return new Gson().fromJson(response, type);
 
