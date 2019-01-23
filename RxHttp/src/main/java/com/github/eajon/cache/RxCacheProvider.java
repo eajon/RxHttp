@@ -54,6 +54,26 @@ public class RxCacheProvider {
         return getInstance().rxCacheBuilder.build();
     }
 
+    public static RxCache buildRxCache(String cacheKey) {
+        CacheMode cacheMode = getCacheMode();
+        long cacheTime = getCacheTime();
+        final RxCache.Builder rxCacheBuilder = getRxCacheBuilder();
+        switch (cacheMode) {
+            case DEFAULT://使用Okhttp的缓存
+                break;
+            case FIRSTREMOTE:
+            case FIRSTCACHE:
+            case ONLYREMOTE:
+            case ONLYCACHE:
+            case CACHEANDREMOTE:
+            case CACHEANDREMOTEDISTINCT:
+                rxCacheBuilder.cacheKey(ObjectHelper.requireNonNull(cacheKey, "cacheKey == null"))
+                        .cacheTime(cacheTime);
+                return rxCacheBuilder.build();
+        }
+        return rxCacheBuilder.build();
+    }
+
     /**
      * 对外暴露 RxCacheBuilder,方便自定义
      */

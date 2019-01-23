@@ -19,7 +19,6 @@ package com.github.eajon.util;
 
 import android.text.TextUtils;
 
-import com.github.eajon.cache.RxCache;
 import com.github.eajon.cache.RxCacheProvider;
 import com.github.eajon.enums.RequestType;
 import com.github.eajon.function.CacheResultFunction;
@@ -82,7 +81,7 @@ public class RxUtils {
                     return upstream;
                 } else {
                     return upstream
-                            .compose(RxCache.generateRxCache(cacheKey).transformer(RxCacheProvider.getCacheMode(), type == null ? String.class : type))
+                            .compose(RxCacheProvider.buildRxCache(cacheKey).transformer(RxCacheProvider.getCacheMode(), type == null ? String.class : type))
                             .map(new CacheResultFunction());
                 }
             }

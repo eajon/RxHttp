@@ -82,8 +82,7 @@ public class App extends Application {
                 .baseUrl("http://172.17.12.42:8088/")
                 .okHttpClient(httpClient)
                 .rxCache(new File(getExternalCacheDir(), "rxcache"))
-                .log(true, "RxLog")
-                .build();
+                .log(true, "RxLog");
 
     }
 

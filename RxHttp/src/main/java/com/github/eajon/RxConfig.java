@@ -46,6 +46,14 @@ public class RxConfig {
 
     }
 
+    private void addLogAdapter() {
+        FormatStrategy formatStrategy = PrettyFormatStrategy.newBuilder()
+                .tag(logTag)
+                .build();
+        Logger.addLogAdapter(new AndroidLogAdapter(formatStrategy));
+    }
+
+
     /*请求基础路径*/
     String baseUrl;
     /*请求参数*/
@@ -59,7 +67,9 @@ public class RxConfig {
 
 
     private RxConfig() {
-
+        setRxJava2ErrorHandler();
+        RxBus.setMainScheduler(AndroidSchedulers.mainThread());
+        addLogAdapter();
     }
 
 
@@ -82,7 +92,6 @@ public class RxConfig {
     /*基础参数*/
     public RxConfig baseObjectParameter(Object object) {
         this.parameter = GsonUtils.objectToMap(object);
-        ;
         return this;
     }
 
@@ -153,16 +162,10 @@ public class RxConfig {
     public RxConfig log(boolean isDebug, String logTag) {
         LoggerUtils.init(isDebug);
         this.logTag = logTag;
+        Logger.clearLogAdapters();
+        addLogAdapter();
         return this;
     }
 
-    public void build() {
-        setRxJava2ErrorHandler();
-        RxBus.setMainScheduler(AndroidSchedulers.mainThread());
-        FormatStrategy formatStrategy = PrettyFormatStrategy.newBuilder()
-                .tag(logTag)
-                .build();
-        Logger.addLogAdapter(new AndroidLogAdapter(formatStrategy));
-    }
 
 }
