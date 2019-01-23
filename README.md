@@ -62,8 +62,8 @@
                 .baseParameter(...)/*公用请参数*/
                 .okHttpClient(...)/*自定义okHttpClient*/
                 .log(...)/*自定义Log名称*/
-                .rxCache(...)/* 配置cache, 不配置默认使用okhttp的缓存*/
-                .build();
+                .rxCache(...);/* 配置cache, 不配置默认使用okhttp的缓存*/
+              
                 
                 
                 
