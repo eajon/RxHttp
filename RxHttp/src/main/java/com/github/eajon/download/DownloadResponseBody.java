@@ -52,7 +52,7 @@ public class DownloadResponseBody extends ResponseBody {
         if (!TextUtils.isEmpty(disposition)) {
             int index = disposition.indexOf(FILENAME);
             if (index >= 0) {
-                String name = disposition.substring(index + FILENAME.length(), disposition.length());
+                String name = disposition.substring(index + FILENAME.length());
                 name = name.replace("UTF-8", "");
                 name = name.replace("\"", "");
                 if (!TextUtils.isEmpty(name)) {
