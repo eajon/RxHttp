@@ -56,10 +56,10 @@ public class GsonUtils {
                     if (hasName) {
                         Name name = field.getAnnotation(Name.class);
                         if (name.require()) {
-                            map.put(TextUtils.isEmpty(name.value()) ? entry.getKey() : name.value(), entry.getValue().isJsonObject() ? entry.getValue().toString() : entry.getValue().getAsString());
+                            map.put(TextUtils.isEmpty(name.value()) ? entry.getKey() : name.value(), entry.getValue().isJsonPrimitive() ? entry.getValue().getAsString() : entry.getValue().toString());
                         }
                     } else {
-                        map.put(entry.getKey(), entry.getValue().isJsonObject() ? entry.getValue().toString() : entry.getValue().getAsString());
+                        map.put(entry.getKey(), entry.getValue().isJsonPrimitive() ? entry.getValue().getAsString() : entry.getValue().toString());
                     }
                 } catch (NoSuchFieldException e) {
                     e.printStackTrace();

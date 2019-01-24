@@ -3,6 +3,7 @@ package com.github.eajon.function;
 import com.github.eajon.util.LoggerUtils;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
 
 import java.lang.reflect.Type;
 
@@ -29,10 +30,12 @@ public class HttpResponseFunction<T> implements Function<JsonElement, Object> {
         LoggerUtils.json(response.toString());
         /*此处不再处理业务相关逻辑交由开发者重写httpCallback*/
         if (type == null) {
-            if (response.isJsonObject()) {
-                return response.toString();
-            } else {
+            if (response.isJsonPrimitive()) {
                 return response.getAsString();
+            } else if (response.isJsonNull()) {
+                return JsonNull.INSTANCE;
+            } else {
+                return response.toString();
             }
         }
         return new Gson().fromJson(response, type);
