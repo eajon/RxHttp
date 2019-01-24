@@ -25,6 +25,7 @@ public class WeatherModule2 extends ViewModel {
         baseResponse.setCode(1);
         baseResponse.setMessage("HAHAH");
         testGson.setBaseResponse(null);
+        testGson.setMessage("haha");
         List<BaseResponse> arrayList = new ArrayList<>();
         arrayList.add(baseResponse);
         testGson.setResponseList(arrayList);
@@ -43,7 +44,7 @@ public class WeatherModule2 extends ViewModel {
 
     }
 
-    private class TestGson {
+    private class TestGson extends BaseResponse {
 
         @Name(value = "haha", require = false)
         private String test;

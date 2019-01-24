@@ -7,7 +7,7 @@ import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
 
 
 public abstract class RxBusActivity extends RxAppCompatActivity {
-    
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

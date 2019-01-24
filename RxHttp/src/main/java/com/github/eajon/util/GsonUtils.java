@@ -47,26 +47,41 @@ public class GsonUtils {
             Map<String, Object> map = new HashMap<>();
             JsonObject jsonObject = json.getAsJsonObject();
             Set<Map.Entry<String, JsonElement>> entrySet = jsonObject.entrySet();
-            Class clazz = object.getClass();
             for (Map.Entry<String, JsonElement> entry : entrySet) {
-                try {
-                    Field field = clazz.getDeclaredField(entry.getKey());
-                    boolean hasName = field.isAnnotationPresent(Name.class);
-                    if (hasName) {
-                        Name name = field.getAnnotation(Name.class);
-                        if (name.require()) {
-                            map.put(TextUtils.isEmpty(name.value()) ? entry.getKey() : name.value(), entry.getValue().isJsonPrimitive() ? entry.getValue().getAsString() : entry.getValue().toString());
-                        }
-                    } else {
-                        map.put(entry.getKey(), entry.getValue().isJsonPrimitive() ? entry.getValue().getAsString() : entry.getValue().toString());
+                Field field = getDeclaredField(object, entry.getKey());
+                boolean hasName = field.isAnnotationPresent(Name.class);
+                if (hasName) {
+                    Name name = field.getAnnotation(Name.class);
+                    if (name.require()) {
+                        map.put(TextUtils.isEmpty(name.value()) ? entry.getKey() : name.value(), entry.getValue().isJsonPrimitive() ? entry.getValue().getAsString() : entry.getValue().toString());
                     }
-                } catch (NoSuchFieldException e) {
-                    e.printStackTrace();
+                } else {
+                    map.put(entry.getKey(), entry.getValue().isJsonPrimitive() ? entry.getValue().getAsString() : entry.getValue().toString());
                 }
+
             }
             return map;
         }
     }
+
+    public static Field getDeclaredField(Object object, String fieldName) {
+        Field field = null;
+
+        Class<?> clazz = object.getClass();
+
+        for (; clazz != Object.class; clazz = clazz.getSuperclass()) {
+            try {
+                field = clazz.getDeclaredField(fieldName);
+                return field;
+            } catch (NoSuchFieldException e) {
+                //这里甚么都不能抛出去。
+                //如果这里的异常打印或者往外抛，则就不会进入
+            }
+        }
+
+        return field;
+    }
+
 }
 
 
