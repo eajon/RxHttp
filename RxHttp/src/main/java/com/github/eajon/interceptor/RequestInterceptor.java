@@ -1,6 +1,7 @@
 package com.github.eajon.interceptor;
 
 import com.github.eajon.enums.RequestMethod;
+import com.github.eajon.util.NetUtils;
 
 import java.io.IOException;
 import java.util.Map;
@@ -64,7 +65,7 @@ public class RequestInterceptor implements Interceptor {
 
         if (header != null && header.keySet().size() > 0) {
             for (String key : header.keySet()) {
-                newRequestBuilder.addHeader(key, String.valueOf(header.get(key)));
+                newRequestBuilder.addHeader(key, NetUtils.getHeaderValueEncoded(header.get(key)).toString());
             }
         }
         return chain.proceed(newRequestBuilder.build());

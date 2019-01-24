@@ -43,7 +43,7 @@ public class FileUtils {
             Buffer buffer = sink.buffer();
             long total = downloadTask.getCurrentSize();
             long len;
-            int bufferSize = 8 * 1024;
+            long bufferSize = 8 * 1024L;
             source = responseBody.source();
             while ((len = source.read(buffer, bufferSize)) != -1) {
                 sink.emit();

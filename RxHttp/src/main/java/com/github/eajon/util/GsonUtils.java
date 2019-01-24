@@ -30,9 +30,8 @@ public class GsonUtils {
 
     public static Map<String, Object> objectToMap(Object object) {
         Gson gson = buildGson(object);
-        Map<String, Object> map = gson.fromJson(gson.toJson(object), new TypeToken<Map<String, String>>() {
+        return gson.fromJson(gson.toJson(object), new TypeToken<Map<String, String>>() {
         }.getType());
-        return map;
     }
 
     private static class MapJsonDeserializer implements JsonDeserializer<Map<String, Object>> {
