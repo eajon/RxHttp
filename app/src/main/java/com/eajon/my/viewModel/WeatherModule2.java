@@ -15,6 +15,7 @@ public class WeatherModule2 extends ViewModel {
     public void getWeather() {
         //测试@NAME注解 对象会转成jsonObject 列表转成jsonArray
         //value 对应参数名 不填使用变量名 require 设置成false 将过滤
+        //支持父类的属性
         TestGson testGson = new TestGson();
         testGson.setCity2("常熟");
         testGson.setTest("111");
