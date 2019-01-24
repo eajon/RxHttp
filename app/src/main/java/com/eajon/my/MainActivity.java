@@ -172,16 +172,16 @@ public class MainActivity extends BaseActivity {
     }
 
     private void doProfile() {
+        Type type = new TypeToken<CommonResponse<Profile>>() {
+        }.getType();
         new RxHttp.Builder()
                 .get()
                 .apiUrl("api/user/profile")
+                .entity(type)
                 .build()
-                .request(new HttpObserver<String>() {
+                .request(new HttpObserver<CommonResponse<Profile>>() {
                     @Override
-                    public void onSuccess(String o) {
-                        Type type = new TypeToken<CommonResponse<Profile>>() {
-                        }.getType();
-                        CommonResponse<Profile> profile = new Gson().fromJson(o, type);
+                    public void onSuccess(CommonResponse<Profile> profile) {
                         content.setText(profile.getData().getNickname());
                     }
 
