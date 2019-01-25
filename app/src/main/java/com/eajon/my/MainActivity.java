@@ -118,8 +118,8 @@ public class MainActivity extends BaseActivity {
 
     @Override
     protected void initLogic() {
-//        doRequest();
-        doRequest2();
+        doRequest();
+//        doRequest2();
     }
 
     private void doRequest() {
@@ -202,7 +202,7 @@ public class MainActivity extends BaseActivity {
         new RxHttp.Builder()
                 .get()
                 .apiUrl("api/user/profile")
-                .entity(type)
+//                .entity(type)
                 .cacheKey("profile")
                 .build()
                 .request(new HttpObserver<CommonResponse<Profile>>() {
