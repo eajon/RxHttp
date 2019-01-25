@@ -2,6 +2,7 @@ package com.github.eajon.task;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.concurrent.TimeUnit;
 
 public class UploadTask extends BaseTask implements Serializable {
 
@@ -70,6 +71,18 @@ public class UploadTask extends BaseTask implements Serializable {
         } else {
             return 0;
         }
+    }
+
+    public float getAverageSpeed() {
+        return getAverageSpeed(currentSize);
+    }
+
+    public String getAverageSpeedFormat() {
+        return getAverageSpeedFormat(currentSize);
+    }
+
+    public String getAverageSpeedFormat(TimeUnit timeUnit) {
+        return getAverageSpeedFormat(currentSize, timeUnit);
     }
 
 

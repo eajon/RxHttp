@@ -5,7 +5,6 @@ import android.Manifest;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -18,7 +17,6 @@ import com.eajon.my.model.Profile;
 import com.eajon.my.model.Weather;
 import com.eajon.my.util.PhotoUtils;
 import com.eajon.my.util.ZhihuImagePicker;
-import com.eajon.my.viewModel.WeatherModule;
 import com.eajon.my.viewModel.WeatherModule2;
 import com.eajon.my.widget.CProgressDialog;
 import com.github.eajon.RxHttp;
@@ -91,13 +89,13 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void initView() {
 //        官方MVVM
-        WeatherModule weatherModule = ViewModelProviders.of(this).get(WeatherModule.class);
-        weatherModule.getWeather().observe(this, new android.arch.lifecycle.Observer<Weather>() {
-            @Override
-            public void onChanged(@Nullable Weather weather) {
-                content.setText(new Gson().toJson(weather));
-            }
-        });
+//        WeatherModule weatherModule = ViewModelProviders.of(this).get(WeatherModule.class);
+//        weatherModule.getWeather().observe(this, new android.arch.lifecycle.Observer<Weather>() {
+//            @Override
+//            public void onChanged(@Nullable Weather weather) {
+//                content.setText(new Gson().toJson(weather));
+//            }
+//        });
 //        RxHttp MVVM
         WeatherModule2 weatherModule2 = ViewModelProviders.of(this).get(WeatherModule2.class);
         weatherModule2.getWeather();
@@ -120,7 +118,8 @@ public class MainActivity extends BaseActivity {
 
     @Override
     protected void initLogic() {
-        doRequest();
+//        doRequest();
+        doRequest2();
     }
 
     private void doRequest() {
@@ -138,6 +137,32 @@ public class MainActivity extends BaseActivity {
                         header.put("Authorization", o.toString());
                         RxHttp.getConfig().baseHeader(header);
                         content.setText(o.toString());
+                    }
+
+                    @Override
+                    public void onError(ApiException t) {
+
+                    }
+                });
+    }
+
+    private void doRequest2() {
+        HashMap map = new HashMap();
+        map.put("username", "admin");
+        map.put("password", "12345678");
+        new RxHttp.Builder()
+                .post()
+                .apiUrl("user/login")
+                .addParameter(map)
+                .entity(CommonResponse.class)
+                .build()
+                .request(new HttpObserver<CommonResponse>() {
+                    @Override
+                    public void onSuccess(CommonResponse o) {
+                        HashMap<String, Object> header = new HashMap<>();
+                        header.put("Authorization", o.getData());
+                        RxHttp.getConfig().baseHeader(header);
+                        content.setText(o.getData().toString());
                     }
 
                     @Override
@@ -178,6 +203,7 @@ public class MainActivity extends BaseActivity {
                 .get()
                 .apiUrl("api/user/profile")
                 .entity(type)
+                .cacheKey("profile")
                 .build()
                 .request(new HttpObserver<CommonResponse<Profile>>() {
                     @Override
@@ -204,6 +230,18 @@ public class MainActivity extends BaseActivity {
 
     }
 
+
+    @RxSubscribe(observeOnThread = EventThread.MAIN, isSticky = true, tag = "weather")
+    public void weatherCallBack(String weather) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                content.setText(weather);
+            }
+        });
+
+    }
+
     @RxSubscribe(observeOnThread = EventThread.MAIN, isSticky = true, tag = "weather")//异常捕获
     public void weatherCallBack(ApiException e) {
         content.setText(new Gson().toJson(e));
@@ -214,7 +252,7 @@ public class MainActivity extends BaseActivity {
     @SuppressWarnings("unused")
     public void downloadProgress(DownloadTask downloadTask) {
         LoggerUtils.info("download1", downloadTask.getState().toString() + downloadTask.getProgress() + "%" + downloadTask.getSpeedFormat());
-        download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%" + downloadTask.getSpeedFormat());
+        download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%" + downloadTask.getSpeedFormat() + "平均速度：" + downloadTask.getAverageSpeedFormat() + "用时：" + downloadTask.getDuration() + "速度：" + downloadTask.getAverageSpeed());
     }
 
 
@@ -228,11 +266,11 @@ public class MainActivity extends BaseActivity {
     @RxSubscribe(observeOnThread = EventThread.MAIN, tag = "upload")
     @SuppressWarnings("unused")
     public void uploadProgress(MultiUploadTask multiUploadTask) {
-        content.setText("总进度：" + multiUploadTask.getProgress() + "%" + multiUploadTask.getState().toString() + multiUploadTask.getSpeedFormat());
+        content.setText("总进度：" + multiUploadTask.getProgress() + "%" + multiUploadTask.getState().toString() + multiUploadTask.getSpeedFormat() + "平均速度：" + multiUploadTask.getAverageSpeedFormat() + "用时：" + multiUploadTask.getDuration());
         if (multiUploadTask.getUploadTasks().size() >= 3) {//假设选择3个
-            content1.setText("第一个：" + multiUploadTask.getProgress(0) + "%" + multiUploadTask.getState(0).toString() + multiUploadTask.getSpeedFormat());
-            content2.setText("第二个：" + multiUploadTask.getProgress(1) + "%" + multiUploadTask.getState(1).toString() + multiUploadTask.getSpeedFormat());
-            content3.setText("第三个：" + multiUploadTask.getProgress(2) + "%" + multiUploadTask.getState(2).toString() + multiUploadTask.getSpeedFormat());
+            content1.setText("第一个：" + multiUploadTask.getProgress(0) + "%" + multiUploadTask.getState(0).toString() + multiUploadTask.getUploadTasks().get(0).getSpeedFormat());
+            content2.setText("第二个：" + multiUploadTask.getProgress(1) + "%" + multiUploadTask.getState(1).toString() + multiUploadTask.getUploadTasks().get(1).getSpeedFormat());
+            content3.setText("第三个：" + multiUploadTask.getProgress(2) + "%" + multiUploadTask.getState(2).toString() + multiUploadTask.getUploadTasks().get(2).getSpeedFormat());
         }
     }
 
@@ -255,7 +293,6 @@ public class MainActivity extends BaseActivity {
         new RxHttp.Builder()
                 .apiUrl("image/upload")
                 .task(multiUploadTask)
-                .isStick(true)
                 .tag("upload")
                 .addParameter(params)
                 .lifecycle(MainActivity.this)

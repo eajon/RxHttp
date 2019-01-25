@@ -48,7 +48,7 @@ public class GsonUtils {
             JsonObject jsonObject = json.getAsJsonObject();
             Set<Map.Entry<String, JsonElement>> entrySet = jsonObject.entrySet();
             for (Map.Entry<String, JsonElement> entry : entrySet) {
-                Field field = getDeclaredField(object, entry.getKey());
+                Field field = ReflectUtils.getDeclaredField(object, entry.getKey());
                 boolean hasName = field.isAnnotationPresent(Name.class);
                 if (hasName) {
                     Name name = field.getAnnotation(Name.class);
@@ -64,23 +64,7 @@ public class GsonUtils {
         }
     }
 
-    public static Field getDeclaredField(Object object, String fieldName) {
-        Field field = null;
 
-        Class<?> clazz = object.getClass();
-
-        for (; clazz != Object.class; clazz = clazz.getSuperclass()) {
-            try {
-                field = clazz.getDeclaredField(fieldName);
-                return field;
-            } catch (NoSuchFieldException e) {
-                //这里甚么都不能抛出去。
-                //如果这里的异常打印或者往外抛，则就不会进入
-            }
-        }
-
-        return field;
-    }
 
 }
 

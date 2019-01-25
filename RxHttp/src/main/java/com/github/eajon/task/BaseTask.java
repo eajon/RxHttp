@@ -1,9 +1,6 @@
 package com.github.eajon.task;
 
-import android.text.TextUtils;
-
 import com.github.eajon.util.SpeedUtils;
-import com.threshold.rxbus2.RxBus;
 
 import java.util.concurrent.TimeUnit;
 
@@ -22,6 +19,10 @@ public abstract class BaseTask {
         CANCEL,         //取消
     }
 
+    private long startTime;
+    private long finishTime;
+
+
     private State state = State.NONE;//下载状态
 
     private long speed;
@@ -34,7 +35,19 @@ public abstract class BaseTask {
         this.state = state;
         if (state != State.LOADING) {
             this.speed = 0;
+        } else {
+            startTime = System.currentTimeMillis();
         }
+        if (state == State.FINISH) {
+            finishTime = System.currentTimeMillis();
+        }
+    }
+
+    public long getDuration() {
+        if (finishTime == 0L) {
+            return System.currentTimeMillis() - startTime;
+        }
+        return finishTime - startTime;
     }
 
     public long getSpeed() {
@@ -50,8 +63,28 @@ public abstract class BaseTask {
 
     }
 
+
     public String getSpeedFormat(TimeUnit timeUnit) {
         return SpeedUtils.formatSpeed(speed, timeUnit);
+    }
+
+    public float getAverageSpeed(long currentSize) {
+        long dur = getDuration();
+        if (currentSize != 0 && dur != 0) {
+            float speed = 1000F * currentSize / dur;
+            return speed;
+        } else {
+            return 0F;
+        }
+
+    }
+
+    public String getAverageSpeedFormat(long currentSize) {
+        return SpeedUtils.formatSpeedPerSecond(getAverageSpeed(currentSize));
+    }
+
+    public String getAverageSpeedFormat(long currentSize, TimeUnit timeUnit) {
+        return SpeedUtils.formatSpeed(getAverageSpeed(currentSize), timeUnit);
     }
 
     public boolean isFinish() {
@@ -62,20 +95,5 @@ public abstract class BaseTask {
         return state == State.ERROR;
     }
 
-    public void sendBus(String tag, boolean isStick) {
-        if (isStick) {
-            RxBus.getDefault().removeStickyEventType(this.getClass());
-            if (TextUtils.isEmpty(tag)) {
-                RxBus.getDefault().postSticky(this);
-            } else {
-                RxBus.getDefault().postSticky(tag, this);
-            }
-        } else {
-            if (TextUtils.isEmpty(tag)) {
-                RxBus.getDefault().post(this);
-            } else {
-                RxBus.getDefault().post(tag, this);
-            }
-        }
-    }
+
 }

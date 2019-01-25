@@ -19,6 +19,7 @@ import com.github.eajon.task.UploadTask;
 import com.github.eajon.upload.UploadRequestBody;
 import com.github.eajon.util.GsonUtils;
 import com.github.eajon.util.NetUtils;
+import com.github.eajon.util.ReflectUtils;
 import com.github.eajon.util.RetrofitUtils;
 import com.github.eajon.util.RxBusUtils;
 import com.github.eajon.util.RxUtils;
@@ -230,7 +231,7 @@ public class RxHttp {
             UploadTask uploadTask = ( UploadTask ) task;
             file = uploadTask.getFile();
             requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
-            MultipartBody.Part part = MultipartBody.Part.createFormData(uploadTask.getName(), uploadTask.getFileName(), new UploadRequestBody(requestBody, tag, isStick, uploadTask));
+            MultipartBody.Part part = MultipartBody.Part.createFormData(uploadTask.getName(), NetUtils.getHeaderValueEncoded(uploadTask.getFileName()).toString(), new UploadRequestBody(requestBody, tag, isStick, uploadTask));
             observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).upload(disposeApiUrl(), convertParameter(), header, part);
         } else {
             MultiUploadTask multiUploadTask = ( MultiUploadTask ) task;
@@ -238,7 +239,7 @@ public class RxHttp {
                 UploadTask task = multiUploadTask.getUploadTasks().get(i);
                 file = task.getFile();
                 requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
-                MultipartBody.Part part = MultipartBody.Part.createFormData(task.getName(), task.getFileName(), new UploadRequestBody(requestBody, tag, isStick, task, multiUploadTask));
+                MultipartBody.Part part = MultipartBody.Part.createFormData(task.getName(), NetUtils.getHeaderValueEncoded(task.getFileName()).toString(), new UploadRequestBody(requestBody, tag, isStick, task, multiUploadTask));
                 partList.add(part);
             }
             observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).upload(disposeApiUrl(), convertParameter(), header, partList);
@@ -270,14 +271,19 @@ public class RxHttp {
             httpObserver = new HttpObserver() {
                 @Override
                 public void onSuccess(Object o) {
-                    RxBusUtils.sendBus(tag, isStick, o);
+                    RxBusUtils.sendBus(tag, o, isStick);
                 }
 
                 @Override
                 public void onError(ApiException t) {
-                    RxBusUtils.sendBus(tag, isStick, t);
+                    RxBusUtils.sendBus(tag, t, isStick);
                 }
             };
+        }
+
+        //如果没有设置type获取泛型type
+        if (type == null) {
+            type = ReflectUtils.getParameterizedType(httpObserver);
         }
         if (dialog != null || dialogContext != null) {
             dialogObserver(observable).subscribe(httpObserver);

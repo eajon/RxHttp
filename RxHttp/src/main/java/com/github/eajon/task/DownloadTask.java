@@ -3,6 +3,7 @@ package com.github.eajon.task;
 import android.os.Environment;
 
 import java.io.Serializable;
+import java.util.concurrent.TimeUnit;
 
 
 public class DownloadTask extends BaseTask implements Serializable {
@@ -13,10 +14,12 @@ public class DownloadTask extends BaseTask implements Serializable {
     private String localDir;//本地存储目录
     private long totalSize;//文件大小
     private long currentSize;//当前大小
+    private long rangeSize;//纪录上次下载位置
 
     public DownloadTask() {
         this.localDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
     }
+
     public DownloadTask(String name) {
         this.name = name;
         this.localDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
@@ -27,6 +30,14 @@ public class DownloadTask extends BaseTask implements Serializable {
         this.localDir = localDir;
     }
 
+    @Override
+    public void setState(State state) {
+        super.setState(state);
+        if (state == State.PAUSE) {
+            rangeSize = currentSize;
+        }
+
+    }
 
     public String getName() {
         return name;
@@ -71,11 +82,24 @@ public class DownloadTask extends BaseTask implements Serializable {
 
     public int getProgress() {
         if (totalSize != 0) {
-            float progress = (float) currentSize / (float) totalSize;
-            return (int) (progress * 100);
+            float progress = ( float ) currentSize / ( float ) totalSize;
+            return ( int ) (progress * 100);
         } else {
             return 0;
         }
+    }
+
+    public float getAverageSpeed() {
+        return getAverageSpeed(currentSize - rangeSize);
+
+    }
+
+    public String getAverageSpeedFormat() {
+        return getAverageSpeedFormat(currentSize - rangeSize);
+    }
+
+    public String getAverageSpeedFormat(TimeUnit timeUnit) {
+        return getAverageSpeedFormat(currentSize - rangeSize, timeUnit);
     }
 
 
@@ -83,9 +107,11 @@ public class DownloadTask extends BaseTask implements Serializable {
     public String toString() {
         return "DownloadTask{" +
                 "name='" + name + '\'' +
+                ", originalName='" + originalName + '\'' +
                 ", localDir='" + localDir + '\'' +
                 ", totalSize=" + totalSize +
                 ", currentSize=" + currentSize +
+                ", rangeSize=" + rangeSize +
                 '}';
     }
 }

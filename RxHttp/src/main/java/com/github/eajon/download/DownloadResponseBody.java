@@ -4,6 +4,7 @@ package com.github.eajon.download;
 import android.text.TextUtils;
 
 import com.github.eajon.task.DownloadTask;
+import com.github.eajon.util.RxBusUtils;
 
 import java.io.IOException;
 
@@ -110,7 +111,7 @@ public class DownloadResponseBody extends ResponseBody {
                 }
                 downloadTask.setCurrentSize(readBytesCount);
                 downloadTask.setTotalSize(totalBytesCount);
-                downloadTask.sendBus(tag, isStick);
+                RxBusUtils.sendBus(tag, downloadTask, isStick);
                 return bytesRead;
             }
         };

@@ -91,4 +91,14 @@ public class SecondActivity extends BaseActivity {
             }
         });
     }
+
+    @RxSubscribe(observeOnThread = EventThread.MAIN, isSticky = true, tag = "weather")
+    public void weatherCallBack(String weather) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                content2.setText("请求返回" + weather);
+            }
+        });
+    }
 }

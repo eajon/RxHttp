@@ -136,7 +136,12 @@ public class RxUtils {
 //                        LoggerUtils.e("dialog", "doOnSubscribe");
                         if (task != null) {
                             task.setState(BaseTask.State.LOADING);
-                            task.sendBus(tag, isStick);
+                            if (task instanceof MultiUploadTask) {
+                                for (UploadTask uploadTask : (( MultiUploadTask ) task).getUploadTasks()) {
+                                    uploadTask.setState(UploadTask.State.WAITING);
+                                }
+                            }
+                            RxBusUtils.sendBus(tag, task, isStick);
                         }
                     }
                 }).doOnError(new Consumer<Throwable>() {
@@ -150,7 +155,7 @@ public class RxUtils {
                                     uploadTask.setState(UploadTask.State.ERROR);
                                 }
                             }
-                            task.sendBus(tag, isStick);
+                            RxBusUtils.sendBus(tag, task, isStick);
                         }
                     }
                 }).doOnNext(new Consumer() {
@@ -159,7 +164,7 @@ public class RxUtils {
 //                        LoggerUtils.e("dialog", "doOnNext");
                         if (task != null) {
                             task.setState(BaseTask.State.FINISH);
-                            task.sendBus(tag, isStick);
+                            RxBusUtils.sendBus(tag, task, isStick);
                         }
                     }
                 }).doFinally(new Action() {
@@ -177,7 +182,7 @@ public class RxUtils {
                                     uploadTask.setState(UploadTask.State.CANCEL);
                                 }
                             }
-                            task.sendBus(tag, isStick);
+                            RxBusUtils.sendBus(tag, task, isStick);
                         }
                     }
                 });

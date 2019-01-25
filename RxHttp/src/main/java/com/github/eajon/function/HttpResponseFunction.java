@@ -25,7 +25,7 @@ public class HttpResponseFunction<T> implements Function<JsonElement, Object> {
     }
 
     @Override
-    public Object apply(@NonNull JsonElement response) throws Exception {
+    public Object apply(@NonNull JsonElement response) {
         //打印服务器回传结果
         LoggerUtils.json(response.toString());
         /*此处不再处理业务相关逻辑交由开发者重写httpCallback*/
@@ -33,7 +33,7 @@ public class HttpResponseFunction<T> implements Function<JsonElement, Object> {
             if (response.isJsonPrimitive()) {
                 return response.getAsString();
             } else if (response.isJsonNull()) {
-                return JsonNull.INSTANCE;
+                return JsonNull.INSTANCE.toString();
             } else {
                 return response.toString();
             }

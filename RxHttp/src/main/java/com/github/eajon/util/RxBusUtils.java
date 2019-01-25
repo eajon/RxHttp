@@ -8,20 +8,14 @@ public class RxBusUtils {
 
 
     //默认发射粘性消息只同类型保留最后一个
-    public static void sendBus(String tag, boolean isStick, Object object) {
+    public static void sendBus(String tag, Object object, boolean isStick) {
         if (isStick) {
             RxBus.getDefault().removeStickyEventType(object.getClass());
-            if (TextUtils.isEmpty(tag)) {
-                RxBus.getDefault().postSticky(object);
-            } else {
-                RxBus.getDefault().postSticky(tag, object);
-            }
+        }
+        if (TextUtils.isEmpty(tag)) {
+            RxBus.getDefault().post(object, isStick);
         } else {
-            if (TextUtils.isEmpty(tag)) {
-                RxBus.getDefault().post(object);
-            } else {
-                RxBus.getDefault().post(tag, object);
-            }
+            RxBus.getDefault().post(tag, object, isStick);
         }
     }
 }

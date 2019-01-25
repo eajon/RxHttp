@@ -3,6 +3,7 @@ package com.github.eajon.upload;
 
 import com.github.eajon.task.MultiUploadTask;
 import com.github.eajon.task.UploadTask;
+import com.github.eajon.util.RxBusUtils;
 
 import java.io.IOException;
 
@@ -132,9 +133,9 @@ public class UploadRequestBody extends RequestBody {
                     uploadTask.setState(UploadTask.State.LOADING);
                 }
                 if (multiUploadTask != null) {
-                    multiUploadTask.sendBus(tag, isStick);
+                    RxBusUtils.sendBus(tag, multiUploadTask, isStick);
                 } else {
-                    uploadTask.sendBus(tag, isStick);
+                    RxBusUtils.sendBus(tag, uploadTask, isStick);
                 }
             }
         };
