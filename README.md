@@ -18,6 +18,27 @@
 	     16.支持自定义cookie管理
 	     等等
          具体功能使用方法参看demo
+	 
+	 
+# 新增功能
+支持无需设置返回对象Type 只需用泛型Observer指定对象类型 即可自动解析 例如：
+ .request(new HttpObserver<Login>() {//此处设置为login 返回对象会自动解析成Login 解析失败会报错提示
+                
+                        @Override
+                        public void onSuccess(Login o) {
+                          
+                        }
+            
+                        @Override
+                        public void onError(ApiException t) {
+            
+                        }
+                        
+           
+                    });
+	
+ 支持对象参数 会自动解析对象中的属性 转成keyvalue 同时可以使用@Name 注解过滤掉不需要的参数 或者重定义key值
+ addObjectParamters(Object object) 
          
 	   
 	     
