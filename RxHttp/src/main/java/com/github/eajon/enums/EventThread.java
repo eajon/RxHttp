@@ -1,6 +1,7 @@
 package com.github.eajon.enums;
 
 import io.reactivex.Scheduler;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
 /**
@@ -34,18 +35,6 @@ public enum EventThread {
     SINGLE;
 
 
-    private static Scheduler mainThreadScheduler;
-
-    /**
-     * Set {@link #MAIN} {@link Scheduler} in your current environment.<br>
-     * For example in Android,you probably set @{code AndroidSchedulers.mainThread()}.
-     *
-     * @param scheduler {@link #MAIN} {@link Scheduler}
-     */
-    public static void setMainThreadScheduler(Scheduler scheduler) {
-        mainThreadScheduler = scheduler;
-    }
-
     /**
      * This factory method produce {@link Scheduler} for use.
      * <p>
@@ -61,10 +50,7 @@ public enum EventThread {
         switch (threadMode) {
             default:
             case MAIN:
-                if (mainThreadScheduler == null) {
-                    throw new IllegalStateException("pass the main thread scheduler for your current runtime environment before use");
-                }
-                scheduler = mainThreadScheduler;
+                scheduler = AndroidSchedulers.mainThread();
                 break;
             case NEW:
                 scheduler = Schedulers.newThread();

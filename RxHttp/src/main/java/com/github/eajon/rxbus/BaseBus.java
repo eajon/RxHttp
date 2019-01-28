@@ -1,12 +1,10 @@
 package com.github.eajon.rxbus;
 
-import com.github.eajon.enums.EventThread;
 import com.github.eajon.util.LoggerUtils;
 import com.jakewharton.rxrelay2.Relay;
 
 import io.reactivex.BackpressureStrategy;
 import io.reactivex.Flowable;
-import io.reactivex.Scheduler;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.internal.functions.ObjectHelper;
 
@@ -17,19 +15,6 @@ import io.reactivex.internal.functions.ObjectHelper;
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class BaseBus implements Bus {
 
-
-    /**
-     * Set {@link EventThread#MAIN} {@link Scheduler} in your current environment.<br>
-     * For example in Android,you probably set @{code AndroidSchedulers.mainThread()}.
-     * <p>
-     * Handy method for {@link EventThread#setMainThreadScheduler(Scheduler)}
-     * </p>
-     *
-     * @param mainScheduler mainScheduler for {@link EventThread#MAIN}
-     */
-    public static void setMainScheduler(@NonNull Scheduler mainScheduler) {
-        EventThread.setMainThreadScheduler(mainScheduler);
-    }
 
     private Relay<Object> relay;
 

@@ -13,12 +13,10 @@ import com.orhanobut.logger.PrettyFormatStrategy;
 import java.io.File;
 import java.util.Map;
 
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
 import io.reactivex.plugins.RxJavaPlugins;
 import okhttp3.OkHttpClient;
 
-import static com.github.eajon.rxbus.BaseBus.setMainScheduler;
 
 public class RxConfig {
 
@@ -69,7 +67,6 @@ public class RxConfig {
 
     private RxConfig() {
         setRxJava2ErrorHandler();
-        setMainScheduler(AndroidSchedulers.mainThread());
         addLogAdapter();
     }
 
