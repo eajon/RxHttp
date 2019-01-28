@@ -2,7 +2,8 @@ package com.github.eajon.util;
 
 import android.text.TextUtils;
 
-import com.threshold.rxbus2.RxBus;
+import com.github.eajon.rxbus.RxBus;
+
 
 public class RxBusUtils {
 

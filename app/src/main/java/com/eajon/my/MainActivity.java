@@ -20,10 +20,13 @@ import com.eajon.my.util.ZhihuImagePicker;
 import com.eajon.my.viewModel.WeatherModule2;
 import com.eajon.my.widget.CProgressDialog;
 import com.github.eajon.RxHttp;
+import com.github.eajon.annotation.RxSubscribe;
+import com.github.eajon.enums.EventThread;
 import com.github.eajon.exception.ApiException;
 import com.github.eajon.observer.DownloadObserver;
 import com.github.eajon.observer.HttpObserver;
 import com.github.eajon.observer.UploadObserver;
+import com.github.eajon.rxbus.RxBus;
 import com.github.eajon.task.DownloadTask;
 import com.github.eajon.task.MultiUploadTask;
 import com.github.eajon.task.UploadTask;
@@ -36,9 +39,6 @@ import com.qingmei2.rximagepicker_extension.MimeType;
 import com.qingmei2.rximagepicker_extension_zhihu.ZhihuConfigurationBuilder;
 import com.tbruyelle.rxpermissions2.Permission;
 import com.tbruyelle.rxpermissions2.RxPermissions;
-import com.threshold.rxbus2.RxBus;
-import com.threshold.rxbus2.annotation.RxSubscribe;
-import com.threshold.rxbus2.util.EventThread;
 import com.trello.rxlifecycle2.android.ActivityEvent;
 
 import java.io.File;
@@ -389,7 +389,9 @@ public class MainActivity extends BaseActivity {
                 break;
             case R.id.request:
 //                doJsonRequest();
-                doProfile();
+//                doProfile();
+                WeatherModule2 weatherModule2 = ViewModelProviders.of(this).get(WeatherModule2.class);
+                weatherModule2.getWeather();
                 break;
             case R.id.stick:
                 intent = new Intent(this, SecondActivity.class);

@@ -5,12 +5,12 @@ import android.widget.TextView;
 
 import com.eajon.my.base.BaseActivity;
 import com.eajon.my.model.Weather;
+import com.github.eajon.annotation.RxSubscribe;
+import com.github.eajon.enums.EventThread;
 import com.github.eajon.task.DownloadTask;
 import com.github.eajon.task.MultiUploadTask;
 import com.github.eajon.util.LoggerUtils;
 import com.google.gson.Gson;
-import com.threshold.rxbus2.annotation.RxSubscribe;
-import com.threshold.rxbus2.util.EventThread;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
