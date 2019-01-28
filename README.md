@@ -22,7 +22,8 @@
 	 
 # 新增功能
 支持无需设置返回对象Type 只需用泛型Observer指定对象类型 即可自动解析 例如：
-//此处设置为login 返回对象会自动解析成Login 解析失败会报错提示
+
+// 此处设置为login 返回对象会自动解析成Login 解析失败会报错提示
  .request(new HttpObserver<Login>() {
                 
                         @Override
