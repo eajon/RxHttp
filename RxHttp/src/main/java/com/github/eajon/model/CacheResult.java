@@ -26,8 +26,8 @@ import java.io.Serializable;
  * 版本： v2.0<br>
  */
 public class CacheResult<T> implements Serializable {
-    public boolean isFromCache;
-    public T data;
+    private boolean isFromCache;
+    private T data;
 
     public CacheResult() {
     }
@@ -41,13 +41,14 @@ public class CacheResult<T> implements Serializable {
         this.data = data;
     }
 
-    public boolean isCache() {
+    public boolean isFromCache() {
         return isFromCache;
     }
 
-    public void setCache(boolean cache) {
-        isFromCache = cache;
+    public T getData() {
+        return data;
     }
+
 
     @Override
     public String toString() {

@@ -346,14 +346,14 @@ public class RxBus extends BaseBus {
                 .doOnNext(new Consumer<Class<?>>() {
                     @Override
                     public void accept(Class<?> type) throws Exception {
-                        LoggerUtils.debug("Origin: [method: %s ] , param[0] type: %s", method, type);
+//                        LoggerUtils.debug("Origin: [method: %s ] , param[0] type: %s", method, type);
                     }
                 })
                 .map(new Function<Class<?>, Class<?>>() {
                     @Override
                     public Class<?> apply(Class<?> type) throws Exception {
                         Class<?> eventType = getEventType(type);
-                        LoggerUtils.debug("Listen event type: %s", eventType);
+//                        LoggerUtils.debug("Listen event type: %s", eventType);
                         return eventType;
                     }
                 })
@@ -361,7 +361,7 @@ public class RxBus extends BaseBus {
                     @Override
                     public Flowable<?> apply(Class<?> type) throws Exception {
                         RxSubscribe rxAnnotation = method.getAnnotation(RxSubscribe.class);
-                        LoggerUtils.debug("%s @RxSubscribe Annotation: %s", method, rxAnnotation.observeOnThread());
+//                        LoggerUtils.debug("%s @RxSubscribe Annotation: %s", method, rxAnnotation.observeOnThread());
                         Flowable<?> flowable = rxAnnotation.isSticky() ? ofStickyType(type) : ofType(RxEvent.class);
                         return flowable.observeOn(EventThread.getScheduler(rxAnnotation.observeOnThread()));
                     }
@@ -371,16 +371,6 @@ public class RxBus extends BaseBus {
                     public boolean test(Object obj) {
                         RxEvent event = ( RxEvent ) obj;
                         RxSubscribe rxAnnotation = method.getAnnotation(RxSubscribe.class);
-//                            if (rxAnnotation.tag().equals(event.getTag())) {
-//                                LoggerUtils.debug("eventID same"+rxAnnotation.tag()+"/"+event.getTag());
-//                            } else {
-//                                LoggerUtils.debug("eventID diff"+rxAnnotation.tag()+"/"+event.getTag());
-//                            }
-//                            if (method.getParameterTypes()[0].equals(event.getSource().getClass())) {
-//                                LoggerUtils.debug("class same" + event.getSource().getClass());
-//                            } else {
-//                                LoggerUtils.debug("class diff" + event.getSource().getClass() + method.getParameterTypes()[0]);
-//                            }
                         if (rxAnnotation.tag().equals(event.getTag()) && rxAnnotation.isSticky() == event.isStick() && method.getParameterTypes()[0].equals(event.getSource().getClass())) {
                             return true;
                         } else {
@@ -423,7 +413,7 @@ public class RxBus extends BaseBus {
         }
         compositeDisposable.add(subscribe);
         subscriptions.put(subscriber.hashCode(), compositeDisposable);
-        LoggerUtils.debug("Registered method %s complete", method);
+//        LoggerUtils.debug("Registered method %s complete", method);
     }
 
     /**

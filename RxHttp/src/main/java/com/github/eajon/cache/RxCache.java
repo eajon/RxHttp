@@ -21,8 +21,8 @@ import android.util.Log;
 
 import com.github.eajon.converter.GsonDiskConverter;
 import com.github.eajon.converter.IDiskConverter;
+import com.github.eajon.enums.CacheMode;
 import com.github.eajon.exception.CacheNullException;
-import com.github.eajon.model.CacheMode;
 import com.github.eajon.model.CacheResult;
 import com.github.eajon.model.RealEntity;
 import com.github.eajon.stategy.CacheAndRemoteDistinctStrategy;
@@ -68,7 +68,7 @@ import io.reactivex.internal.functions.ObjectHelper;
  * <p>
  * 使用说明：<br>
  * RxCache rxCache = new RxCache.Builder(this)<br>
- * .appVersion(1)//不设置，默认为1</br>
+ * .cacheVersion(1)//不设置，默认为1</br>
  * .diskDir(new File(getCacheDir().getPath() + File.separator + "data-cache"))//不设置，默认使用缓存路径<br>
  * .diskConverter(new SerializableDiskConverter())//目前只支持Serializable缓存<br>
  * .diskMax(20*1024*1024)//不设置， 默为认50MB<br>
@@ -82,11 +82,10 @@ public final class RxCache {
 
     private static final String TAG = "RxCache";
     private final CacheCore cacheCore;                                  //缓存的核心管理类
-    private final String cacheKey;                                      //缓存的key
     private final long cacheTime;                                       //缓存的时间 单位:秒
+    private final int cacheVersion;                                     //缓存的版本
     private final IDiskConverter diskConverter;                         //缓存的转换器
     private final File diskDir;                                         //缓存的磁盘目录，默认是缓存目录
-    private final int appVersion;                                       //缓存的版本
     private final long diskMaxSize;                                     //缓存的磁盘大小
 
     public RxCache() {
@@ -94,13 +93,12 @@ public final class RxCache {
     }
 
     private RxCache(Builder builder) {
-        this.cacheKey = builder.cacheKey;
         this.cacheTime = builder.cacheTime;
         this.diskDir = builder.diskDir;
-        this.appVersion = builder.appVersion;
+        this.cacheVersion = builder.cacheVersion;
         this.diskMaxSize = builder.diskMaxSize;
         this.diskConverter = builder.diskConverter;
-        cacheCore = new CacheCore(new LruDiskCache(diskConverter, diskDir, appVersion, diskMaxSize));
+        cacheCore = new CacheCore(new LruDiskCache(diskConverter, diskDir, cacheVersion, diskMaxSize));
     }
 
     public Builder newBuilder() {
@@ -109,8 +107,8 @@ public final class RxCache {
 
 
     @SuppressWarnings(value = {"unchecked", "deprecation"})
-    public <T> ObservableTransformer <T, CacheResult <T>> transformer(CacheMode cacheMode, Type type) {
-        return transformer(cacheMode, type, false);
+    public <T> ObservableTransformer<T, CacheResult<T>> transformer(CacheMode cacheMode, Type type, String cacheKey) {
+        return transformer(cacheMode, type, false, cacheKey);
     }
 
     /**
@@ -120,25 +118,25 @@ public final class RxCache {
      * @param type      缓存clazz
      */
     @SuppressWarnings(value = {"unchecked", "deprecation"})
-    public <T> ObservableTransformer <T, CacheResult <T>> transformer(CacheMode cacheMode, final Type type, final boolean needCacheCallback) {
+    public <T> ObservableTransformer<T, CacheResult<T>> transformer(CacheMode cacheMode, final Type type, final boolean needCacheCallback, final String cacheKey) {
         final IStrategy strategy = loadStrategy(cacheMode);//获取缓存策略
-        return new ObservableTransformer <T, CacheResult <T>>() {
+        return new ObservableTransformer<T, CacheResult<T>>() {
             @Override
-            public ObservableSource <CacheResult <T>> apply(@NonNull Observable <T> upstream) {
-                Log.i(TAG, "cackeKey=" + RxCache.this.cacheKey);
-                return strategy.execute(RxCache.this, RxCache.this.cacheKey, RxCache.this.cacheTime, upstream, type, needCacheCallback);
+            public ObservableSource<CacheResult<T>> apply(@NonNull Observable<T> upstream) {
+                Log.i(TAG, "cackeKey=" + cacheKey);
+                return strategy.execute(RxCache.this, cacheKey, RxCache.this.cacheTime, upstream, type, needCacheCallback);
             }
         };
     }
 
-    private static abstract class SimpleSubscribe<T> implements ObservableOnSubscribe <T> {
+    private static abstract class SimpleSubscribe<T> implements ObservableOnSubscribe<T> {
         @Override
-        public void subscribe(@NonNull ObservableEmitter <T> subscriber) throws Exception {
+        public void subscribe(@NonNull ObservableEmitter<T> subscriber) throws Exception {
             try {
                 T data = execute();
                 if (!subscriber.isDisposed()) {
                     if (data instanceof RealEntity) {
-                        if (((RealEntity) data).getData() != null) {
+                        if ((( RealEntity ) data).getData() != null) {
                             subscriber.onNext(data);
                         } else {
                             subscriber.onError(new CacheNullException());
@@ -177,8 +175,8 @@ public final class RxCache {
      * @param <T>
      * @return
      */
-    public <T> T get(String key, Class <T> clazz) {
-        return get(key, (Type) clazz);
+    public <T> T get(String key, Class<T> clazz) {
+        return get(key, ( Type ) clazz);
     }
 
 
@@ -191,7 +189,7 @@ public final class RxCache {
      * @return
      */
     public <T> T get(String key, Type type) {
-        RealEntity <T> result = cacheCore.load(type, key, -1);
+        RealEntity<T> result = cacheCore.load(type, key, -1);
         if (result != null) {
             return result.getData();
         }
@@ -206,8 +204,8 @@ public final class RxCache {
      * @param <T>
      * @return
      */
-    public <T> Observable <T> load(String key, Class <T> clazz) {
-        return load(key, (Type) clazz);
+    public <T> Observable<T> load(String key, Class<T> clazz) {
+        return load(key, ( Type ) clazz);
     }
 
 
@@ -217,7 +215,7 @@ public final class RxCache {
      * @param type 保存的类型
      * @param key  缓存key
      */
-    public <T> Observable <T> load(final String key, final Type type) {
+    public <T> Observable<T> load(final String key, final Type type) {
         return load(key, type, -1);
     }
 
@@ -228,15 +226,15 @@ public final class RxCache {
      * @param key  缓存key
      * @param time 保存时间 ms
      */
-    public <T> Observable <T> load(final String key, final Type type, final long time) {
-        return Observable.create(new SimpleSubscribe <RealEntity <T>>() {
+    public <T> Observable<T> load(final String key, final Type type, final long time) {
+        return Observable.create(new SimpleSubscribe<RealEntity<T>>() {
             @Override
-            RealEntity <T> execute() {
+            RealEntity<T> execute() {
                 return cacheCore.load(type, key, time);
             }
-        }).map(new Function <RealEntity <T>, T>() {
+        }).map(new Function<RealEntity<T>, T>() {
             @Override
-            public T apply(RealEntity <T> entity) throws Exception {
+            public T apply(RealEntity<T> entity) throws Exception {
                 return entity.getData();
             }
         });
@@ -266,7 +264,7 @@ public final class RxCache {
         if (cacheTime < -1) {
             cacheTime = -1;
         }
-        RealEntity <T> entity = new RealEntity <>(value, cacheTime);
+        RealEntity<T> entity = new RealEntity<>(value, cacheTime);
         entity.setUpdateDate(System.currentTimeMillis());
         return cacheCore.save(key, entity);
     }
@@ -277,12 +275,12 @@ public final class RxCache {
      * @param key   缓存key
      * @param value 缓存Value
      */
-    public <T> Observable <Boolean> save(final String key, final T value) {
+    public <T> Observable<Boolean> save(final String key, final T value) {
         return save(key, value, -1);
     }
 
-    public <T> Observable <Boolean> save(final String key, final T value, final long cacheTime) {
-        return Observable.create(new SimpleSubscribe <Boolean>() {
+    public <T> Observable<Boolean> save(final String key, final T value, final long cacheTime) {
+        return Observable.create(new SimpleSubscribe<Boolean>() {
             @Override
             Boolean execute() throws Throwable {
                 long time;
@@ -291,7 +289,7 @@ public final class RxCache {
                 } else {
                     time = cacheTime;
                 }
-                RealEntity <T> entity = new RealEntity <>(value, time);
+                RealEntity<T> entity = new RealEntity<>(value, time);
                 entity.setUpdateDate(System.currentTimeMillis());
                 return cacheCore.save(key, entity);
             }
@@ -306,8 +304,8 @@ public final class RxCache {
     /**
      * 删除缓存
      */
-    public Observable <Boolean> remove(final String key) {
-        return Observable.create(new SimpleSubscribe <Boolean>() {
+    public Observable<Boolean> remove(final String key) {
+        return Observable.create(new SimpleSubscribe<Boolean>() {
             @Override
             Boolean execute() throws Throwable {
                 return cacheCore.remove(key);
@@ -318,8 +316,8 @@ public final class RxCache {
     /**
      * 清空缓存
      */
-    public Observable <Boolean> clear() {
-        return Observable.create(new SimpleSubscribe <Boolean>() {
+    public Observable<Boolean> clear() {
+        return Observable.create(new SimpleSubscribe<Boolean>() {
             @Override
             Boolean execute() throws Throwable {
                 return cacheCore.clear();
@@ -364,9 +362,6 @@ public final class RxCache {
         return cacheTime;
     }
 
-    public String getCacheKey() {
-        return cacheKey;
-    }
 
     public CacheCore getCacheCore() {
         return cacheCore;
@@ -380,8 +375,8 @@ public final class RxCache {
         return diskDir;
     }
 
-    public int getAppVersion() {
-        return appVersion;
+    public int getCacheVersion() {
+        return cacheVersion;
     }
 
     public long getDiskMaxSize() {
@@ -392,33 +387,31 @@ public final class RxCache {
         private static final int MIN_DISK_CACHE_SIZE = 5 * 1024 * 1024; // 5MB
         private static final int MAX_DISK_CACHE_SIZE = 50 * 1024 * 1024; // 50MB
         public static final long CACHE_NEVER_EXPIRE = -1;//永久不过期
-        private int appVersion;
+        private int cacheVersion;
         private long diskMaxSize;
         private File diskDir;
         private IDiskConverter diskConverter;
-        private String cacheKey;
         private long cacheTime;
 
         public Builder() {
             diskConverter = new GsonDiskConverter();
             cacheTime = CACHE_NEVER_EXPIRE;
-            appVersion = 1;
+            cacheVersion = 1;
         }
 
         public Builder(RxCache rxCache) {
-            this.appVersion = rxCache.appVersion;
+            this.cacheVersion = rxCache.cacheVersion;
             this.diskMaxSize = rxCache.diskMaxSize;
             this.diskDir = rxCache.diskDir;
             this.diskConverter = rxCache.diskConverter;
-            this.cacheKey = rxCache.cacheKey;
             this.cacheTime = rxCache.cacheTime;
         }
 
         /**
          * 不设置，默认为1
          */
-        public Builder appVersion(int appVersion) {
-            this.appVersion = appVersion;
+        public Builder cacheVersion(int appVersion) {
+            this.cacheVersion = appVersion;
             return this;
         }
 
@@ -428,7 +421,7 @@ public final class RxCache {
          * @param directory
          * @return
          */
-        public Builder diskDir(File directory) {
+        public Builder cacheDir(File directory) {
             this.diskDir = directory;
             return this;
         }
@@ -442,22 +435,16 @@ public final class RxCache {
         /**
          * 不设置， 默为认50MB
          */
-        public Builder diskMax(long maxSize) {
+        public Builder cacheMaxSize(long maxSize) {
             this.diskMaxSize = maxSize;
             return this;
         }
 
-        public Builder cacheKey(String cachekey) {
-            this.cacheKey = cachekey;
-            return this;
-        }
 
-
-        public Builder cacheTime(long cacheTime) {
+        public Builder cacheExpTime(long cacheTime) {
             this.cacheTime = cacheTime;
             return this;
         }
-
 
 
         public RxCache build() {
@@ -473,7 +460,7 @@ public final class RxCache {
             }
             cacheTime = Math.max(CACHE_NEVER_EXPIRE, this.cacheTime);
 
-            appVersion = Math.max(1, this.appVersion);
+            cacheVersion = Math.max(1, this.cacheVersion);
 
             return new RxCache(this);
         }
@@ -483,7 +470,7 @@ public final class RxCache {
             long size = 0;
             try {
                 StatFs statFs = new StatFs(dir.getAbsolutePath());
-                long available = ((long) statFs.getBlockCount()) * statFs.getBlockSize();
+                long available = (( long ) statFs.getBlockCount()) * statFs.getBlockSize();
                 size = available / 50;
             } catch (IllegalArgumentException ignored) {
             }

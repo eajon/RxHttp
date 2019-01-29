@@ -42,7 +42,7 @@ public final class CacheAndRemoteStrategy extends BaseStrategy {
                 .filter(new Predicate<CacheResult<T>>() {
                     @Override
                     public boolean test(@NonNull CacheResult<T> tCacheResult) throws Exception {
-                        return tCacheResult != null && tCacheResult.data != null;
+                        return tCacheResult != null && tCacheResult.getData() != null;
                     }
                 });
     }

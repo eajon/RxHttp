@@ -1,7 +1,7 @@
 package com.github.eajon;
 
-import com.github.eajon.cache.RxCacheProvider;
-import com.github.eajon.model.CacheMode;
+import com.github.eajon.cache.RxCache;
+import com.github.eajon.enums.CacheMode;
 import com.github.eajon.util.GsonUtils;
 import com.github.eajon.util.LoggerUtils;
 import com.github.eajon.util.OkHttpUtils;
@@ -36,7 +36,7 @@ public class RxConfig {
 
 
     private void setRxJava2ErrorHandler() {
-        RxJavaPlugins.setErrorHandler(new Consumer <Throwable>() {
+        RxJavaPlugins.setErrorHandler(new Consumer<Throwable>() {
             @Override
             public void accept(Throwable throwable) throws Exception {
                 LoggerUtils.error(throwable, throwable.getMessage());
@@ -56,11 +56,15 @@ public class RxConfig {
     /*请求基础路径*/
     String baseUrl;
     /*请求参数*/
-    Map <String, Object> parameter;
+    Map<String, Object> parameter;
     /*header*/
-    Map <String, Object> header;
+    Map<String, Object> header;
 
     OkHttpClient okHttpClient;
+
+    RxCache rxCache;
+
+    CacheMode cacheMode;
 
     String logTag = "RxHttp";
 
@@ -82,7 +86,7 @@ public class RxConfig {
     }
 
     /*基础参数*/
-    public RxConfig baseParameter(Map <String, Object> parameter) {
+    public RxConfig baseParameter(Map<String, Object> parameter) {
         this.parameter = parameter;
         return this;
     }
@@ -93,12 +97,12 @@ public class RxConfig {
         return this;
     }
 
-    public Map <String, Object> getBaseParameter() {
+    public Map<String, Object> getBaseParameter() {
         return parameter;
     }
 
     /*基础Header*/
-    public RxConfig baseHeader(Map <String, Object> header) {
+    public RxConfig baseHeader(Map<String, Object> header) {
         this.header = header;
         return this;
     }
@@ -109,7 +113,7 @@ public class RxConfig {
         return this;
     }
 
-    public Map <String, Object> getBaseHeader() {
+    public Map<String, Object> getBaseHeader() {
         return header;
     }
 
@@ -120,40 +124,43 @@ public class RxConfig {
         return this;
     }
 
+    public RxCache getRxCache() {
+        return rxCache;
+    }
 
+    public CacheMode getCacheMode() {
+        return cacheMode;
+    }
 
     public OkHttpClient getOkHttpClient() {
         return this.okHttpClient == null ? OkHttpUtils.HttpClient : this.okHttpClient;
     }
 
     public RxConfig rxCache(File cacheDir) {
-        RxCacheProvider.getInstance()
-                .setCacheDirectory(cacheDir)
-                .setCacheMode(CacheMode.FIRSTREMOTE)
-                .setCacheMaxSize(50 * 1024 * 1024)
-                .setCacheTime(-1)
-                .setCacheVersion(1);
+        this.rxCache = new RxCache.Builder()
+                .cacheDir(cacheDir)
+                .build();
+        this.cacheMode = CacheMode.FIRSTREMOTE;
         return this;
     }
 
 
     public RxConfig rxCache(File cacheDir, CacheMode cacheMode) {
-        RxCacheProvider.getInstance()
-                .setCacheDirectory(cacheDir)
-                .setCacheMode(cacheMode)
-                .setCacheMaxSize(50 * 1024 * 1024)
-                .setCacheTime(-1)
-                .setCacheVersion(1);
+        rxCache = new RxCache.Builder()
+                .cacheDir(cacheDir)
+                .build();
+        this.cacheMode = cacheMode;
         return this;
     }
 
     public RxConfig rxCache(File cacheDir, CacheMode cacheMode, long cacheMaxSize, long cacheExpTime, int cacheVersion) {
-        RxCacheProvider.getInstance()
-                .setCacheDirectory(cacheDir)
-                .setCacheMaxSize(cacheMaxSize)
-                .setCacheTime(cacheExpTime)
-                .setCacheMode(cacheMode)
-                .setCacheVersion(cacheVersion);
+        rxCache = new RxCache.Builder()
+                .cacheDir(cacheDir)
+                .cacheMaxSize(cacheMaxSize)
+                .cacheExpTime(cacheExpTime)
+                .cacheVersion(cacheVersion)
+                .build();
+        this.cacheMode = cacheMode;
         return this;
     }
 

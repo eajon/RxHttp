@@ -44,12 +44,12 @@ public final class CacheAndRemoteDistinctStrategy extends BaseStrategy {
                 .filter(new Predicate<CacheResult<T>>() {
                     @Override
                     public boolean test(@NonNull CacheResult<T> tCacheResult) throws Exception {
-                        return tCacheResult != null && tCacheResult.data != null;
+                        return tCacheResult != null && tCacheResult.getData() != null;
                     }
                 }).distinctUntilChanged(new Function<CacheResult<T>, String>() {
                     @Override
                     public String apply(@NonNull CacheResult<T> tCacheResult) throws Exception {
-                        return  ByteString.of(tCacheResult.data.toString().getBytes()).md5().hex();
+                        return ByteString.of(tCacheResult.getData().toString().getBytes()).md5().hex();
                     }
                 });
     }

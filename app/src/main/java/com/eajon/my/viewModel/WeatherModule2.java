@@ -38,6 +38,7 @@ public class WeatherModule2 extends ViewModel {
                 .apiUrl("weather_mini")
                 .addObjectParameter(testGson)//可以使用name注解 过滤不需要的参数
 //                .addParameter(map)
+                .cacheKey("weather")
                 .entity(Weather.class)
                 .isStick(true)
                 .tag("weather")

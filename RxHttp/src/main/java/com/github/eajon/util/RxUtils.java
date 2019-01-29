@@ -19,7 +19,9 @@ package com.github.eajon.util;
 
 import android.text.TextUtils;
 
-import com.github.eajon.cache.RxCacheProvider;
+import com.github.eajon.RxConfig;
+import com.github.eajon.cache.RxCache;
+import com.github.eajon.enums.CacheMode;
 import com.github.eajon.enums.RequestType;
 import com.github.eajon.function.CacheResultFunction;
 import com.github.eajon.function.DownloadResponseFunction;
@@ -77,11 +79,13 @@ public class RxUtils {
         return new ObservableTransformer<T, T>() {
             @Override
             public ObservableSource<T> apply(@NonNull Observable<T> upstream) {
-                if (requestType != RequestType.REQUEST || !RxCacheProvider.isInit() || TextUtils.isEmpty(cacheKey)) {
+                RxCache rxCache = RxConfig.get().getRxCache();
+                CacheMode cacheMode = RxConfig.get().getCacheMode();
+                if (requestType != RequestType.REQUEST || rxCache == null || TextUtils.isEmpty(cacheKey)) {
                     return upstream;
                 } else {
                     return upstream
-                            .compose(RxCacheProvider.buildRxCache(cacheKey).transformer(RxCacheProvider.getCacheMode(), type == null ? String.class : type))
+                            .compose(rxCache.transformer(cacheMode, type == null ? String.class : type, cacheKey))
                             .map(new CacheResultFunction());
                 }
             }

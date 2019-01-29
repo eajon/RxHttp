@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.github.eajon.model;
+package com.github.eajon.enums;
 
 /**
  * <p>描述：网络请求策略</p>

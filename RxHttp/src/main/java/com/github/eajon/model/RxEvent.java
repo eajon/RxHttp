@@ -18,13 +18,11 @@ public class RxEvent extends EventObject {
      * @throws IllegalArgumentException if source is null.
      */
     private String tag;
-    private Object source;
     private boolean isStick;
 
     public RxEvent(String tag, @NonNull Object source) {
         super(source);
         this.tag = tag;
-        this.source = source;
         this.isStick = false;
 
     }
@@ -32,7 +30,6 @@ public class RxEvent extends EventObject {
     public RxEvent(String tag, @NonNull Object source, boolean isStick) {
         super(source);
         this.tag = tag;
-        this.source = source;
         this.isStick = isStick;
 
     }
@@ -40,7 +37,6 @@ public class RxEvent extends EventObject {
     public RxEvent(@NonNull Object source) {
         super(source);
         this.tag = "";
-        this.source = source;
         this.isStick = false;
 
     }
@@ -48,7 +44,6 @@ public class RxEvent extends EventObject {
     public RxEvent(@NonNull Object source, boolean isStick) {
         super(source);
         this.tag = "";
-        this.source = source;
         this.isStick = isStick;
 
     }
@@ -59,15 +54,6 @@ public class RxEvent extends EventObject {
 
     public void setTag(String tag) {
         this.tag = tag;
-    }
-
-    @Override
-    public Object getSource() {
-        return source;
-    }
-
-    public void setSource(Object source) {
-        this.source = source;
     }
 
     public boolean isStick() {
