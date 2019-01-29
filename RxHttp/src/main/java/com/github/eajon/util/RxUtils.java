@@ -65,9 +65,9 @@ public class RxUtils {
             public ObservableSource<T> apply(@NonNull Observable<T> upstream) {
                 if (requestType == RequestType.DOWNLOAD) {
                     return upstream.map(new DownloadResponseFunction());
-                } else {
-                    return upstream.map(new HttpResponseFunction(type));
                 }
+                return upstream.map(new HttpResponseFunction(type));
+
             }
         };
     }
@@ -83,11 +83,11 @@ public class RxUtils {
                 CacheMode cacheMode = RxConfig.get().getCacheMode();
                 if (requestType != RequestType.REQUEST || rxCache == null || TextUtils.isEmpty(cacheKey)) {
                     return upstream;
-                } else {
-                    return upstream
-                            .compose(rxCache.transformer(cacheMode, type == null ? String.class : type, cacheKey))
-                            .map(new CacheResultFunction());
                 }
+                return upstream
+                        .compose(rxCache.transformer(cacheMode, type == null ? String.class : type, cacheKey))
+                        .map(new CacheResultFunction());
+
             }
         };
     }
@@ -134,48 +134,43 @@ public class RxUtils {
         return new ObservableTransformer<T, T>() {
             @Override
             public ObservableSource<T> apply(@NonNull Observable<T> upstream) {
+                if (task == null) {
+                    return upstream;
+                }
                 return upstream.doOnSubscribe(new Consumer<Disposable>() {
                     @Override
                     public void accept(Disposable disposable) throws Exception {
-//                        LoggerUtils.e("dialog", "doOnSubscribe");
-                        if (task != null) {
-                            task.setState(BaseTask.State.LOADING);
-                            if (task instanceof MultiUploadTask) {
-                                for (UploadTask uploadTask : (( MultiUploadTask ) task).getUploadTasks()) {
-                                    uploadTask.setState(UploadTask.State.WAITING);
-                                }
+                        task.setState(BaseTask.State.LOADING);
+                        if (task instanceof MultiUploadTask) {
+                            for (UploadTask uploadTask : (( MultiUploadTask ) task).getUploadTasks()) {
+                                uploadTask.setState(UploadTask.State.WAITING);
                             }
-                            RxBusUtils.sendBus(tag, task, isStick);
                         }
+                        RxBusUtils.sendBus(tag, task, isStick);
+
                     }
                 }).doOnError(new Consumer<Throwable>() {
                     @Override
-                    public void accept(Throwable throwable) throws Exception {
-//                        LoggerUtils.e("dialog", "doOnError");
-                        if (task != null) {
-                            task.setState(UploadTask.State.ERROR);
-                            if (task instanceof MultiUploadTask) {
-                                for (UploadTask uploadTask : (( MultiUploadTask ) task).getUploadTasks()) {
-                                    uploadTask.setState(UploadTask.State.ERROR);
-                                }
+                    public void accept(Throwable throwable) {
+                        task.setState(UploadTask.State.ERROR);
+                        if (task instanceof MultiUploadTask) {
+                            for (UploadTask uploadTask : (( MultiUploadTask ) task).getUploadTasks()) {
+                                uploadTask.setState(UploadTask.State.ERROR);
                             }
-                            RxBusUtils.sendBus(tag, task, isStick);
                         }
+                        RxBusUtils.sendBus(tag, task, isStick);
                     }
                 }).doOnNext(new Consumer() {
                     @Override
-                    public void accept(Object o) throws Exception {
-//                        LoggerUtils.e("dialog", "doOnNext");
-                        if (task != null) {
-                            task.setState(BaseTask.State.FINISH);
-                            RxBusUtils.sendBus(tag, task, isStick);
-                        }
+                    public void accept(Object o) {
+                        task.setState(BaseTask.State.FINISH);
+                        RxBusUtils.sendBus(tag, task, isStick);
+
                     }
                 }).doFinally(new Action() {
                     @Override
-                    public void run() throws Exception {
-//                        LoggerUtils.e("dialog", "doFinally");
-                        if (task != null && !task.isFinish() && !task.isError()) {
+                    public void run() {
+                        if (!task.isFinish() && !task.isError()) {
                             if (task instanceof DownloadTask) {
                                 task.setState(BaseTask.State.PAUSE);
                             } else if (task instanceof UploadTask) {

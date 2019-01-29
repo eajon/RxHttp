@@ -156,7 +156,24 @@ public class RxHttp {
         disposeHeader();
         /*Parameter处理*/
         disposeParameter();
+        /*RxBus方式*/
+        if (httpObserver == null) {
+            httpObserver = new HttpObserver() {
+                @Override
+                public void onSuccess(Object o) {
+                    RxBusUtils.sendBus(tag, o, isStick);
+                }
 
+                @Override
+                public void onError(ApiException t) {
+                    RxBusUtils.sendBus(tag, t, isStick);
+                }
+            };
+        }
+        //如果没有设置type获取泛型type
+        if (type == null) {
+            type = ReflectUtils.getParameterizedType(httpObserver);
+        }
         if (task == null) {
             this.requestType = RequestType.REQUEST;
             return doRequest();
@@ -267,24 +284,6 @@ public class RxHttp {
 
     @SuppressWarnings("unchecked")
     private Disposable subscribe(Observable observable) {
-        if (httpObserver == null) {
-            httpObserver = new HttpObserver() {
-                @Override
-                public void onSuccess(Object o) {
-                    RxBusUtils.sendBus(tag, o, isStick);
-                }
-
-                @Override
-                public void onError(ApiException t) {
-                    RxBusUtils.sendBus(tag, t, isStick);
-                }
-            };
-        }
-
-        //如果没有设置type获取泛型type
-        if (type == null) {
-            type = ReflectUtils.getParameterizedType(httpObserver);
-        }
         if (dialog != null || dialogContext != null) {
             dialogObserver(observable).subscribe(httpObserver);
         } else {
