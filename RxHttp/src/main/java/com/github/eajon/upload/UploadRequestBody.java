@@ -1,12 +1,13 @@
 package com.github.eajon.upload;
 
 
+import com.github.eajon.observer.UploadObserver;
 import com.github.eajon.task.MultiUploadTask;
 import com.github.eajon.task.UploadTask;
-import com.github.eajon.util.RxBusUtils;
 
 import java.io.IOException;
 
+import io.reactivex.Observer;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import okio.Buffer;
@@ -31,26 +32,23 @@ public class UploadRequestBody extends RequestBody {
 
     private MultiUploadTask multiUploadTask;
 
-    private boolean isStick;
+    private Observer observer;
 
-    private String tag;
 
     private long time;
     private long secondBytesCount;
 
 
-    public UploadRequestBody(RequestBody requestBody, String tag, boolean isStick, UploadTask uploadTask) {
+    public UploadRequestBody(RequestBody requestBody, Observer observer, UploadTask uploadTask) {
         this.requestBody = requestBody;
-        this.tag = tag;
-        this.isStick = isStick;
+        this.observer = observer;
         this.uploadTask = uploadTask;
 
     }
 
-    public UploadRequestBody(RequestBody requestBody, String tag, boolean isStick, UploadTask uploadTask, MultiUploadTask multiUploadTask) {
+    public UploadRequestBody(RequestBody requestBody, Observer observer, UploadTask uploadTask, MultiUploadTask multiUploadTask) {
         this.requestBody = requestBody;
-        this.tag = tag;
-        this.isStick = isStick;
+        this.observer = observer;
         this.uploadTask = uploadTask;
         this.multiUploadTask = multiUploadTask;
     }
@@ -132,10 +130,12 @@ public class UploadRequestBody extends RequestBody {
                 } else {
                     uploadTask.setState(UploadTask.State.LOADING);
                 }
-                if (multiUploadTask != null) {
-                    RxBusUtils.sendBus(tag, multiUploadTask, isStick);
-                } else {
-                    RxBusUtils.sendBus(tag, uploadTask, isStick);
+                if (observer instanceof UploadObserver) {
+                    if (multiUploadTask != null) {
+                        (( UploadObserver ) observer).onProgress(multiUploadTask);
+                    } else {
+                        (( UploadObserver ) observer).onProgress(uploadTask);
+                    }
                 }
             }
         };

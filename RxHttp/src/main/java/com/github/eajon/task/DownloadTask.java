@@ -80,6 +80,7 @@ public class DownloadTask extends BaseTask implements Serializable {
     }
 
 
+    @Override
     public int getProgress() {
         if (totalSize != 0) {
             float progress = ( float ) currentSize / ( float ) totalSize;
@@ -89,15 +90,18 @@ public class DownloadTask extends BaseTask implements Serializable {
         }
     }
 
+    @Override
     public float getAverageSpeed() {
         return getAverageSpeed(currentSize - rangeSize);
 
     }
 
+    @Override
     public String getAverageSpeedFormat() {
         return getAverageSpeedFormat(currentSize - rangeSize);
     }
 
+    @Override
     public String getAverageSpeedFormat(TimeUnit timeUnit) {
         return getAverageSpeedFormat(currentSize - rangeSize, timeUnit);
     }

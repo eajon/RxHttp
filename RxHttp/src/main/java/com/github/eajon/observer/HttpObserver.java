@@ -12,7 +12,6 @@ public abstract class HttpObserver<T> extends DisposableObserver <T> {
     public abstract void onError(ApiException exception);
 
 
-
     @Override
     public void onNext(T value) {
         onSuccess(value);

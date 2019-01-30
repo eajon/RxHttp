@@ -14,11 +14,8 @@ public class UploadTask extends BaseTask implements Serializable {
     private long totalSize;//总文件大小
 
 
-
-
-
-    public UploadTask(String name,File file) {
-        this.name=name;
+    public UploadTask(String name, File file) {
+        this.name = name;
         this.file = file;
         this.fileName = file.getName();
         this.totalSize = file.length();
@@ -39,6 +36,7 @@ public class UploadTask extends BaseTask implements Serializable {
     public void setFileName(String fileName) {
         this.fileName = fileName;
     }
+
     public File getFile() {
         return file;
     }
@@ -63,24 +61,27 @@ public class UploadTask extends BaseTask implements Serializable {
         this.totalSize = totalSize;
     }
 
-
+    @Override
     public int getProgress() {
         if (totalSize != 0) {
-            float progress = (float) currentSize / (float) totalSize;
-            return (int) (progress * 100);
+            float progress = ( float ) currentSize / ( float ) totalSize;
+            return ( int ) (progress * 100);
         } else {
             return 0;
         }
     }
 
+    @Override
     public float getAverageSpeed() {
         return getAverageSpeed(currentSize);
     }
 
+    @Override
     public String getAverageSpeedFormat() {
         return getAverageSpeedFormat(currentSize);
     }
 
+    @Override
     public String getAverageSpeedFormat(TimeUnit timeUnit) {
         return getAverageSpeedFormat(currentSize, timeUnit);
     }

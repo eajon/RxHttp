@@ -3,11 +3,12 @@ package com.github.eajon.download;
 
 import android.text.TextUtils;
 
+import com.github.eajon.observer.DownloadObserver;
 import com.github.eajon.task.DownloadTask;
-import com.github.eajon.util.RxBusUtils;
 
 import java.io.IOException;
 
+import io.reactivex.Observer;
 import okhttp3.MediaType;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
@@ -32,18 +33,16 @@ public class DownloadResponseBody extends ResponseBody {
     Response originalResponse;
 
     DownloadTask downloadTask;
-
+    private Observer observer;
     private BufferedSource bufferedSource;
 
-    private boolean isStick;
-    private String tag;
+
     private long time;
     private long secondBytesCount;
 
-    public DownloadResponseBody(Response originalResponse, String tag, boolean isStick, DownloadTask downloadTask) {
+    public DownloadResponseBody(Response originalResponse, Observer observer, DownloadTask downloadTask) {
         this.originalResponse = originalResponse;
-        this.tag = tag;
-        this.isStick = isStick;
+        this.observer = observer;
         this.downloadTask = downloadTask;
         getFileOriginalName();
     }
@@ -111,7 +110,9 @@ public class DownloadResponseBody extends ResponseBody {
                 }
                 downloadTask.setCurrentSize(readBytesCount);
                 downloadTask.setTotalSize(totalBytesCount);
-                RxBusUtils.sendBus(tag, downloadTask, isStick);
+                if (observer instanceof DownloadObserver) {
+                    (( DownloadObserver ) observer).onProgress(downloadTask);
+                }
                 return bytesRead;
             }
         };

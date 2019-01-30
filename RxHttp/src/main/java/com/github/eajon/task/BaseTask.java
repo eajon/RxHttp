@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit;
 
 public abstract class BaseTask {
 
+
     /**
      * 枚举状态
      */
@@ -43,6 +44,8 @@ public abstract class BaseTask {
         }
     }
 
+    public abstract int getProgress();
+
     public long getDuration() {
         if (finishTime == 0L) {
             return System.currentTimeMillis() - startTime;
@@ -63,12 +66,18 @@ public abstract class BaseTask {
 
     }
 
-
     public String getSpeedFormat(TimeUnit timeUnit) {
         return SpeedUtils.formatSpeed(speed, timeUnit);
     }
 
-    public float getAverageSpeed(long currentSize) {
+
+    public abstract float getAverageSpeed();
+
+    public abstract String getAverageSpeedFormat();
+
+    public abstract String getAverageSpeedFormat(TimeUnit timeUnit);
+
+    protected float getAverageSpeed(long currentSize) {
         long dur = getDuration();
         if (currentSize != 0 && dur != 0) {
             float speed = 1000F * currentSize / dur;
@@ -79,11 +88,11 @@ public abstract class BaseTask {
 
     }
 
-    public String getAverageSpeedFormat(long currentSize) {
+    protected String getAverageSpeedFormat(long currentSize) {
         return SpeedUtils.formatSpeedPerSecond(getAverageSpeed(currentSize));
     }
 
-    public String getAverageSpeedFormat(long currentSize, TimeUnit timeUnit) {
+    protected String getAverageSpeedFormat(long currentSize, TimeUnit timeUnit) {
         return SpeedUtils.formatSpeed(getAverageSpeed(currentSize), timeUnit);
     }
 

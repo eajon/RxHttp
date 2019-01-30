@@ -27,6 +27,7 @@ import com.github.eajon.observer.DownloadObserver;
 import com.github.eajon.observer.HttpObserver;
 import com.github.eajon.observer.UploadObserver;
 import com.github.eajon.rxbus.RxBus;
+import com.github.eajon.task.BaseTask;
 import com.github.eajon.task.DownloadTask;
 import com.github.eajon.task.MultiUploadTask;
 import com.github.eajon.task.UploadTask;
@@ -58,7 +59,7 @@ import okhttp3.RequestBody;
 
 
 public class MainActivity extends BaseActivity {
-    ArrayList <UploadTask> uploadTasks;
+    ArrayList<UploadTask> uploadTasks;
     DownloadTask downloadTask;
     Disposable downloadDisposable;
     @BindView(R.id.request)
@@ -118,8 +119,8 @@ public class MainActivity extends BaseActivity {
 
     @Override
     protected void initLogic() {
-        doRequest();
-//        doRequest2();
+//        doRequest();
+        doRequest2();
     }
 
     private void doRequest() {
@@ -133,7 +134,7 @@ public class MainActivity extends BaseActivity {
                 .request(new HttpObserver() {
                     @Override
                     public void onSuccess(Object o) {
-                        HashMap<String,Object> header=new HashMap<>();
+                        HashMap<String, Object> header = new HashMap<>();
                         header.put("Authorization", o.toString());
                         RxHttp.getConfig().baseHeader(header);
                         content.setText(o.toString());
@@ -173,10 +174,10 @@ public class MainActivity extends BaseActivity {
     }
 
     private void doJsonRequest() {
-        BaseResponse baseResponse=new BaseResponse();
+        BaseResponse baseResponse = new BaseResponse();
         baseResponse.setCode(1);
         baseResponse.setMessage("HAHAH");
-        RequestBody body=RequestBody.create(MediaType.parse("application/json"),new Gson().toJson(baseResponse));
+        RequestBody body = RequestBody.create(MediaType.parse("application/json"), new Gson().toJson(baseResponse));
         new RxHttp.Builder()
                 .post()
                 .apiUrl("test/json")
@@ -247,32 +248,6 @@ public class MainActivity extends BaseActivity {
         content.setText(new Gson().toJson(e));
     }
 
-    //下载监听
-    @RxSubscribe(observeOnThread = EventThread.MAIN, tag = "download")
-    @SuppressWarnings("unused")
-    public void downloadProgress(DownloadTask downloadTask) {
-        LoggerUtils.info("download1", downloadTask.getState().toString() + downloadTask.getProgress() + "%" + downloadTask.getSpeedFormat());
-        download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%" + downloadTask.getSpeedFormat() + "平均速度：" + downloadTask.getAverageSpeedFormat() + "用时：" + downloadTask.getDuration() + "速度：" + downloadTask.getAverageSpeed());
-    }
-
-
-    //上传监听
-    @RxSubscribe(observeOnThread = EventThread.MAIN)
-    @SuppressWarnings("unused")
-    public void uploadProgress(UploadTask uploadTask) {
-        upload.setText(uploadTask.getState().toString() + uploadTask.getProgress() + "%");
-    }
-
-    @RxSubscribe(observeOnThread = EventThread.MAIN, tag = "upload")
-    @SuppressWarnings("unused")
-    public void uploadProgress(MultiUploadTask multiUploadTask) {
-        content.setText("总进度：" + multiUploadTask.getProgress() + "%" + multiUploadTask.getState().toString() + multiUploadTask.getSpeedFormat() + "平均速度：" + multiUploadTask.getAverageSpeedFormat() + "用时：" + multiUploadTask.getDuration());
-        if (multiUploadTask.getUploadTasks().size() >= 3) {//假设选择3个
-            content1.setText("第一个：" + multiUploadTask.getProgress(0) + "%" + multiUploadTask.getState(0).toString() + multiUploadTask.getUploadTasks().get(0).getSpeedFormat());
-            content2.setText("第二个：" + multiUploadTask.getProgress(1) + "%" + multiUploadTask.getState(1).toString() + multiUploadTask.getUploadTasks().get(1).getSpeedFormat());
-            content3.setText("第三个：" + multiUploadTask.getProgress(2) + "%" + multiUploadTask.getState(2).toString() + multiUploadTask.getUploadTasks().get(2).getSpeedFormat());
-        }
-    }
 
 
     @Override
@@ -283,12 +258,12 @@ public class MainActivity extends BaseActivity {
     }
 
 
-    private void upload(ArrayList <UploadTask> uploadTasks) {
-        HashMap<String,Object> params=new HashMap<>();
-        params.put("folder","gallery");
-        params.put("host","gallery");
-        params.put("folderId",52L);
-        params.put("remark","androidTest");
+    private void upload(ArrayList<UploadTask> uploadTasks) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("folder", "gallery");
+        params.put("host", "gallery");
+        params.put("folderId", 52L);
+        params.put("remark", "androidTest");
         MultiUploadTask multiUploadTask = new MultiUploadTask(uploadTasks);
         new RxHttp.Builder()
                 .apiUrl("image/upload")
@@ -303,6 +278,27 @@ public class MainActivity extends BaseActivity {
                 .request(new UploadObserver<CommonResponse>() {
                     @Override
                     public void onCancel() {
+                        content.setText("总进度：" + multiUploadTask.getProgress() + "%" + multiUploadTask.getState().toString() + multiUploadTask.getSpeedFormat() + "平均速度：" + multiUploadTask.getAverageSpeedFormat() + "用时：" + multiUploadTask.getDuration());
+                        if (multiUploadTask.getUploadTasks().size() >= 3) {//假设选择3个
+                            content1.setText("第一个：" + multiUploadTask.getProgress(0) + "%" + multiUploadTask.getState(0).toString() + multiUploadTask.getUploadTasks().get(0).getSpeedFormat());
+                            content2.setText("第二个：" + multiUploadTask.getProgress(1) + "%" + multiUploadTask.getState(1).toString() + multiUploadTask.getUploadTasks().get(1).getSpeedFormat());
+                            content3.setText("第三个：" + multiUploadTask.getProgress(2) + "%" + multiUploadTask.getState(2).toString() + multiUploadTask.getUploadTasks().get(2).getSpeedFormat());
+                        }
+                    }
+
+                    @Override
+                    public void onProgress(BaseTask baseTask) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                content.setText("总进度：" + baseTask.getProgress() + "%" + baseTask.getState().toString() + baseTask.getSpeedFormat() + "平均速度：" + baseTask.getAverageSpeedFormat() + "用时：" + multiUploadTask.getDuration());
+                                if (multiUploadTask.getUploadTasks().size() >= 3) {//假设选择3个
+                                    content1.setText("第一个：" + multiUploadTask.getProgress(0) + "%" + multiUploadTask.getState(0).toString() + multiUploadTask.getUploadTasks().get(0).getSpeedFormat());
+                                    content2.setText("第二个：" + multiUploadTask.getProgress(1) + "%" + multiUploadTask.getState(1).toString() + multiUploadTask.getUploadTasks().get(1).getSpeedFormat());
+                                    content3.setText("第三个：" + multiUploadTask.getProgress(2) + "%" + multiUploadTask.getState(2).toString() + multiUploadTask.getUploadTasks().get(2).getSpeedFormat());
+                                }
+                            }
+                        });
 
                     }
 
@@ -326,7 +322,7 @@ public class MainActivity extends BaseActivity {
             case R.id.download:
                 new RxPermissions(MainActivity.this)
                         .requestEachCombined(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE)
-                        .subscribe(new Consumer <Permission>() {
+                        .subscribe(new Consumer<Permission>() {
                             @Override
                             public void accept(Permission permission) throws Exception {
                                 if (permission.granted) {
@@ -344,27 +340,42 @@ public class MainActivity extends BaseActivity {
                                                 .baseUrl("http://imtt.dd.qq.com/")
                                                 .apiUrl("16891/50CC095EFBE6059601C6FB652547D737.apk")
                                                 .lifecycle(MainActivity.this)
-                                                .tag("download")
                                                 .get()
                                                 .addParameter(map)
                                                 .withDialog(new CProgressDialog(MainActivity.this, R.style.CustomDialog))
                                                 .activityEvent(ActivityEvent.PAUSE)
                                                 .task(downloadTask)
                                                 .build()
-                                                .request(new DownloadObserver<DownloadTask>() {
+                                                .request(new DownloadObserver() {
                                                     @Override
                                                     public void onPause(DownloadTask downloadTask) {
-                                                        LoggerUtils.info("onPause", downloadTask.getProgress());
+                                                        LoggerUtils.info("download1" + downloadTask.getState().toString() + downloadTask.getProgress() + "%" + downloadTask.getSpeedFormat());
+                                                        download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%" + downloadTask.getSpeedFormat() + "平均速度：" + downloadTask.getAverageSpeedFormat() + "用时：" + downloadTask.getDuration() + "速度：" + downloadTask.getAverageSpeed());
+                                                    }
+
+                                                    @Override
+                                                    public void onProgress(DownloadTask downloadTask) {
+                                                        runOnUiThread(new Runnable() {
+                                                            @Override
+                                                            public void run() {
+                                                                LoggerUtils.info("download1" + downloadTask.getState().toString() + downloadTask.getProgress() + "%" + downloadTask.getSpeedFormat());
+                                                                download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%" + downloadTask.getSpeedFormat() + "平均速度：" + downloadTask.getAverageSpeedFormat() + "用时：" + downloadTask.getDuration() + "速度：" + downloadTask.getAverageSpeed());
+                                                            }
+                                                        });
+
                                                     }
 
                                                     @Override
                                                     public void onSuccess(DownloadTask downloadTask) {
-                                                        LoggerUtils.info(downloadTask.getState().name());
+                                                        LoggerUtils.info("download1" + downloadTask.getState().toString() + downloadTask.getProgress() + "%" + downloadTask.getSpeedFormat());
+                                                        download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%" + downloadTask.getSpeedFormat() + "平均速度：" + downloadTask.getAverageSpeedFormat() + "用时：" + downloadTask.getDuration() + "速度：" + downloadTask.getAverageSpeed());
                                                     }
 
                                                     @Override
                                                     public void onError(ApiException t) {
-                                                        LoggerUtils.error(downloadTask.getState().name());
+                                                        LoggerUtils.info("download1" + downloadTask.getState().toString() + downloadTask.getProgress() + "%" + downloadTask.getSpeedFormat());
+                                                        download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%" + downloadTask.getSpeedFormat() + "平均速度：" + downloadTask.getAverageSpeedFormat() + "用时：" + downloadTask.getDuration() + "速度：" + downloadTask.getAverageSpeed());
+
                                                     }
                                                 });
                                         //加入管理器
@@ -403,7 +414,7 @@ public class MainActivity extends BaseActivity {
     private void requestCameraPermissions() {
         new RxPermissions(this)
                 .requestEachCombined(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .subscribe(new Consumer <Permission>() {
+                .subscribe(new Consumer<Permission>() {
                     @Override
                     public void accept(Permission permission) throws Exception {
                         if (permission.granted) {
@@ -423,7 +434,7 @@ public class MainActivity extends BaseActivity {
     private void requestGalleryPermissions() {
         new RxPermissions(this)
                 .requestEachCombined(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .subscribe(new Consumer <Permission>() {
+                .subscribe(new Consumer<Permission>() {
                     @Override
                     public void accept(Permission permission) throws Exception {
                         if (permission.granted) {
@@ -435,15 +446,15 @@ public class MainActivity extends BaseActivity {
                                             .theme(R.style.Zhihu_Normal)
                                             .build())
                                     .compose(MainActivity.this.bindUntilEvent(ActivityEvent.DESTROY))
-                                    .subscribe(new Observer <Result>() {
+                                    .subscribe(new Observer<Result>() {
                                         @Override
                                         public void onSubscribe(Disposable d) {
-                                            uploadTasks = new ArrayList <>();
+                                            uploadTasks = new ArrayList<>();
                                         }
 
                                         @Override
                                         public void onNext(Result result) {
-                                            uploadTasks.add(new UploadTask("files",new File(PhotoUtils.getPath(MainActivity.this, result.getUri()))));
+                                            uploadTasks.add(new UploadTask("files", new File(PhotoUtils.getPath(MainActivity.this, result.getUri()))));
                                         }
 
                                         @Override

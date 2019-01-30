@@ -248,7 +248,7 @@ public class RxHttp {
             UploadTask uploadTask = ( UploadTask ) task;
             file = uploadTask.getFile();
             requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
-            MultipartBody.Part part = MultipartBody.Part.createFormData(uploadTask.getName(), NetUtils.getHeaderValueEncoded(uploadTask.getFileName()).toString(), new UploadRequestBody(requestBody, tag, isStick, uploadTask));
+            MultipartBody.Part part = MultipartBody.Part.createFormData(uploadTask.getName(), NetUtils.getHeaderValueEncoded(uploadTask.getFileName()).toString(), new UploadRequestBody(requestBody, httpObserver, uploadTask));
             observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).upload(disposeApiUrl(), convertParameter(), header, part);
         } else {
             MultiUploadTask multiUploadTask = ( MultiUploadTask ) task;
@@ -256,7 +256,7 @@ public class RxHttp {
                 UploadTask task = multiUploadTask.getUploadTasks().get(i);
                 file = task.getFile();
                 requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
-                MultipartBody.Part part = MultipartBody.Part.createFormData(task.getName(), NetUtils.getHeaderValueEncoded(task.getFileName()).toString(), new UploadRequestBody(requestBody, tag, isStick, task, multiUploadTask));
+                MultipartBody.Part part = MultipartBody.Part.createFormData(task.getName(), NetUtils.getHeaderValueEncoded(task.getFileName()).toString(), new UploadRequestBody(requestBody, httpObserver, task, multiUploadTask));
                 partList.add(part);
             }
             observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).upload(disposeApiUrl(), convertParameter(), header, partList);
@@ -274,7 +274,7 @@ public class RxHttp {
             requestMethod = RequestMethod.GET;
         }
 
-        Observable observable = RetrofitUtils.get().getRetrofit(getBaseUrl(), new DownloadInterceptor(tag, isStick, downloadTask), new RequestInterceptor(requestMethod, parameter, header, requestBody)).download(disposeApiUrl(), "bytes=" + downloadTask.getCurrentSize() + "-");
+        Observable observable = RetrofitUtils.get().getRetrofit(getBaseUrl(), new DownloadInterceptor(httpObserver, downloadTask), new RequestInterceptor(requestMethod, parameter, header, requestBody)).download(disposeApiUrl(), "bytes=" + downloadTask.getCurrentSize() + "-");
 
         /*请求处理*/
         return subscribe(observable);
@@ -338,7 +338,7 @@ public class RxHttp {
                 .compose(RxUtils.cache(requestType, type, cacheKey))
                 .compose(RxUtils.lifeCycle(lifecycle, activityEvent, fragmentEvent))
                 .compose(RxUtils.retryPolicy(retryTime))
-                .compose(RxUtils.sendEvent(task, tag, isStick))
+                .compose(RxUtils.sendEvent(task, httpObserver))
                 .compose(RxUtils.io_main());
 
     }

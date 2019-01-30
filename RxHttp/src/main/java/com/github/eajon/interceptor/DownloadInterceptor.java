@@ -5,6 +5,7 @@ import com.github.eajon.task.DownloadTask;
 
 import java.io.IOException;
 
+import io.reactivex.Observer;
 import okhttp3.Interceptor;
 import okhttp3.Response;
 
@@ -12,12 +13,10 @@ public class DownloadInterceptor implements Interceptor {
 
 
     DownloadTask downloadTask;
-    boolean isStick;
-    String tag;
+    private Observer observer;
 
-    public DownloadInterceptor(String tag, boolean isStick, DownloadTask downloadTask) {
-        this.tag = tag;
-        this.isStick = isStick;
+    public DownloadInterceptor(Observer observer, DownloadTask downloadTask) {
+        this.observer = observer;
         this.downloadTask = downloadTask;
     }
 
@@ -25,7 +24,7 @@ public class DownloadInterceptor implements Interceptor {
     public Response intercept(Chain chain) throws IOException {
         Response response = chain.proceed(chain.request());
         return response.newBuilder()
-                .body(new DownloadResponseBody(response, tag, isStick, downloadTask))
+                .body(new DownloadResponseBody(response, observer, downloadTask))
                 .build();
     }
 }

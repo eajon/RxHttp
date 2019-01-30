@@ -17,7 +17,6 @@ public class MultiUploadTask extends BaseTask implements Serializable {
     }
 
     public MultiUploadTask(ArrayList<UploadTask> uploadTasks) {
-
         this.uploadTasks = uploadTasks;
     }
 
@@ -25,6 +24,7 @@ public class MultiUploadTask extends BaseTask implements Serializable {
         return uploadTasks;
     }
 
+    @Override
     public int getProgress() {
         long totalSize = 0L;
         for (int i = 0; i < uploadTasks.size(); i++) {
@@ -51,6 +51,7 @@ public class MultiUploadTask extends BaseTask implements Serializable {
         }
     }
 
+    @Override
     public float getAverageSpeed() {
         long currentSize = 0L;
         for (int i = 0; i < uploadTasks.size(); i++) {
@@ -61,6 +62,7 @@ public class MultiUploadTask extends BaseTask implements Serializable {
 
     }
 
+    @Override
     public String getAverageSpeedFormat() {
         long currentSize = 0L;
         for (int i = 0; i < uploadTasks.size(); i++) {
@@ -69,6 +71,7 @@ public class MultiUploadTask extends BaseTask implements Serializable {
         return getAverageSpeedFormat(currentSize);
     }
 
+    @Override
     public String getAverageSpeedFormat(TimeUnit timeUnit) {
         long currentSize = 0L;
         for (int i = 0; i < uploadTasks.size(); i++) {
