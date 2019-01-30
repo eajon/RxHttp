@@ -187,6 +187,11 @@
                     public void onSuccess(DownloadTask downloadTask) {
      
                     }
+		    
+	            @Override
+                    public void onProgress(DownloadTask downloadTask) {
+     
+                    }
 
                     @Override
                     public void onError(ApiException s) {
@@ -254,6 +259,16 @@
                               public void onError(ApiException t) {
 
                               }
+			      
+	                      @Override
+                              public void onProgress(BaseTask baseTask) {
+     
+                              }
+			      
+	                      @Override
+                              public void onCancle(DownloadTask downloadTask) {
+ 
+                              }
      
                        });
                        
@@ -265,31 +280,6 @@
             disposeable.dispose();
                   
                   
- ####  如何监听进度  
- #####上传 和下载一样 用rxbus注解实现,当然你还可以查看实时传输速度哦 task.getSpeed() 
- 
-                     @RxSubscribe(observeOnThread = EventThread.MAIN) //监听下载进度 
-                     public void downloadProgress(DownloadTask task)
-                     {
-                         download.setText(task.getState().toString() + task.getProgress() + "%");
-                     }
-                 
-                     @RxSubscribe(observeOnThread = EventThread.MAIN) //单文件上传
-                     public void uploadProgress(UploadTask task)
-                     {
-                         upload.setText(task.getState().toString() + task.getProgress() + "%");
-                     }
-                 
-                     @RxSubscribe(observeOnThread = EventThread.MAIN)//多文件上传
-                     public void uploadProgress(MultipartUploadTask task)
-                     {
-                         content.setText("总进度：" + task.getProgress() + "%" + task.getState().toString());
-                         if (task.getUploadTasks().size() == 3) {//假设上传3个文件
-                             content1.setText("第一个：" + task.getProgress(0) + "%" + task.getState(0).toString());
-                             content2.setText("第二个：" + task.getProgress(1) + "%" + task.getState(1).toString());
-                             content3.setText("第三个：" + task.getProgress(2) + "%" + task.getState(2).toString());
-                         }
-                     }
 
 
 #### 具体用例可参看DEMO,发现BUG，可联系eajon@outlook.com,感谢关注
