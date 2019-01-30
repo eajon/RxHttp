@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.text.TextUtils;
 
+import com.github.eajon.body.UploadRequestBody;
 import com.github.eajon.enums.RequestMethod;
 import com.github.eajon.enums.RequestType;
 import com.github.eajon.exception.ApiException;
@@ -16,7 +17,6 @@ import com.github.eajon.task.BaseTask;
 import com.github.eajon.task.DownloadTask;
 import com.github.eajon.task.MultiUploadTask;
 import com.github.eajon.task.UploadTask;
-import com.github.eajon.upload.UploadRequestBody;
 import com.github.eajon.util.GsonUtils;
 import com.github.eajon.util.NetUtils;
 import com.github.eajon.util.ReflectUtils;

@@ -1,6 +1,6 @@
 package com.github.eajon.function;
 
-import com.github.eajon.download.DownloadResponseBody;
+import com.github.eajon.body.DownloadResponseBody;
 import com.github.eajon.util.FileUtils;
 
 import java.lang.reflect.Field;

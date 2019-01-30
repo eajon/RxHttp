@@ -1,6 +1,6 @@
 package com.github.eajon.interceptor;
 
-import com.github.eajon.download.DownloadResponseBody;
+import com.github.eajon.body.DownloadResponseBody;
 import com.github.eajon.task.DownloadTask;
 
 import java.io.IOException;

@@ -3,7 +3,7 @@ package com.github.eajon.util;
 
 import android.text.TextUtils;
 
-import com.github.eajon.download.DownloadResponseBody;
+import com.github.eajon.body.DownloadResponseBody;
 import com.github.eajon.task.DownloadTask;
 
 import java.io.File;
