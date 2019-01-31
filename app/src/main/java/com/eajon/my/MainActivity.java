@@ -97,8 +97,7 @@ public class MainActivity extends BaseActivity {
 //            }
 //        });
 //        RxHttp MVVM
-        WeatherModule2 weatherModule2 = new WeatherModule2();
-        weatherModule2.getWeather();
+        WeatherModule2.getWeather();
 
     }
 
@@ -406,8 +405,7 @@ public class MainActivity extends BaseActivity {
             case R.id.request:
 //                doJsonRequest();
 //                doProfile();
-                WeatherModule2 weatherModule2 = new WeatherModule2();
-                weatherModule2.getWeather();
+                WeatherModule2.getWeather();
                 break;
             case R.id.stick:
                 intent = new Intent(this, SecondActivity.class);

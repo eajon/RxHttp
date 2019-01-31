@@ -11,7 +11,7 @@ import java.util.List;
 
 public class WeatherModule2 {
 
-    public void getWeather() {
+    public static void getWeather() {
         //测试@NAME注解 对象会转成jsonObject 列表转成jsonArray
         //value 对应参数名 不填使用变量名 require 设置成false 将过滤
         //支持父类的属性
@@ -46,7 +46,7 @@ public class WeatherModule2 {
 
     }
 
-    private class TestGson extends BaseResponse {
+    private static class TestGson extends BaseResponse {
 
         @Name(value = "haha", require = false)
         private String test;
