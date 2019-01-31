@@ -21,7 +21,7 @@ public class RequestInterceptor implements Interceptor {
     private Map<String, Object> header;
     private RequestBody requestBody;
 
-    public RequestInterceptor(RequestMethod requestMethod, Map parameter, Map header, RequestBody requestBody) {
+    public RequestInterceptor(RequestMethod requestMethod, Map<String, Object> parameter, Map<String, Object> header, RequestBody requestBody) {
         this.requestMethod = requestMethod;
         this.parameter = parameter;
         this.header = header;

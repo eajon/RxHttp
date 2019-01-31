@@ -29,10 +29,8 @@ public class DownloadResponseBody extends ResponseBody {
 
 
     private static final String FILENAME = "filename=";
-
-    Response originalResponse;
-
-    DownloadTask downloadTask;
+    private Response originalResponse;
+    private DownloadTask downloadTask;
     private Observer observer;
     private BufferedSource bufferedSource;
 
@@ -50,6 +48,7 @@ public class DownloadResponseBody extends ResponseBody {
     private void getFileOriginalName() {
         String disposition = originalResponse.header("Content-Disposition");
         if (!TextUtils.isEmpty(disposition)) {
+            assert disposition != null;
             int index = disposition.indexOf(FILENAME);
             if (index >= 0) {
                 String name = disposition.substring(index + FILENAME.length());
@@ -69,18 +68,21 @@ public class DownloadResponseBody extends ResponseBody {
 
     @Override
     public MediaType contentType() {
+        assert originalResponse.body() != null;
         return originalResponse.body().contentType();
     }
 
 
     @Override
     public long contentLength() {
+        assert originalResponse.body() != null;
         return originalResponse.body().contentLength();
     }
 
     @Override
     public BufferedSource source() {
         if (bufferedSource == null) {
+            assert originalResponse.body() != null;
             bufferedSource = Okio.buffer(source(originalResponse.body().source()));
         }
         return bufferedSource;

@@ -70,7 +70,6 @@ public class RxUtils {
                     return upstream.map(new DownloadResponseFunction());
                 }
                 return upstream.map(new HttpResponseFunction(type));
-
             }
         };
     }
@@ -91,6 +90,19 @@ public class RxUtils {
                         .compose(rxCache.transformer(cacheMode, type == null ? String.class : type, cacheKey))
                         .map(new CacheResultFunction());
 
+            }
+        };
+    }
+
+    // 重试
+    @SuppressWarnings("unchecked")
+    public static <T> ObservableTransformer<T, T> retryPolicy(final int time) {
+        return new ObservableTransformer<T, T>() {
+            @Override
+            public ObservableSource<T> apply(@NonNull Observable<T> upstream) {
+                return upstream
+                        .onErrorResumeNext(new ErrorResponseFunction())
+                        .retryWhen(new RetryExceptionFunction(time));
             }
         };
     }
@@ -118,18 +130,6 @@ public class RxUtils {
         };
     }
 
-    // 重试
-    @SuppressWarnings("unchecked")
-    public static <T> ObservableTransformer<T, T> retryPolicy(final int time) {
-        return new ObservableTransformer<T, T>() {
-            @Override
-            public ObservableSource<T> apply(@NonNull Observable<T> upstream) {
-                return upstream
-                        .onErrorResumeNext(new ErrorResponseFunction())
-                        .retryWhen(new RetryExceptionFunction(time));
-            }
-        };
-    }
 
     //RXbus发射状态
     @SuppressWarnings("unchecked")
@@ -216,7 +216,6 @@ public class RxUtils {
         };
     }
 
-
     //线程调度
     public static <T> ObservableTransformer<T, T> io_main() {
         return new ObservableTransformer<T, T>() {
@@ -229,6 +228,4 @@ public class RxUtils {
             }
         };
     }
-
-
 }

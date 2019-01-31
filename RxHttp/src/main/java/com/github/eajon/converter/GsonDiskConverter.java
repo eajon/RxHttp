@@ -25,7 +25,6 @@ import com.google.gson.TypeAdapter;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -33,7 +32,6 @@ import java.io.OutputStream;
 import java.lang.reflect.Type;
 import java.util.ConcurrentModificationException;
 
-import io.reactivex.internal.functions.ObjectHelper;
 import okhttp3.internal.Util;
 
 /**

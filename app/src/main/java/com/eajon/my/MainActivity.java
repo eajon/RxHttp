@@ -349,12 +349,6 @@ public class MainActivity extends BaseActivity {
                                                 .request(new DownloadObserver() {
                                                     @Override
                                                     public void onPause(DownloadTask downloadTask) {
-                                                        LoggerUtils.info("download1" + downloadTask.getState().toString() + downloadTask.getProgress() + "%" + downloadTask.getSpeedFormat());
-                                                        download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%" + downloadTask.getSpeedFormat() + "平均速度：" + downloadTask.getAverageSpeedFormat() + "用时：" + downloadTask.getDuration() + "速度：" + downloadTask.getAverageSpeed());
-                                                    }
-
-                                                    @Override
-                                                    public void onProgress(DownloadTask downloadTask) {
                                                         runOnUiThread(new Runnable() {
                                                             @Override
                                                             public void run() {
@@ -366,14 +360,26 @@ public class MainActivity extends BaseActivity {
                                                     }
 
                                                     @Override
+                                                    public void onProgress(DownloadTask downloadTask) {
+                                                        runOnUiThread(new Runnable() {
+                                                            @Override
+                                                            public void run() {
+                                                                LoggerUtils.info("download2" + downloadTask.getState().toString() + downloadTask.getProgress() + "%" + downloadTask.getSpeedFormat());
+                                                                download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%" + downloadTask.getSpeedFormat() + "平均速度：" + downloadTask.getAverageSpeedFormat() + "用时：" + downloadTask.getDuration() + "速度：" + downloadTask.getAverageSpeed());
+                                                            }
+                                                        });
+
+                                                    }
+
+                                                    @Override
                                                     public void onSuccess(DownloadTask downloadTask) {
-                                                        LoggerUtils.info("download1" + downloadTask.getState().toString() + downloadTask.getProgress() + "%" + downloadTask.getSpeedFormat());
+                                                        LoggerUtils.info("download3" + downloadTask.getState().toString() + downloadTask.getProgress() + "%" + downloadTask.getSpeedFormat());
                                                         download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%" + downloadTask.getSpeedFormat() + "平均速度：" + downloadTask.getAverageSpeedFormat() + "用时：" + downloadTask.getDuration() + "速度：" + downloadTask.getAverageSpeed());
                                                     }
 
                                                     @Override
                                                     public void onError(ApiException t) {
-                                                        LoggerUtils.info("download1" + downloadTask.getState().toString() + downloadTask.getProgress() + "%" + downloadTask.getSpeedFormat());
+                                                        LoggerUtils.info("download4" + downloadTask.getState().toString() + downloadTask.getProgress() + "%" + downloadTask.getSpeedFormat());
                                                         download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%" + downloadTask.getSpeedFormat() + "平均速度：" + downloadTask.getAverageSpeedFormat() + "用时：" + downloadTask.getDuration() + "速度：" + downloadTask.getAverageSpeed());
 
                                                     }

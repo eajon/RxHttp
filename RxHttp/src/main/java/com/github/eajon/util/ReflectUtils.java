@@ -7,19 +7,17 @@ import java.lang.reflect.Type;
 public class ReflectUtils {
 
     public static Field getDeclaredField(Object object, String fieldName) {
-        Field field = null;
         Class<?> clazz = object.getClass();
         for (; clazz != Object.class; clazz = clazz.getSuperclass()) {
             try {
                 assert clazz != null;
-                field = clazz.getDeclaredField(fieldName);
-                return field;
+                return clazz.getDeclaredField(fieldName);
             } catch (NoSuchFieldException e) {
                 //这里甚么都不能抛出去。
                 //如果这里的异常打印或者往外抛，则就不会进入
             }
         }
-        return field;
+        return null;
     }
 
 

@@ -154,9 +154,8 @@ public class LruDiskCache extends BaseCache {
         if (existTime > -1) {//-1表示永久性存储 不用进行过期校验
             //为什么这么写，请了解DiskLruCache，看它的源码
             File file = new File(mDiskLruCache.getDirectory(), key + "." + 0);
-            if (isCacheDataFailure(file, existTime)) {//没有获取到缓存,或者缓存已经过期!
-                return true;
-            }
+            //没有获取到缓存,或者缓存已经过期!
+            return isCacheDataFailure(file, existTime);
         }
         return false;
     }

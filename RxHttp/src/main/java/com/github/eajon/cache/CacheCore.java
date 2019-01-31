@@ -97,9 +97,7 @@ public class CacheCore {
         String cacheKey = ByteString.of(key.getBytes()).md5().hex();
         Log.d(TAG, "containsCache  key=" + cacheKey);
         if (disk != null) {
-            if (disk.containsKey(cacheKey)) {
-                return true;
-            }
+            return disk.containsKey(cacheKey);
         }
         return false;
     }

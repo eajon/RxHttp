@@ -336,8 +336,8 @@ public class RxHttp {
         return observable
                 .compose(RxUtils.map(requestType, type))
                 .compose(RxUtils.cache(requestType, type, cacheKey))
-                .compose(RxUtils.lifeCycle(lifecycle, activityEvent, fragmentEvent))
                 .compose(RxUtils.retryPolicy(retryTime))
+                .compose(RxUtils.lifeCycle(lifecycle, activityEvent, fragmentEvent))
                 .compose(RxUtils.sendEvent(task, httpObserver))
                 .compose(RxUtils.io_main());
 
@@ -548,7 +548,6 @@ public class RxHttp {
         /*设置 Parameter 会覆盖 Parameter 包括基础参数 自动转化为Map*/
         public Builder setObjectParameter(Object object) {
             this.parameter = GsonUtils.objectToMap(object);
-            ;
             return this;
         }
 

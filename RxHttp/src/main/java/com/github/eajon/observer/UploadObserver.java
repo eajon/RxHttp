@@ -4,7 +4,7 @@ import com.github.eajon.task.BaseTask;
 
 
 public abstract class UploadObserver<T> extends HttpObserver<T> {
-    /*callback on MainThread*/
+    /*callback on IO thread,if you want to do something on ui thread,please use runOnUiThread method*/
     public abstract void onCancel();
 
     /*callback on IO thread,if you want to do something on ui thread,please use runOnUiThread method*/

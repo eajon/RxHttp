@@ -20,7 +20,6 @@ import android.net.ParseException;
 
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializer;
-import com.google.gson.JsonSyntaxException;
 
 import org.apache.http.conn.ConnectTimeoutException;
 import org.json.JSONException;
@@ -82,14 +81,13 @@ public class ApiException extends Exception {
             ex = new ApiException(httpException, httpException.code());
             try {
                 ex.bodyMessage = responseBody.string();
-            } catch (IOException e1) {
+            } catch (Exception e1) {
                 e1.printStackTrace();
             }
 
             return ex;
         } else if (e instanceof JsonParseException
                 || e instanceof JSONException
-                || e instanceof JsonSyntaxException
                 || e instanceof JsonSerializer
                 || e instanceof NotSerializableException
                 || e instanceof ParseException
@@ -124,6 +122,10 @@ public class ApiException extends Exception {
         } else if (e instanceof NullPointerException) {
             ex = new ApiException(e, ERROR.NULLPOINTER_EXCEPTION);
             ex.bodyMessage = "空指针错误";
+            return ex;
+        } else if (e instanceof IOException) {
+            ex = new ApiException(e, ERROR.SOCKETCLOSE_ERROR);
+            ex.bodyMessage = "暂停下载";
             return ex;
         } else {
             ex = new ApiException(e, ERROR.UNKNOWN);
@@ -180,10 +182,14 @@ public class ApiException extends Exception {
          * 未知主机错误
          */
         public static final int UNKNOWNHOST_ERROR = REQUEST_CANCEL + 1;
-
         /**
          * 空指针错误
          */
         public static final int NULLPOINTER_EXCEPTION = UNKNOWNHOST_ERROR + 1;
+
+        /**
+         * 暂停下载
+         */
+        public static final int SOCKETCLOSE_ERROR = NULLPOINTER_EXCEPTION + 1;
     }
 }

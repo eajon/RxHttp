@@ -54,12 +54,8 @@ public class FileUtils {
         } catch (IOException e) {
             throw e;
         } finally {
-            if (source != null) {
-                Util.closeQuietly(source);
-            }
-            if (sink != null) {
-                Util.closeQuietly(sink);
-            }
+            Util.closeQuietly(source);
+            Util.closeQuietly(sink);
         }
 
     }
