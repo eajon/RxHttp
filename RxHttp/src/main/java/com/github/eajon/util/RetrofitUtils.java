@@ -7,7 +7,6 @@ import okhttp3.Interceptor;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
-import retrofit2.converter.scalars.ScalarsConverterFactory;
 
 /**
  * Retrofit工具类
@@ -47,7 +46,6 @@ public class RetrofitUtils {
         retrofit
                 .client(RxHttp.getConfig().getOkHttpClient())
                 .baseUrl(baseUrl)
-                .addConverterFactory(ScalarsConverterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create());
         return retrofit.build().create(Api.class);
@@ -64,7 +62,6 @@ public class RetrofitUtils {
         retrofit
                 .client(OkHttpUtils.getOkHttpClient(interceptorArray))
                 .baseUrl(baseUrl)
-                .addConverterFactory(ScalarsConverterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create());
         return retrofit.build().create(Api.class);

@@ -23,22 +23,17 @@ dependencies {
     //retrofit
     api 'com.squareup.retrofit2:retrofit:2.5.0'
     api 'com.squareup.retrofit2:converter-gson:2.5.0'
-    api 'com.squareup.retrofit2:converter-scalars:2.5.0'
     api 'com.squareup.retrofit2:adapter-rxjava2:2.5.0'
-
     //okhttp 拦截器
     api 'com.squareup.okhttp3:logging-interceptor:3.12.0'
-
     //lifecycle
     api 'com.trello.rxlifecycle3:rxlifecycle-components:3.0.0'
-
-
+    //rxjava
+    api 'io.reactivex.rxjava2:rxjava:2.2.6'
     api 'io.reactivex.rxjava2:rxandroid:2.1.0'
-    api 'io.reactivex.rxjava2:rxjava:2.2.3'
     api 'com.jakewharton.rxrelay2:rxrelay:2.1.0'
-
+    //disklrucache
     api 'com.jakewharton:disklrucache:2.0.2'
-    api 'com.google.code.gson:gson:2.8.5'
     //logger
     api 'com.orhanobut:logger:2.2.0'
 
