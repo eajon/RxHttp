@@ -1,15 +1,15 @@
 package com.eajon.my.viewModel;
 
-import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.MutableLiveData;
-import android.arch.lifecycle.ViewModel;
-
 import com.eajon.my.model.Weather;
 import com.github.eajon.RxHttp;
 import com.github.eajon.exception.ApiException;
 import com.github.eajon.observer.HttpObserver;
 
 import java.util.HashMap;
+
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.ViewModel;
 
 public class WeatherModule extends ViewModel {
     private MutableLiveData <Weather> weather;

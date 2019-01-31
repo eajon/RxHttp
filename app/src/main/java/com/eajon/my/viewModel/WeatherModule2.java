@@ -1,6 +1,5 @@
 package com.eajon.my.viewModel;
 
-import android.arch.lifecycle.ViewModel;
 
 import com.eajon.my.model.BaseResponse;
 import com.eajon.my.model.Weather;
@@ -10,7 +9,7 @@ import com.github.eajon.annotation.Name;
 import java.util.ArrayList;
 import java.util.List;
 
-public class WeatherModule2 extends ViewModel {
+public class WeatherModule2 {
 
     public void getWeather() {
         //测试@NAME注解 对象会转成jsonObject 列表转成jsonArray

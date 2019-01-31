@@ -3,7 +3,7 @@ package com.github.eajon.base;
 import android.os.Bundle;
 
 import com.github.eajon.rxbus.RxBus;
-import com.trello.rxlifecycle2.components.support.RxAppCompatActivity;
+import com.trello.rxlifecycle3.components.support.RxAppCompatActivity;
 
 
 public abstract class RxBusActivity extends RxAppCompatActivity {

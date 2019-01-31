@@ -34,9 +34,9 @@ import com.github.eajon.task.BaseTask;
 import com.github.eajon.task.DownloadTask;
 import com.github.eajon.task.MultiUploadTask;
 import com.github.eajon.task.UploadTask;
-import com.trello.rxlifecycle2.LifecycleProvider;
-import com.trello.rxlifecycle2.android.ActivityEvent;
-import com.trello.rxlifecycle2.android.FragmentEvent;
+import com.trello.rxlifecycle3.LifecycleProvider;
+import com.trello.rxlifecycle3.android.ActivityEvent;
+import com.trello.rxlifecycle3.android.FragmentEvent;
 
 import java.lang.reflect.Type;
 

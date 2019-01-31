@@ -23,9 +23,9 @@ import com.github.eajon.util.ReflectUtils;
 import com.github.eajon.util.RetrofitUtils;
 import com.github.eajon.util.RxBusUtils;
 import com.github.eajon.util.RxUtils;
-import com.trello.rxlifecycle2.LifecycleProvider;
-import com.trello.rxlifecycle2.android.ActivityEvent;
-import com.trello.rxlifecycle2.android.FragmentEvent;
+import com.trello.rxlifecycle3.LifecycleProvider;
+import com.trello.rxlifecycle3.android.ActivityEvent;
+import com.trello.rxlifecycle3.android.FragmentEvent;
 
 import java.io.File;
 import java.lang.reflect.Type;

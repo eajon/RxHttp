@@ -3,7 +3,7 @@ package com.github.eajon.base;
 import android.os.Bundle;
 
 import com.github.eajon.rxbus.RxBus;
-import com.trello.rxlifecycle2.components.support.RxFragment;
+import com.trello.rxlifecycle3.components.support.RxFragment;
 
 public abstract class RxBusFragment extends RxFragment {
 

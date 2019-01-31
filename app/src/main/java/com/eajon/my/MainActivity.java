@@ -2,7 +2,6 @@ package com.eajon.my;
 
 
 import android.Manifest;
-import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -40,7 +39,7 @@ import com.qingmei2.rximagepicker_extension.MimeType;
 import com.qingmei2.rximagepicker_extension_zhihu.ZhihuConfigurationBuilder;
 import com.tbruyelle.rxpermissions2.Permission;
 import com.tbruyelle.rxpermissions2.RxPermissions;
-import com.trello.rxlifecycle2.android.ActivityEvent;
+import com.trello.rxlifecycle3.android.ActivityEvent;
 
 import java.io.File;
 import java.lang.reflect.Type;
@@ -98,7 +97,7 @@ public class MainActivity extends BaseActivity {
 //            }
 //        });
 //        RxHttp MVVM
-        WeatherModule2 weatherModule2 = ViewModelProviders.of(this).get(WeatherModule2.class);
+        WeatherModule2 weatherModule2 = new WeatherModule2();
         weatherModule2.getWeather();
 
     }
@@ -407,7 +406,7 @@ public class MainActivity extends BaseActivity {
             case R.id.request:
 //                doJsonRequest();
 //                doProfile();
-                WeatherModule2 weatherModule2 = ViewModelProviders.of(this).get(WeatherModule2.class);
+                WeatherModule2 weatherModule2 = new WeatherModule2();
                 weatherModule2.getWeather();
                 break;
             case R.id.stick:
