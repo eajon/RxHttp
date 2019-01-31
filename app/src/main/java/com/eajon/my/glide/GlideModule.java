@@ -6,7 +6,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.GlideBuilder;
 import com.bumptech.glide.Registry;
 import com.bumptech.glide.load.engine.bitmap_recycle.LruBitmapPool;
-import com.bumptech.glide.load.engine.cache.ExternalCacheDiskCacheFactory;
+import com.bumptech.glide.load.engine.cache.ExternalPreferredCacheDiskCacheFactory;
 import com.bumptech.glide.load.engine.cache.LruResourceCache;
 import com.bumptech.glide.module.AppGlideModule;
 
@@ -46,7 +46,7 @@ public class GlideModule extends AppGlideModule {
         builder.setMemoryCache(new LruResourceCache(1 * 1024 * 1024));
         //配置图片池大小   20MB
         builder.setBitmapPool(new LruBitmapPool(2 * 1024 * 1024));
-        builder.setDiskCache(new ExternalCacheDiskCacheFactory(context, "wxbCache", 240 * 1024 * 1024));
+        builder.setDiskCache(new ExternalPreferredCacheDiskCacheFactory(context, "wxbCache", 240 * 1024 * 1024));
 //        super.applyOptions(context, builder);
     }
 }
