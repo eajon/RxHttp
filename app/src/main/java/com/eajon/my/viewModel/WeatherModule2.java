@@ -35,7 +35,7 @@ public class WeatherModule2 {
                 .get()
                 .baseUrl("http://wthrcdn.etouch.cn/")
                 .apiUrl("weather_mini")
-                .addObjectParameter(testGson)//可以使用name注解 过滤不需要的参数
+                .addParameter(testGson)//可以使用name注解 过滤不需要的参数
 //                .addParameter(map)
                 .cacheKey("weather")
                 .entity(Weather.class)

@@ -5,6 +5,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.text.TextUtils;
+import android.view.View;
 
 import com.github.eajon.body.UploadRequestBody;
 import com.github.eajon.enums.RequestMethod;
@@ -87,6 +88,8 @@ public class RxHttp {
     private boolean cancelable;
     /*自定义对话框*/
     private Dialog dialog;
+    /*progressBar*/
+    private View view;
     /*是否是粘性消息*/
     private boolean isStick;
     /*cacheKey*/
@@ -112,6 +115,7 @@ public class RxHttp {
         this.message = builder.message;
         this.cancelable = builder.cancelable;
         this.dialog = builder.dialog;
+        this.view = builder.view;
         this.isStick = builder.isStick;
         this.cacheKey = builder.cacheKey;
         this.retryTime = builder.retryTime;
@@ -286,6 +290,8 @@ public class RxHttp {
     private Disposable subscribe(Observable observable) {
         if (dialog != null || dialogContext != null) {
             dialogObserver(observable).subscribe(httpObserver);
+        } else if (view != null) {
+            viewObserver(observable).subscribe(httpObserver);
         } else {
             observe(observable).subscribe(httpObserver);
         }
@@ -325,6 +331,28 @@ public class RxHttp {
             @Override
             public void accept(Dialog dialog) throws Exception {
                 dialog.dismiss();
+            }
+        });
+    }
+
+    //progressBar
+    @SuppressWarnings("unchecked")
+    private Observable viewObserver(final Observable observable) {
+        return Observable.using(new Callable<View>() {
+            @Override
+            public View call() {
+                view.setVisibility(View.VISIBLE);
+                return view;
+            }
+        }, new Function<View, Observable<Object>>() {
+            @Override
+            public Observable<Object> apply(final View view) {
+                return observe(observable);
+            }
+        }, new Consumer<View>() {
+            @Override
+            public void accept(View view) {
+                view.setVisibility(View.INVISIBLE);
             }
         });
     }
@@ -441,6 +469,8 @@ public class RxHttp {
         boolean cancelable;
         /*自定义progressDialog*/
         Dialog dialog;
+        /*progressBar*/
+        private View view;
         /*是否是粘性消息*/
         boolean isStick;
         /*cacheKey*/
@@ -531,7 +561,7 @@ public class RxHttp {
         }
 
         /* 增加 Parameter 不断叠加参数 包括基础参数 自动转化为Map*/
-        public Builder addObjectParameter(Object object) {
+        public Builder addParameter(Object object) {
             if (this.parameter == null) {
                 this.parameter = new HashMap<>();
             }
@@ -546,7 +576,7 @@ public class RxHttp {
         }
 
         /*设置 Parameter 会覆盖 Parameter 包括基础参数 自动转化为Map*/
-        public Builder setObjectParameter(Object object) {
+        public Builder setParameter(Object object) {
             this.parameter = GsonUtils.objectToMap(object);
             return this;
         }
@@ -561,7 +591,7 @@ public class RxHttp {
         }
 
         /* 增加 Header 不断叠加 Header 包括基础 Header 自动转化为Map*/
-        public Builder addObjectHeader(Object object) {
+        public Builder addHeader(Object object) {
             if (this.header == null) {
                 this.header = new HashMap<>();
             }
@@ -576,7 +606,7 @@ public class RxHttp {
         }
 
         /*设置 Header 会覆盖 Header 包括基础参数 自动转化为Map*/
-        public Builder setObjectHeader(Object object) {
+        public Builder setHeader(Object object) {
             this.header = GsonUtils.objectToMap(object);
             return this;
         }
@@ -645,6 +675,12 @@ public class RxHttp {
         /*阻塞对话框*/
         public Builder withDialog(Dialog dialog) {
             this.dialog = dialog;
+            return this;
+        }
+
+        /*progressBar*/
+        public Builder withView(View view) {
+            this.view = view;
             return this;
         }
 

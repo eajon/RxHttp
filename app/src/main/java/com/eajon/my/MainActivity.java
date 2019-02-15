@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.eajon.my.base.BaseActivity;
@@ -77,6 +78,8 @@ public class MainActivity extends BaseActivity {
     TextView content2;
     @BindView(R.id.content3)
     TextView content3;
+    @BindView(R.id.progressbar)
+    ProgressBar progressbar;
 
     private ZhihuImagePicker rxImagePicker;
 
@@ -247,7 +250,6 @@ public class MainActivity extends BaseActivity {
     }
 
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -340,7 +342,8 @@ public class MainActivity extends BaseActivity {
                                                 .lifecycle(MainActivity.this)
                                                 .get()
                                                 .addParameter(map)
-                                                .withDialog(new CProgressDialog(MainActivity.this, R.style.CustomDialog))
+//                                                .withDialog(new CProgressDialog(MainActivity.this, R.style.CustomDialog))
+                                                .withView(progressbar)
                                                 .activityEvent(ActivityEvent.PAUSE)
                                                 .task(downloadTask)
                                                 .build()
