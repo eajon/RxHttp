@@ -561,7 +561,7 @@ public class RxHttp {
         }
 
         /* 增加 Parameter 不断叠加参数 包括基础参数 自动转化为Map*/
-        public Builder addParameter(Object object) {
+        public Builder addTypeParameter(Object object) {
             if (this.parameter == null) {
                 this.parameter = new HashMap<>();
             }
@@ -576,7 +576,7 @@ public class RxHttp {
         }
 
         /*设置 Parameter 会覆盖 Parameter 包括基础参数 自动转化为Map*/
-        public Builder setParameter(Object object) {
+        public Builder setTypeParameter(Object object) {
             this.parameter = GsonUtils.objectToMap(object);
             return this;
         }
@@ -591,7 +591,7 @@ public class RxHttp {
         }
 
         /* 增加 Header 不断叠加 Header 包括基础 Header 自动转化为Map*/
-        public Builder addHeader(Object object) {
+        public Builder addTypeHeader(Object object) {
             if (this.header == null) {
                 this.header = new HashMap<>();
             }
@@ -606,7 +606,7 @@ public class RxHttp {
         }
 
         /*设置 Header 会覆盖 Header 包括基础参数 自动转化为Map*/
-        public Builder setHeader(Object object) {
+        public Builder setTypeHeader(Object object) {
             this.header = GsonUtils.objectToMap(object);
             return this;
         }

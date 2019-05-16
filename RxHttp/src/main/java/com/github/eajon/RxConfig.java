@@ -92,7 +92,7 @@ public class RxConfig {
     }
 
     /*基础参数*/
-    public RxConfig baseParameter(Object object) {
+    public RxConfig baseTypeParameter(Object object) {
         this.parameter = GsonUtils.objectToMap(object);
         return this;
     }
@@ -108,7 +108,7 @@ public class RxConfig {
     }
 
     /*基础Header*/
-    public RxConfig baseHeader(Object object) {
+    public RxConfig baseTypeHeader(Object object) {
         this.header = GsonUtils.objectToMap(object);
         return this;
     }
