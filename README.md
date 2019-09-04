@@ -39,17 +39,17 @@
                     });
 
  支持对象参数 会自动解析对象中的属性 转成keyvalue
- 
+
  addTypeParamters(Object object)
- 
+
  addTypeHeader(Object object)
 
  2.2.1版本开始支持 gson,jackson,fastjson
- 
+
  GSON  可以使用@GsonField 自定义注解   过滤掉不需要的参数 或者重定义jsonField值
- 
+
  JACKSON  可以使用@JsonIgnore 等原生注解 过滤掉不需要的参数 或者重定义jsonField值
- 
+
  FASTJSON  可以使用@JSONField  等原生注解 过滤掉不需要的参数 或者重定义jsonField值
 
 
@@ -81,9 +81,9 @@
  	dependencies {
 	        implementation 'com.github.eajon:RxHttp:2.2.1'
 	        选择你需要的JSON解析器 并设置converterType 为该类型 converterType不配置 默认为GSON 需添加GSON依赖
-//	        implementation 'com.google.code.gson:gson:2.8.5'
-//          implementation 'com.alibaba:fastjson:1.1.52.android'
-//          implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.8'
+	        implementation 'com.google.code.gson:gson:2.8.5'
+            implementation 'com.alibaba:fastjson:1.1.52.android'
+            implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.8'
 	}
 
 
