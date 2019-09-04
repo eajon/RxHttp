@@ -45,7 +45,7 @@
  2.2.1版本开始支持 gson,jackson,fastjson
  GSON  可以使用@GsonField 自定义注解   过滤掉不需要的参数 或者重定义jsonField值
  JACKSON  可以使用@JsonIgnore 等原生注解 过滤掉不需要的参数 或者重定义jsonField值
- FASTJSON  可以使用@JSONField  等原生注解 过滤掉不需要的参数 或者重定义jsonField值
+ FASTJSON  可以使用@JSONField  等原生注解 过滤掉不需要的参数 或者重定义jsonField值  
 
 
 
