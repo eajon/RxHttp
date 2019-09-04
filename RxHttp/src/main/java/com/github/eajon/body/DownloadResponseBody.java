@@ -33,8 +33,6 @@ public class DownloadResponseBody extends ResponseBody {
     private DownloadTask downloadTask;
     private Observer observer;
     private BufferedSource bufferedSource;
-
-
     private long time;
     private long secondBytesCount;
 
@@ -104,16 +102,16 @@ public class DownloadResponseBody extends ResponseBody {
                 if (time == 0) {
                     time = System.currentTimeMillis();
                 }
-                long millis = System.currentTimeMillis() - time;
-                if (millis >= 500) {
-                    downloadTask.setSpeed(secondBytesCount * 1000 / millis);
-                    secondBytesCount = 0;
-                    time = System.currentTimeMillis();
-                }
                 downloadTask.setCurrentSize(readBytesCount);
                 downloadTask.setTotalSize(totalBytesCount);
-                if (observer instanceof DownloadObserver) {
-                    (( DownloadObserver ) observer).onProgress(downloadTask);
+                long millis = System.currentTimeMillis() - time;
+                if (millis >= 500L) {
+                    downloadTask.setSpeed(secondBytesCount * 1000 * 2 / millis);
+                    secondBytesCount = 0;
+                    time = System.currentTimeMillis();
+                    if (observer instanceof DownloadObserver) {
+                        (( DownloadObserver ) observer).onProgress(downloadTask);
+                    }
                 }
                 return bytesRead;
             }

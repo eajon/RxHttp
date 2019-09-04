@@ -18,15 +18,14 @@ package com.github.eajon.exception;
 
 import android.net.ParseException;
 
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonSerializer;
-
 import org.apache.http.conn.ConnectTimeoutException;
 import org.json.JSONException;
 
 import java.io.IOException;
 import java.io.NotSerializableException;
 import java.net.ConnectException;
+import java.net.ProtocolException;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 
 import okhttp3.ResponseBody;
@@ -86,9 +85,7 @@ public class ApiException extends Exception {
             }
 
             return ex;
-        } else if (e instanceof JsonParseException
-                || e instanceof JSONException
-                || e instanceof JsonSerializer
+        } else if (e instanceof JSONException
                 || e instanceof NotSerializableException
                 || e instanceof ParseException
                 || e instanceof UnsupportedOperationException) {
@@ -123,9 +120,17 @@ public class ApiException extends Exception {
             ex = new ApiException(e, ERROR.NULLPOINTER_EXCEPTION);
             ex.bodyMessage = "空指针错误";
             return ex;
-        } else if (e instanceof IOException) {
+        } else if (e instanceof ProtocolException) {
+            ex = new ApiException(e, ERROR.ProtocolException);
+            ex.bodyMessage = "文件流意外关闭";
+            return ex;
+        } else if (e instanceof SocketException) {
             ex = new ApiException(e, ERROR.SOCKETCLOSE_ERROR);
-            ex.bodyMessage = "暂停下载";
+            ex.bodyMessage = "文件流被关闭，暂停下载";
+            return ex;
+        } else if (e instanceof IOException) {
+            ex = new ApiException(e, ERROR.IO_ERROR);
+            ex.bodyMessage = "文件流错误";
             return ex;
         } else {
             ex = new ApiException(e, ERROR.UNKNOWN);
@@ -186,10 +191,18 @@ public class ApiException extends Exception {
          * 空指针错误
          */
         public static final int NULLPOINTER_EXCEPTION = UNKNOWNHOST_ERROR + 1;
+        /**
+         * 文件流意外关闭
+         */
+        public static final int ProtocolException = NULLPOINTER_EXCEPTION + 1;
 
         /**
-         * 暂停下载
+         * 文件流被关闭，暂停下载
          */
-        public static final int SOCKETCLOSE_ERROR = NULLPOINTER_EXCEPTION + 1;
+        public static final int SOCKETCLOSE_ERROR = ProtocolException + 1;
+        /**
+         * 流错误
+         */
+        public static final int IO_ERROR = SOCKETCLOSE_ERROR + 1;
     }
 }

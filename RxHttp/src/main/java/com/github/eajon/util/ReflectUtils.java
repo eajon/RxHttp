@@ -29,7 +29,7 @@ public class ReflectUtils {
             ParameterizedType p = ( ParameterizedType ) type;
             return p.getActualTypeArguments()[0];
         } else {
-            return null;
+            return String.class;
         }
     }
 

@@ -19,11 +19,14 @@ package com.github.eajon.cache;
 import android.os.StatFs;
 import android.util.Log;
 
+import com.github.eajon.RxConfig;
+import com.github.eajon.converter.FastJsonDiskConvert;
 import com.github.eajon.converter.GsonDiskConverter;
 import com.github.eajon.converter.IDiskConverter;
+import com.github.eajon.converter.JacksonDiskConverter;
 import com.github.eajon.enums.CacheMode;
 import com.github.eajon.exception.CacheNullException;
-import com.github.eajon.model.CacheResult;
+import com.github.eajon.model.CacheEntity;
 import com.github.eajon.model.RealEntity;
 import com.github.eajon.stategy.CacheAndRemoteDistinctStrategy;
 import com.github.eajon.stategy.CacheAndRemoteStrategy;
@@ -107,7 +110,7 @@ public final class RxCache {
 
 
     @SuppressWarnings(value = {"unchecked", "deprecation"})
-    public <T> ObservableTransformer<T, CacheResult<T>> transformer(CacheMode cacheMode, Type type, String cacheKey) {
+    public <T> ObservableTransformer<T, CacheEntity<T>> transformer(CacheMode cacheMode, Type type, String cacheKey) {
         return transformer(cacheMode, type, false, cacheKey);
     }
 
@@ -118,11 +121,11 @@ public final class RxCache {
      * @param type      缓存clazz
      */
     @SuppressWarnings(value = {"unchecked", "deprecation"})
-    public <T> ObservableTransformer<T, CacheResult<T>> transformer(CacheMode cacheMode, final Type type, final boolean needCacheCallback, final String cacheKey) {
+    public <T> ObservableTransformer<T, CacheEntity<T>> transformer(CacheMode cacheMode, final Type type, final boolean needCacheCallback, final String cacheKey) {
         final IStrategy strategy = loadStrategy(cacheMode);//获取缓存策略
-        return new ObservableTransformer<T, CacheResult<T>>() {
+        return new ObservableTransformer<T, CacheEntity<T>>() {
             @Override
-            public ObservableSource<CacheResult<T>> apply(@NonNull Observable<T> upstream) {
+            public ObservableSource<CacheEntity<T>> apply(@NonNull Observable<T> upstream) {
                 Log.i(TAG, "cackeKey=" + cacheKey);
                 return strategy.execute(RxCache.this, cacheKey, RxCache.this.cacheTime, upstream, type, needCacheCallback);
             }
@@ -394,7 +397,18 @@ public final class RxCache {
         private long cacheTime;
 
         public Builder() {
-            diskConverter = new GsonDiskConverter();
+            switch (RxConfig.get().getConverterType()) {
+                case JACKSON:
+                    this.diskConverter = new JacksonDiskConverter();
+                    break;
+                case FASTJSON:
+                    this.diskConverter = new FastJsonDiskConvert();
+                    break;
+                case GSON:
+                default:
+                    this.diskConverter = new GsonDiskConverter();
+                    break;
+            }
             cacheTime = CACHE_NEVER_EXPIRE;
             cacheVersion = 1;
         }
@@ -451,9 +465,6 @@ public final class RxCache {
             ObjectHelper.requireNonNull(this.diskDir, "diskDir==null");
             if (!this.diskDir.exists()) {
                 this.diskDir.mkdirs();
-            }
-            if (this.diskConverter == null) {
-                this.diskConverter = new GsonDiskConverter();
             }
             if (diskMaxSize <= 0) {
                 diskMaxSize = calculateDiskCacheSize(diskDir);

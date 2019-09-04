@@ -1,7 +1,7 @@
 package com.github.eajon.function;
 
 
-import com.github.eajon.model.CacheResult;
+import com.github.eajon.model.CacheEntity;
 import com.github.eajon.util.LoggerUtils;
 
 import io.reactivex.annotations.NonNull;
@@ -13,10 +13,10 @@ import io.reactivex.functions.Function;
  * 日期： 2017/4/21 10:53 <br>
  * 版本： v1.0<br>
  */
-public class CacheResultFunction<T> implements Function<CacheResult<T>, T> {
+public class CacheResultFunction<T> implements Function<CacheEntity<T>, T> {
     @Override
-    public T apply(@NonNull CacheResult<T> cacheResult) {
-        LoggerUtils.info("isFormCache: %s ,data: %s", cacheResult.isFromCache(), cacheResult.getData());
-        return cacheResult.getData();
+    public T apply(@NonNull CacheEntity<T> cacheEntity) {
+        LoggerUtils.info("isFormCache: %s ,data: %s", cacheEntity.isFromCache(), cacheEntity.getData());
+        return cacheEntity.getData();
     }
 }

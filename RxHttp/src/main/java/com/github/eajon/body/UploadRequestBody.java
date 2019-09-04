@@ -112,6 +112,13 @@ public class UploadRequestBody extends RequestBody {
                 if (time == 0) {
                     time = System.currentTimeMillis();
                 }
+                uploadTask.setCurrentSize(writtenBytesCount);
+                if (writtenBytesCount >= uploadTask.getTotalSize()) {
+                    uploadTask.setState(UploadTask.State.FINISH);
+                } else {
+                    uploadTask.setState(UploadTask.State.LOADING);
+                }
+
                 long millis = System.currentTimeMillis() - time;
                 if (millis >= 500) {
                     uploadTask.setSpeed(secondBytesCount * 1000 / millis);
@@ -120,23 +127,15 @@ public class UploadRequestBody extends RequestBody {
                     }
                     secondBytesCount = 0;
                     time = System.currentTimeMillis();
-                }
-
-
-                uploadTask.setCurrentSize(writtenBytesCount);
-
-                if (writtenBytesCount >= uploadTask.getTotalSize()) {
-                    uploadTask.setState(UploadTask.State.FINISH);
-                } else {
-                    uploadTask.setState(UploadTask.State.LOADING);
-                }
-                if (observer instanceof UploadObserver) {
-                    if (multiUploadTask != null) {
-                        (( UploadObserver ) observer).onProgress(multiUploadTask);
-                    } else {
-                        (( UploadObserver ) observer).onProgress(uploadTask);
+                    if (observer instanceof UploadObserver) {
+                        if (multiUploadTask != null) {
+                            (( UploadObserver ) observer).onProgress(multiUploadTask);
+                        } else {
+                            (( UploadObserver ) observer).onProgress(uploadTask);
+                        }
                     }
                 }
+
             }
         };
     }

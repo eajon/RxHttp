@@ -2,33 +2,59 @@ package com.github.eajon.util;
 
 
 import com.github.eajon.RxConfig;
-
-import java.util.concurrent.TimeUnit;
+import com.github.eajon.interceptor.HttpRequestInterceptor;
 
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 
+/**
+ * @author eajon
+ */
 public class OkHttpUtils {
 
+    private OkHttpUtils() {
+        throw new AssertionError();
+    }
 
-    private static final long TIMEOUT = 30;
-    private static HttpsUtils.SSLParams sslParams = HttpsUtils.getSslSocketFactory();
+    private static HttpRequestInterceptor httpRequestInterceptor;
 
-    //默认HttpClient
-    public static OkHttpClient HttpClient = new OkHttpClient.Builder()
-            .addNetworkInterceptor(new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
-                @Override
-                public void log(String message) {
-                    LoggerUtils.info(message);
+    public static HttpRequestInterceptor getHttpRequestInterceptor() {
+        if (httpRequestInterceptor == null) {
+            synchronized (OkHttpUtils.class) {
+                if (httpRequestInterceptor == null) {
+                    httpRequestInterceptor = new HttpRequestInterceptor();
                 }
-            })
-                    .setLevel(HttpLoggingInterceptor.Level.BASIC))
-            .connectTimeout(TIMEOUT, TimeUnit.SECONDS)
-            .readTimeout(TIMEOUT, TimeUnit.SECONDS)
-            .writeTimeout(TIMEOUT, TimeUnit.SECONDS)
-            .sslSocketFactory(sslParams.sSLSocketFactory, sslParams.trustManager)
-            .build();
+            }
+        }
+        return httpRequestInterceptor;
+    }
+
+    /**
+     * 默认httpclient
+     */
+    private static OkHttpClient httpClient;
+
+
+    public static OkHttpClient getOkHttpClient() {
+        if (httpClient == null) {
+            synchronized (OkHttpUtils.class) {
+                if (httpClient == null) {
+                    httpClient = new OkHttpClient.Builder()
+                            .addInterceptor(httpRequestInterceptor)
+                            .addNetworkInterceptor(new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
+                                @Override
+                                public void log(String message) {
+                                    LoggerUtils.info(message);
+                                }
+                            })
+                                    .setLevel(HttpLoggingInterceptor.Level.BASIC))
+                            .build();
+                }
+            }
+        }
+        return httpClient;
+    }
 
     /**
      * 获取OkHttpClient
@@ -48,4 +74,5 @@ public class OkHttpUtils {
 
         return okHttpClientBuilder.build();
     }
+
 }

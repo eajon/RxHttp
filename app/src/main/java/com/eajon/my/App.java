@@ -8,6 +8,7 @@ import com.franmontiel.persistentcookiejar.PersistentCookieJar;
 import com.franmontiel.persistentcookiejar.cache.SetCookieCache;
 import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersistor;
 import com.github.eajon.RxHttp;
+import com.github.eajon.enums.ConverterType;
 import com.github.eajon.util.LoggerUtils;
 import com.github.eajon.util.NetUtils;
 
@@ -60,8 +61,9 @@ public class App extends Application {
         ClearableCookieJar cookieJar =
                 new PersistentCookieJar(new SetCookieCache(), new SharedPrefsCookiePersistor(getContext()));
 
-        OkHttpClient httpClient = new OkHttpClient.Builder()
+        OkHttpClient.Builder httpClientBuilder = new OkHttpClient.Builder()
                 .addInterceptor(offlineCacheInterceptor)
+//                .addInterceptor(new TokenInterceptor())
                 .addNetworkInterceptor(netCacheInterceptor)
                 .addNetworkInterceptor(new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
                     @Override
@@ -73,14 +75,14 @@ public class App extends Application {
                 .connectTimeout(30, TimeUnit.SECONDS)
                 .readTimeout(30, TimeUnit.SECONDS)
                 .writeTimeout(30, TimeUnit.SECONDS)
-                .cookieJar(cookieJar)
-                .build();
+                .cookieJar(cookieJar);
 
 
         RxHttp
                 .getConfig()
                 .baseUrl("http://172.17.12.42:8088/")
-                .okHttpClient(httpClient)
+                .okHttpClient(httpClientBuilder)
+                .converterType(ConverterType.FASTJSON)
                 .rxCache(new File(getExternalCacheDir(), "rxcache"))
                 .log(true, "RxLog");
 

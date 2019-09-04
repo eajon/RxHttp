@@ -18,7 +18,7 @@ package com.github.eajon.stategy;
 
 
 import com.github.eajon.cache.RxCache;
-import com.github.eajon.model.CacheResult;
+import com.github.eajon.model.CacheEntity;
 
 import java.lang.reflect.Type;
 
@@ -34,11 +34,11 @@ import io.reactivex.functions.Function;
  */
 public class NoStrategy implements IStrategy {
     @Override
-    public <T> Observable<CacheResult<T>> execute(RxCache rxCache, String cacheKey, long cacheTime, Observable<T> source, Type type, boolean needCacheCallback) {
-        return source.map(new Function<T, CacheResult<T>>() {
+    public <T> Observable<CacheEntity<T>> execute(RxCache rxCache, String cacheKey, long cacheTime, Observable<T> source, Type type, boolean needCacheCallback) {
+        return source.map(new Function<T, CacheEntity<T>>() {
             @Override
-            public CacheResult<T> apply(@NonNull T t) throws Exception {
-                return new CacheResult<T>(false, t);
+            public CacheEntity<T> apply(@NonNull T t) throws Exception {
+                return new CacheEntity<T>(false, t);
             }
         });
     }

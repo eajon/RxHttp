@@ -4,11 +4,11 @@ public class CommonResponse<T> extends BaseResponse {
 
     private T data;
 
-    public T getData() {
+    public T getResult() {
         return data;
     }
 
-    public void setData(T data) {
-        this.data = data;
+    public void setResult(T result) {
+        this.data = result;
     }
 }

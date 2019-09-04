@@ -1,9 +1,9 @@
 package com.github.eajon.util;
 
+import androidx.annotation.NonNull;
+
 import java.text.DecimalFormat;
 import java.util.concurrent.TimeUnit;
-
-import androidx.annotation.NonNull;
 
 /**
  * 描述：格式化速度

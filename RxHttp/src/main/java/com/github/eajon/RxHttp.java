@@ -7,32 +7,31 @@ import android.content.DialogInterface;
 import android.text.TextUtils;
 import android.view.View;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.github.eajon.body.UploadRequestBody;
 import com.github.eajon.enums.RequestMethod;
 import com.github.eajon.enums.RequestType;
-import com.github.eajon.exception.ApiException;
-import com.github.eajon.interceptor.DownloadInterceptor;
-import com.github.eajon.interceptor.RequestInterceptor;
+import com.github.eajon.exception.HttpMethodException;
+import com.github.eajon.interceptor.DownloadResponseInterceptor;
+import com.github.eajon.model.RequestEntity;
 import com.github.eajon.observer.HttpObserver;
 import com.github.eajon.task.BaseTask;
 import com.github.eajon.task.DownloadTask;
 import com.github.eajon.task.MultiUploadTask;
 import com.github.eajon.task.UploadTask;
 import com.github.eajon.util.GsonUtils;
+import com.github.eajon.util.JacksonUtils;
 import com.github.eajon.util.NetUtils;
 import com.github.eajon.util.ReflectUtils;
 import com.github.eajon.util.RetrofitUtils;
-import com.github.eajon.util.RxBusUtils;
 import com.github.eajon.util.RxUtils;
 import com.trello.rxlifecycle3.LifecycleProvider;
 import com.trello.rxlifecycle3.android.ActivityEvent;
 import com.trello.rxlifecycle3.android.FragmentEvent;
 
-import java.io.File;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
@@ -41,7 +40,6 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.subjects.BehaviorSubject;
-import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 
@@ -52,52 +50,55 @@ import okhttp3.RequestBody;
  * @author wengyijiong
  */
 public class RxHttp {
-    /*请求标志 rxBus发射标识*/
+    /**
+     * 请求标志
+     */
     private String tag;
-    /*请求类型*/
+    /**
+     * 请求类型
+     */
     private RequestType requestType;
-    /*请求方式*/
+    /**请求方式*/
     private RequestMethod requestMethod;
-    /*请求参数*/
+    /**请求参数*/
     private Map<String, Object> parameter;
-    /*header*/
+    /**header*/
     private Map<String, Object> header;
-    /*json参数*/
+    /**json参数*/
     private RequestBody requestBody;
-    /*LifecycleProvider*/
+    /**LifecycleProvider*/
     private LifecycleProvider lifecycle;
-    /*ActivityEvent*/
+    /**ActivityEvent*/
     private ActivityEvent activityEvent;
-    /*FragmentEvent*/
+    /**FragmentEvent*/
     private FragmentEvent fragmentEvent;
-    /*上传或者下载任务*/
+    /**上传或者下载任务*/
     private BaseTask task;
-    /*基础URL*/
+    /**基础URL*/
     private String baseUrl;
-    /*apiUrl*/
+    /**apiUrl*/
     private String apiUrl;
-    /*entity*/
+    /**entity*/
     private Type type;
-    /*HTTP回调*/
+    /**HTTP回调*/
     private HttpObserver httpObserver;
-    /*RxDialog提供Context*/
+    /**RxDialog提供Context*/
     private Context dialogContext;
-    /*dialog提示*/
+    /**dialog提示*/
     private String message;
-    /*dialog是否默认可以取消*/
+    /**dialog是否默认可以取消*/
     private boolean cancelable;
-    /*自定义对话框*/
+    /**自定义对话框*/
     private Dialog dialog;
-    /*progressBar*/
+    /**progressBar*/
     private View view;
-    /*是否是粘性消息*/
-    private boolean isStick;
-    /*cacheKey*/
+    /**cacheKey*/
     private String cacheKey;
-    /*重试次数*/
+    /**重试次数*/
     private int retryTime;
 
-    /*构造函数*/
+
+    /**构造函数*/
     private RxHttp(Builder builder) {
         this.tag = builder.tag;
         this.parameter = builder.parameter;
@@ -109,14 +110,12 @@ public class RxHttp {
         this.baseUrl = builder.baseUrl;
         this.apiUrl = builder.apiUrl;
         this.requestMethod = builder.requestMethod;
-        this.type = builder.type;
         this.requestBody = builder.requestBody;
         this.dialogContext = builder.dialogContext;
         this.message = builder.message;
         this.cancelable = builder.cancelable;
         this.dialog = builder.dialog;
         this.view = builder.view;
-        this.isStick = builder.isStick;
         this.cacheKey = builder.cacheKey;
         this.retryTime = builder.retryTime;
     }
@@ -133,7 +132,23 @@ public class RxHttp {
         return httpObserver;
     }
 
-    /*builder复制函数,非全部复制*/
+    /**
+     * 构建Http请求
+     */
+    public Observable getRequest() {
+        /*header处理*/
+        disposeHeader();
+        /*Parameter处理*/
+        disposeParameter();
+        if (task == null) {
+            this.requestType = RequestType.REQUEST;
+            return doRequest();
+        } else {
+            throw new NullPointerException("not support task!");
+        }
+    }
+
+    /**builder复制函数,非全部复制*/
     public RxHttp.Builder newBuilder() {
         return new RxHttp.Builder(this);
     }
@@ -143,41 +158,29 @@ public class RxHttp {
         return RxConfig.get();
     }
 
-    /*Http请求*/
+    /**Http请求*/
     public Disposable request(HttpObserver httpObserver) {
-        this.httpObserver = httpObserver;
+
         if (httpObserver == null) {
             throw new NullPointerException("Observer must not null!");
         } else {
-            return request();
+            this.httpObserver = httpObserver;
+            /*处理泛型type*/
+            type = ReflectUtils.getParameterizedType(httpObserver);
+            return subscribe(createRequest());
         }
     }
 
-    /*Http请求*/
-    public Disposable request() {
 
+    /**
+     * 构建Http请求
+     */
+    private Observable createRequest() {
         /*header处理*/
         disposeHeader();
         /*Parameter处理*/
         disposeParameter();
-        /*RxBus方式*/
-        if (httpObserver == null) {
-            httpObserver = new HttpObserver() {
-                @Override
-                public void onSuccess(Object o) {
-                    RxBusUtils.sendBus(tag, o, isStick);
-                }
 
-                @Override
-                public void onError(ApiException t) {
-                    RxBusUtils.sendBus(tag, t, isStick);
-                }
-            };
-        }
-        //如果没有设置type获取泛型type
-        if (type == null) {
-            type = ReflectUtils.getParameterizedType(httpObserver);
-        }
         if (task == null) {
             this.requestType = RequestType.REQUEST;
             return doRequest();
@@ -193,96 +196,73 @@ public class RxHttp {
     }
 
 
-    /*执行请求*/
-    private Disposable doRequest() {
-
-        Observable observable = null;
-
+    /**执行请求*/
+    private Observable doRequest() {
         /*请求方式处理*/
         if (requestMethod == null) {
             requestMethod = RequestMethod.POST;
         }
-        switch (requestMethod) {
-            case GET:
-                observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).get(disposeApiUrl(), parameter, header);
-                break;
-            case POST:
-                if (requestBody != null) {
-                    observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).post(disposeApiUrl(), requestBody, header);
-                } else {
-                    observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).post(disposeApiUrl(), parameter, header);
-                }
-                break;
-            case DELETE:
-                if (requestBody != null) {
-                    observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).delete(disposeApiUrl(), requestBody, header);
-                } else {
-                    observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).delete(disposeApiUrl(), parameter, header);
-                }
-                break;
-            case PUT:
-                if (requestBody != null) {
-                    observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).put(disposeApiUrl(), requestBody, header);
-                } else {
-                    observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).put(disposeApiUrl(), parameter, header);
-                }
-                break;
-            case PATCH:
-                if (requestBody != null) {
-                    observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).patch(disposeApiUrl(), requestBody, header);
-                } else {
-                    observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).patch(disposeApiUrl(), parameter, header);
-                }
-                break;
-            case HEAD:
-                observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).head(disposeApiUrl(), parameter, header);
-                break;
-        }
-        return subscribe(observable);
+        return RetrofitUtils.getRetrofit(getBaseUrl(), new RequestEntity(requestMethod, parameter, header, requestBody)).request(disposeApiUrl());
     }
 
-    /*执行文件上传*/
-    private Disposable doUpload() {
-        Observable observable;
+    /**
+     * 执行文件上传
+     */
+    private Observable doUpload() {
+        /*请求方式处理*/
+        if (requestMethod == null) {
+            requestMethod = RequestMethod.POST;
+        }
+        MultipartBody.Builder builder = new MultipartBody.Builder();
         /*处理文件*/
-        List<MultipartBody.Part> partList = new ArrayList<>();
-        File file;
-        RequestBody requestBody;
         if (task instanceof UploadTask) {
             UploadTask uploadTask = ( UploadTask ) task;
-            file = uploadTask.getFile();
-            requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
-            MultipartBody.Part part = MultipartBody.Part.createFormData(uploadTask.getName(), NetUtils.getHeaderValueEncoded(uploadTask.getFileName()).toString(), new UploadRequestBody(requestBody, httpObserver, uploadTask));
-            observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).upload(disposeApiUrl(), convertParameter(), header, part);
+            builder.setType(MultipartBody.FORM);
+            addFilePart(builder, uploadTask);
         } else {
             MultiUploadTask multiUploadTask = ( MultiUploadTask ) task;
-            for (int i = 0; i < multiUploadTask.getUploadTasks().size(); i++) {
-                UploadTask task = multiUploadTask.getUploadTasks().get(i);
-                file = task.getFile();
-                requestBody = RequestBody.create(MediaType.parse("multipart/form-data"), file);
-                MultipartBody.Part part = MultipartBody.Part.createFormData(task.getName(), NetUtils.getHeaderValueEncoded(task.getFileName()).toString(), new UploadRequestBody(requestBody, httpObserver, task, multiUploadTask));
-                partList.add(part);
+            builder.setType(MultipartBody.FORM);
+            for (UploadTask uploadTask : multiUploadTask.getUploadTasks()) {
+                addFilePart(builder, uploadTask);
             }
-            observable = RetrofitUtils.get().getRetrofit(getBaseUrl()).upload(disposeApiUrl(), convertParameter(), header, partList);
         }
-
-        /*请求处理*/
-        return subscribe(observable);
+        /*处理参数*/
+        for (String key : parameter.keySet()) {
+            Object value = parameter.get(key);
+            if (value instanceof RequestBody) {
+                throw new IllegalArgumentException("requestBody is not allow here");
+            } else {
+                builder.addFormDataPart(key, String.valueOf(value));
+            }
+        }
+        /*处理requestBody,正常上传不含requestBody参数*/
+        if (requestBody != null) {
+            throw new IllegalArgumentException("requestBody is not allow here");
+        }
+        requestBody = builder.build();
+        switch (requestMethod) {
+            case POST:
+            case PUT:
+            case PATCH:
+                return RetrofitUtils.getRetrofit(getBaseUrl(), new RequestEntity(requestMethod, null, header, requestBody)).request(disposeApiUrl());
+            default:
+                throw new HttpMethodException();
+        }
     }
 
-    private Disposable doDownload() {
-
-        DownloadTask downloadTask = ( DownloadTask ) task;
+    private Observable doDownload() {
         /*请求方式处理*/
         if (requestMethod == null) {
             requestMethod = RequestMethod.GET;
         }
-
-        Observable observable = RetrofitUtils.get().getRetrofit(getBaseUrl(), new DownloadInterceptor(httpObserver, downloadTask), new RequestInterceptor(requestMethod, parameter, header, requestBody)).download(disposeApiUrl(), "bytes=" + downloadTask.getCurrentSize() + "-");
-
-        /*请求处理*/
-        return subscribe(observable);
-
+        DownloadTask downloadTask = ( DownloadTask ) task;
+        switch (requestMethod) {
+            case GET:
+            case POST:
+                return RetrofitUtils.getRetrofit(getBaseUrl(), new RequestEntity(requestMethod, parameter, header, requestBody), new DownloadResponseInterceptor(httpObserver, downloadTask)).download(disposeApiUrl(), "bytes=" + downloadTask.getCurrentSize() + "-");
+            default:
+                throw new HttpMethodException();
+        }
     }
 
 
@@ -299,7 +279,7 @@ public class RxHttp {
     }
 
 
-    //dialog
+    /**设置DIALOG*/
     @SuppressWarnings("unchecked")
     private Observable dialogObserver(final Observable observable) {
         return Observable.using(new Callable<Dialog>() {
@@ -313,7 +293,7 @@ public class RxHttp {
             }
         }, new Function<Dialog, Observable<Object>>() {
             @Override
-            public Observable<Object> apply(final Dialog progressDialog) throws Exception {
+            public Observable<Object> apply(final Dialog progressDialog) {
                 final BehaviorSubject<Boolean> dialogSubject = BehaviorSubject.create();
                 return observe(observable).doOnSubscribe(new Consumer<Disposable>() {
                     @Override
@@ -329,13 +309,13 @@ public class RxHttp {
             }
         }, new Consumer<Dialog>() {
             @Override
-            public void accept(Dialog dialog) throws Exception {
+            public void accept(Dialog dialog) {
                 dialog.dismiss();
             }
         });
     }
 
-    //progressBar
+    /**设置ProgressBar*/
     @SuppressWarnings("unchecked")
     private Observable viewObserver(final Observable observable) {
         return Observable.using(new Callable<View>() {
@@ -358,7 +338,7 @@ public class RxHttp {
     }
 
 
-    //构建数据发射器
+    /**构建数据发射器*/
     @SuppressWarnings("unchecked")
     public Observable observe(Observable observable) {
         return observable
@@ -366,24 +346,24 @@ public class RxHttp {
                 .compose(RxUtils.cache(requestType, type, cacheKey))
                 .compose(RxUtils.retryPolicy(retryTime))
                 .compose(RxUtils.lifeCycle(lifecycle, activityEvent, fragmentEvent))
-                .compose(RxUtils.sendEvent(task, httpObserver))
-                .compose(RxUtils.io_main());
+                .compose(RxUtils.sendState(task, httpObserver))
+                .compose(RxUtils.ioMain());
 
     }
 
 
-    /*获取基础URL*/
+    /**获取BaseUrl*/
     private String getBaseUrl() {
         //如果没有重新指定URL则是用默认配置
         return TextUtils.isEmpty(baseUrl) ? getConfig().getBaseUrl() : baseUrl;
     }
 
-    /*ApiUrl处理*/
+    /**ApiUrl处理*/
     private String disposeApiUrl() {
         return TextUtils.isEmpty(apiUrl) ? "" : apiUrl;
     }
 
-    /*处理Header*/
+    /**处理Header*/
     private void disposeHeader() {
 
         /*header空处理*/
@@ -391,14 +371,14 @@ public class RxHttp {
             header = new HashMap<>();
         }
 
-        //添加基础 Header
+        /*添加基础Header*/
         Map<String, Object> baseHeader = getConfig().getBaseHeader();
         if (baseHeader != null && baseHeader.size() > 0) {
             header.putAll(baseHeader);
         }
 
         if (!header.isEmpty()) {
-            //处理header中文或者换行符出错问题
+            /*处理Header字符问题*/
             for (String key : header.keySet()) {
                 header.put(key, NetUtils.getHeaderValueEncoded(header.get(key)));
             }
@@ -406,28 +386,26 @@ public class RxHttp {
 
     }
 
-    /*处理 Parameter*/
+    /**处理 Parameter*/
     private void disposeParameter() {
         /*空处理*/
         if (parameter == null) {
             parameter = new HashMap<>();
         }
-        //添加基础 Parameter
+        /*添加基础 Parameter*/
         Map<String, Object> baseParameter = getConfig().getBaseParameter();
         if (baseParameter != null && baseParameter.size() > 0) {
             parameter.putAll(baseParameter);
         }
     }
 
-    /*上传其他参数使用post提交 ,Parameter不是requestbody的话，需要转为requestbody*/
-    private Map<String, RequestBody> convertParameter() {
-        Map<String, RequestBody> map = new HashMap<>();
-        for (String key : parameter.keySet()) {
-            if (!(parameter.get(key) instanceof RequestBody)) {
-                map.put(key, RequestBody.create(null, String.valueOf(parameter.get(key))));
-            }
-        }
-        return map;
+
+    /**
+     * 上传增加文件参数
+     */
+    private void addFilePart(MultipartBody.Builder builder, UploadTask uploadTask) {
+        RequestBody requestBody = RequestBody.create(null, uploadTask.getFile());
+        builder.addFormDataPart(uploadTask.getName(), NetUtils.getHeaderValueEncoded(uploadTask.getFileName()).toString(), new UploadRequestBody(requestBody, httpObserver, uploadTask));
     }
 
 
@@ -437,7 +415,7 @@ public class RxHttp {
      */
     public static final class Builder {
 
-        /*请求标志 rxBus发射标识*/
+        /*请求标志 */
         String tag;
         /*请求方式*/
         RequestMethod requestMethod;
@@ -459,8 +437,6 @@ public class RxHttp {
         String baseUrl;
         /*apiUrl*/
         String apiUrl;
-        /*entity*/
-        Type type;
         /*RxDialog提供Context*/
         Context dialogContext;
         /*dialog提示*/
@@ -471,14 +447,14 @@ public class RxHttp {
         Dialog dialog;
         /*progressBar*/
         private View view;
-        /*是否是粘性消息*/
-        boolean isStick;
         /*cacheKey*/
         String cacheKey;
         /*重试次数，仅针对部分http连接问题进行重试，默认每隔0.5秒*/
         int retryTime;
 
+
         public Builder() {
+
         }
 
         Builder(RxHttp rxHttp) {
@@ -488,11 +464,9 @@ public class RxHttp {
             this.fragmentEvent = rxHttp.fragmentEvent;
             this.baseUrl = rxHttp.baseUrl;
             this.apiUrl = rxHttp.apiUrl;
-            this.type = rxHttp.type;
             this.parameter = rxHttp.parameter;
             this.header = rxHttp.header;
             this.requestBody = rxHttp.requestBody;
-            this.isStick = rxHttp.isStick;
             this.cacheKey = rxHttp.cacheKey;
         }
 
@@ -560,12 +534,24 @@ public class RxHttp {
             return this;
         }
 
-        /* 增加 Parameter 不断叠加参数 包括基础参数 自动转化为Map*/
+        /*增加 Parameter 不断叠加参数 包括基础参数 自动转化为Map*/
+        @SuppressWarnings(value = "unchecked")
         public Builder addTypeParameter(Object object) {
             if (this.parameter == null) {
                 this.parameter = new HashMap<>();
             }
-            this.parameter.putAll(GsonUtils.objectToMap(object));
+            switch (RxConfig.get().getConverterType()) {
+                case JACKSON:
+                    this.parameter.putAll(JacksonUtils.getMapper().convertValue(object, Map.class));
+                    break;
+                case FASTJSON:
+                    this.parameter.putAll(JSONObject.parseObject((JSON.toJSON(object)).toString()));
+                    break;
+                case GSON:
+                default:
+                    this.parameter.putAll(GsonUtils.objectToMap(object));
+                    break;
+            }
             return this;
         }
 
@@ -576,12 +562,24 @@ public class RxHttp {
         }
 
         /*设置 Parameter 会覆盖 Parameter 包括基础参数 自动转化为Map*/
+        @SuppressWarnings(value = "unchecked")
         public Builder setTypeParameter(Object object) {
-            this.parameter = GsonUtils.objectToMap(object);
+            switch (RxConfig.get().getConverterType()) {
+                case JACKSON:
+                    this.parameter = JacksonUtils.getMapper().convertValue(object, Map.class);
+                    break;
+                case FASTJSON:
+                    this.parameter = JSONObject.parseObject((JSON.toJSON(object)).toString());
+                    break;
+                case GSON:
+                default:
+                    this.parameter = GsonUtils.objectToMap(object);
+                    break;
+            }
             return this;
         }
 
-        /* 增加 Header 不断叠加 Header 包括基础 Header */
+        /*  增加 Header 不断叠加 Header 包括基础 Header */
         public Builder addHeader(Map<String, Object> header) {
             if (this.header == null) {
                 this.header = new HashMap<>();
@@ -591,64 +589,82 @@ public class RxHttp {
         }
 
         /* 增加 Header 不断叠加 Header 包括基础 Header 自动转化为Map*/
+        @SuppressWarnings(value = "unchecked")
         public Builder addTypeHeader(Object object) {
             if (this.header == null) {
                 this.header = new HashMap<>();
             }
-            this.header.putAll(GsonUtils.objectToMap(object));
+            switch (RxConfig.get().getConverterType()) {
+                case JACKSON:
+                    this.header.putAll(JacksonUtils.getMapper().convertValue(object, Map.class));
+                    break;
+                case FASTJSON:
+                    this.header.putAll(JSONObject.parseObject((JSON.toJSON(object)).toString()));
+                    break;
+                case GSON:
+                default:
+                    this.header.putAll(GsonUtils.objectToMap(object));
+                    break;
+            }
             return this;
         }
 
-        /*设置 Header 会覆盖 Header 包括基础参数*/
+        /* 设置 Header 会覆盖 Header 包括基础参数*/
         public Builder setHeader(Map<String, Object> header) {
             this.header = header;
             return this;
         }
 
-        /*设置 Header 会覆盖 Header 包括基础参数 自动转化为Map*/
+        /* 设置 Header 会覆盖 Header 包括基础参数 自动转化为Map*/
+        @SuppressWarnings(value = "unchecked")
         public Builder setTypeHeader(Object object) {
-            this.header = GsonUtils.objectToMap(object);
+            switch (RxConfig.get().getConverterType()) {
+                case JACKSON:
+                    this.header = JacksonUtils.getMapper().convertValue(object, Map.class);
+                    break;
+                case FASTJSON:
+                    this.header = JSONObject.parseObject((JSON.toJSON(object)).toString());
+                    break;
+                case GSON:
+                default:
+                    this.header = GsonUtils.objectToMap(object);
+                    break;
+            }
             return this;
         }
 
 
-        /*设置RequestBody*/
+        /* 设置RequestBody*/
         public Builder setRequestBody(RequestBody requestBody) {
             this.requestBody = requestBody;
             return this;
         }
 
-        /*LifecycleProvider*/
+        /* LifecycleProvider*/
         public Builder lifecycle(LifecycleProvider lifecycle) {
             this.lifecycle = lifecycle;
             return this;
         }
 
-        /*ActivityEvent*/
+        /* ActivityEvent*/
         public Builder activityEvent(ActivityEvent activityEvent) {
             this.activityEvent = activityEvent;
             return this;
         }
 
-        /*FragmentEvent*/
+        /* FragmentEvent*/
         public Builder fragmentEvent(FragmentEvent fragmentEvent) {
             this.fragmentEvent = fragmentEvent;
             return this;
         }
 
-        /*返回的实体类型，对下载无效*/
-        public Builder entity(Type type) {
-            this.type = type;
-            return this;
-        }
-
-        /*下载上传任务*/
+        /* 下载上传任务*/
         public Builder task(BaseTask baseTask) {
             this.task = baseTask;
             return this;
         }
 
-        /*阻塞对话框*/
+        /* 阻塞对话框*/
         public Builder withDialog(Context context) {
             this.dialogContext = context;
             this.message = "";
@@ -656,7 +672,7 @@ public class RxHttp {
             return this;
         }
 
-        /*阻塞对话框*/
+        /* 阻塞对话框*/
         public Builder withDialog(Context context, String message) {
             this.dialogContext = context;
             this.message = message;
@@ -664,7 +680,7 @@ public class RxHttp {
             return this;
         }
 
-        /*阻塞对话框*/
+        /* 阻塞对话框*/
         public Builder withDialog(Context context, String message, boolean cancelable) {
             this.dialogContext = context;
             this.message = message;
@@ -672,37 +688,32 @@ public class RxHttp {
             return this;
         }
 
-        /*阻塞对话框*/
+
+        /* 阻塞对话框*/
         public Builder withDialog(Dialog dialog) {
             this.dialog = dialog;
             return this;
         }
 
-        /*progressBar*/
+        /* progressBar*/
         public Builder withView(View view) {
             this.view = view;
             return this;
         }
 
 
-        /*是否是粘性消息*/
-        public Builder isStick(boolean isStick) {
-            this.isStick = isStick;
-            return this;
-        }
-
-
-        /*cacheKey*/
+        /* cacheKey*/
         public Builder cacheKey(String cacheKey) {
             this.cacheKey = cacheKey;
             return this;
         }
 
-        /*重试次数*/
+        /* 重试次数*/
         public Builder retryTime(int retryTime) {
             this.retryTime = retryTime;
             return this;
         }
+
 
         public RxHttp build() {
             return new RxHttp(this);

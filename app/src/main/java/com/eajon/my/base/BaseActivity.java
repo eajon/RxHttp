@@ -5,13 +5,14 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 
-import com.github.eajon.base.RxBusActivity;
-
 import androidx.annotation.LayoutRes;
+
+import com.trello.rxlifecycle3.components.support.RxAppCompatActivity;
+
 import butterknife.ButterKnife;
 
 
-public abstract class BaseActivity extends RxBusActivity {
+public abstract class BaseActivity extends RxAppCompatActivity {
     protected Activity self;
 
     @LayoutRes

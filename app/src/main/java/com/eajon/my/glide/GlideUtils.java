@@ -7,7 +7,6 @@ import android.widget.ImageView;
 import com.bumptech.glide.request.RequestOptions;
 import com.eajon.my.R;
 
-
 import java.io.Serializable;
 
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
@@ -17,7 +16,7 @@ import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
  * glide的工具类
  */
 
-public class GlideUtils implements Serializable{
+public class GlideUtils implements Serializable {
 
     public static void loadImg(Activity activity, String url, ImageView img) {
         RequestOptions options = new RequestOptions();

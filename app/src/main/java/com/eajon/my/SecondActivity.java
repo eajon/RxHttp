@@ -5,12 +5,9 @@ import android.widget.TextView;
 
 import com.eajon.my.base.BaseActivity;
 import com.eajon.my.model.Weather;
-import com.github.eajon.annotation.RxSubscribe;
-import com.github.eajon.enums.EventThread;
 import com.github.eajon.task.DownloadTask;
 import com.github.eajon.task.MultiUploadTask;
 import com.github.eajon.util.LoggerUtils;
-import com.google.gson.Gson;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -57,7 +54,6 @@ public class SecondActivity extends BaseActivity {
         ButterKnife.bind(this);
     }
 
-    @RxSubscribe(observeOnThread = EventThread.MAIN, isSticky = true, tag = "download")
     private void download(DownloadTask downloadTask) {
         LoggerUtils.info("download", downloadTask.getProgress());
         runOnUiThread(new Runnable() {
@@ -70,7 +66,6 @@ public class SecondActivity extends BaseActivity {
     }
 
 
-    @RxSubscribe(observeOnThread = EventThread.MAIN, isSticky = true, tag = "upload")
     @SuppressWarnings("unused")
     public void uploadProgress(MultiUploadTask multiUploadTask) {
         runOnUiThread(new Runnable() {
@@ -82,17 +77,15 @@ public class SecondActivity extends BaseActivity {
     }
 
 
-    @RxSubscribe(observeOnThread = EventThread.MAIN, isSticky = true, tag = "weather")
     public void weatherCallBack(Weather weather) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                content2.setText("请求返回" + new Gson().toJson(weather));
+//                content2.setText("请求返回" + new Gson().toJson(weather));
             }
         });
     }
 
-    @RxSubscribe(observeOnThread = EventThread.MAIN, isSticky = true, tag = "weather")
     public void weatherCallBack(String weather) {
         runOnUiThread(new Runnable() {
             @Override

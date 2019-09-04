@@ -18,7 +18,7 @@ package com.github.eajon.stategy;
 
 
 import com.github.eajon.cache.RxCache;
-import com.github.eajon.model.CacheResult;
+import com.github.eajon.model.CacheEntity;
 
 import java.lang.reflect.Type;
 
@@ -35,14 +35,14 @@ public interface IStrategy {
     /**
      * 执行缓存
      *
-     * @param rxCache   缓存管理对象
-     * @param cacheKey  缓存key
-     * @param cacheTime 缓存时间
-     * @param source    网络请求对象
-     * @param type     要转换的目标对象
+     * @param rxCache           缓存管理对象
+     * @param cacheKey          缓存key
+     * @param cacheTime         缓存时间
+     * @param source            网络请求对象
+     * @param type              要转换的目标对象
      * @param needCacheCallback
      * @return 返回带缓存的Observable流对象
      */
-    <T> Observable<CacheResult<T>> execute(RxCache rxCache, String cacheKey, long cacheTime, Observable <T> source, Type type, boolean needCacheCallback);
+    <T> Observable<CacheEntity<T>> execute(RxCache rxCache, String cacheKey, long cacheTime, Observable<T> source, Type type, boolean needCacheCallback);
 
 }

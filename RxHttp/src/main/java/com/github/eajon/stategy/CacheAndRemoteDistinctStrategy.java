@@ -17,9 +17,8 @@
 package com.github.eajon.stategy;
 
 
-
 import com.github.eajon.cache.RxCache;
-import com.github.eajon.model.CacheResult;
+import com.github.eajon.model.CacheEntity;
 
 import java.lang.reflect.Type;
 
@@ -37,19 +36,19 @@ import okio.ByteString;
  */
 public final class CacheAndRemoteDistinctStrategy extends BaseStrategy {
     @Override
-    public <T> Observable<CacheResult<T>> execute(RxCache rxCache, String key, long time, Observable<T> source, Type type, boolean need) {
-        Observable<CacheResult<T>> cache = loadCache(rxCache, type, key, time,true);
-        Observable<CacheResult<T>> remote = loadRemote(rxCache, key, source,false);
+    public <T> Observable<CacheEntity<T>> execute(RxCache rxCache, String key, long time, Observable<T> source, Type type, boolean need) {
+        Observable<CacheEntity<T>> cache = loadCache(rxCache, type, key, time, true);
+        Observable<CacheEntity<T>> remote = loadRemote(rxCache, key, source, false);
         return Observable.concat(cache, remote)
-                .filter(new Predicate<CacheResult<T>>() {
+                .filter(new Predicate<CacheEntity<T>>() {
                     @Override
-                    public boolean test(@NonNull CacheResult<T> tCacheResult) throws Exception {
-                        return tCacheResult != null && tCacheResult.getData() != null;
+                    public boolean test(@NonNull CacheEntity<T> tCacheEntity) throws Exception {
+                        return tCacheEntity != null && tCacheEntity.getData() != null;
                     }
-                }).distinctUntilChanged(new Function<CacheResult<T>, String>() {
+                }).distinctUntilChanged(new Function<CacheEntity<T>, String>() {
                     @Override
-                    public String apply(@NonNull CacheResult<T> tCacheResult) throws Exception {
-                        return ByteString.of(tCacheResult.getData().toString().getBytes()).md5().hex();
+                    public String apply(@NonNull CacheEntity<T> tCacheEntity) throws Exception {
+                        return ByteString.of(tCacheEntity.getData().toString().getBytes()).md5().hex();
                     }
                 });
     }

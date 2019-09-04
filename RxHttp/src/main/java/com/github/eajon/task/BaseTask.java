@@ -11,13 +11,20 @@ public abstract class BaseTask {
      * 枚举状态
      */
     public enum State {
-        NONE,           //无状态
-        WAITING,        //等待
-        LOADING,        //启动中
-        ERROR,          //错误
-        FINISH,         //完成
-        PAUSE,          //暂停
-        CANCEL,         //取消
+        /*无状态*/
+        NONE,
+        /*等待*/
+        WAITING,
+        /*启动中*/
+        LOADING,
+        /*错误*/
+        ERROR,
+        /*完成*/
+        FINISH,
+        /*暂停*/
+        PAUSE,
+        /*取消*/
+        CANCEL,
     }
 
     private long startTime;

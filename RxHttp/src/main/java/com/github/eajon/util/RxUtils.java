@@ -60,7 +60,9 @@ import io.reactivex.schedulers.Schedulers;
  */
 public class RxUtils {
 
-    //返回数据转换
+    /**
+     * 返回数据装换
+     */
     @SuppressWarnings("unchecked")
     public static <T> ObservableTransformer<T, T> map(final RequestType requestType, final Type type) {
         return new ObservableTransformer<T, T>() {
@@ -75,7 +77,9 @@ public class RxUtils {
     }
 
 
-    //缓存
+    /**
+     * 缓存
+     */
     @SuppressWarnings("unchecked")
     public static <T> ObservableTransformer<T, T> cache(final RequestType requestType, final Type type, final String cacheKey) {
         return new ObservableTransformer<T, T>() {
@@ -94,7 +98,9 @@ public class RxUtils {
         };
     }
 
-    // 重试
+    /**
+     * 重试
+     */
     @SuppressWarnings("unchecked")
     public static <T> ObservableTransformer<T, T> retryPolicy(final int time) {
         return new ObservableTransformer<T, T>() {
@@ -107,7 +113,9 @@ public class RxUtils {
         };
     }
 
-    //生命周期关联
+    /**
+     * 生命周期
+     */
     @SuppressWarnings("unchecked")
     public static <T> ObservableTransformer<T, T> lifeCycle(final LifecycleProvider lifecycle, final ActivityEvent activityEvent, final FragmentEvent fragmentEvent) {
         return new ObservableTransformer<T, T>() {
@@ -131,9 +139,11 @@ public class RxUtils {
     }
 
 
-    //RXbus发射状态
+    /**
+     * 发送状态
+     */
     @SuppressWarnings("unchecked")
-    public static <T> ObservableTransformer<T, T> sendEvent(final BaseTask task, final Observer observer) {
+    public static <T> ObservableTransformer<T, T> sendState(final BaseTask task, final Observer observer) {
         return new ObservableTransformer<T, T>() {
             @Override
             public ObservableSource<T> apply(@NonNull Observable<T> upstream) {
@@ -149,11 +159,15 @@ public class RxUtils {
                                 uploadTask.setState(UploadTask.State.WAITING);
                             }
                         }
-                        if (observer instanceof UploadObserver) {
-                            (( UploadObserver ) observer).onProgress(task);
+                        if (task instanceof MultiUploadTask || task instanceof UploadTask) {
+                            if (observer instanceof UploadObserver) {
+                                (( UploadObserver ) observer).onProgress(task);
+                            }
                         }
-                        if (observer instanceof DownloadObserver) {
-                            (( DownloadObserver ) observer).onProgress(( DownloadTask ) task);
+                        if (task instanceof DownloadTask) {
+                            if (observer instanceof DownloadObserver) {
+                                (( DownloadObserver ) observer).onProgress(( DownloadTask ) task);
+                            }
                         }
 
                     }
@@ -166,11 +180,16 @@ public class RxUtils {
                                 uploadTask.setState(UploadTask.State.ERROR);
                             }
                         }
-                        if (observer instanceof UploadObserver) {
-                            (( UploadObserver ) observer).onProgress(task);
+                        if (task instanceof MultiUploadTask || task instanceof UploadTask) {
+                            if (observer instanceof UploadObserver) {
+                                (( UploadObserver ) observer).onProgress(task);
+                            }
                         }
-                        if (observer instanceof DownloadObserver) {
-                            (( DownloadObserver ) observer).onProgress(( DownloadTask ) task);
+
+                        if (task instanceof DownloadTask) {
+                            if (observer instanceof DownloadObserver) {
+                                (( DownloadObserver ) observer).onProgress(( DownloadTask ) task);
+                            }
                         }
 
                     }
@@ -178,11 +197,15 @@ public class RxUtils {
                     @Override
                     public void accept(Object o) throws Exception {
                         task.setState(BaseTask.State.FINISH);
-                        if (observer instanceof UploadObserver) {
-                            (( UploadObserver ) observer).onProgress(task);
+                        if (task instanceof MultiUploadTask || task instanceof UploadTask) {
+                            if (observer instanceof UploadObserver) {
+                                (( UploadObserver ) observer).onProgress(task);
+                            }
                         }
-                        if (observer instanceof DownloadObserver) {
-                            (( DownloadObserver ) observer).onProgress(( DownloadTask ) task);
+                        if (task instanceof DownloadTask) {
+                            if (observer instanceof DownloadObserver) {
+                                (( DownloadObserver ) observer).onProgress(( DownloadTask ) task);
+                            }
                         }
 
                     }
@@ -216,8 +239,10 @@ public class RxUtils {
         };
     }
 
-    //线程调度
-    public static <T> ObservableTransformer<T, T> io_main() {
+    /**
+     * 线程调度
+     */
+    public static <T> ObservableTransformer<T, T> ioMain() {
         return new ObservableTransformer<T, T>() {
             @Override
             public ObservableSource<T> apply(@NonNull Observable<T> upstream) {

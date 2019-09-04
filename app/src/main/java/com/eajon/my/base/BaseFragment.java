@@ -8,10 +8,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.github.eajon.base.RxBusFragment;
-
 import androidx.annotation.LayoutRes;
 import androidx.annotation.Nullable;
+
+import com.trello.rxlifecycle3.components.support.RxFragment;
+
 import butterknife.ButterKnife;
 
 
@@ -19,7 +20,7 @@ import butterknife.ButterKnife;
  * Created by newbiechen on 17-3-31.
  */
 
-public abstract class BaseFragment extends RxBusFragment {
+public abstract class BaseFragment extends RxFragment {
 
 
     protected Activity self;

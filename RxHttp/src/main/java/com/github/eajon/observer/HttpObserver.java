@@ -4,7 +4,7 @@ import com.github.eajon.exception.ApiException;
 
 import io.reactivex.observers.DisposableObserver;
 
-public abstract class HttpObserver<T> extends DisposableObserver <T> {
+public abstract class HttpObserver<T> extends DisposableObserver<T> {
 
 
     public abstract void onSuccess(T response);

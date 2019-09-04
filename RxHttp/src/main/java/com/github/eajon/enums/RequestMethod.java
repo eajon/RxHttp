@@ -6,10 +6,20 @@ package com.github.eajon.enums;
  * @author WENGYIJIONG
  */
 public enum RequestMethod {
-    GET,
-    POST,
-    DELETE,
-    PUT,
-    PATCH,
-    HEAD
+    /*GET*/
+    GET("GET"),
+    /*POST*/
+    POST("POST"),
+    /*DELETE*/
+    DELETE("DELETE"),
+    /*PUT*/
+    PUT("PUT"),
+    /*PATCH*/
+    PATCH("PATCH"),
+    /*HEAD*/
+    HEAD("HEAD");
+
+    RequestMethod(String method) {
+    }
+
 }

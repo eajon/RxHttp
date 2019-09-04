@@ -1,5 +1,9 @@
 package com.eajon.my.viewModel;
 
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.ViewModel;
+
 import com.eajon.my.model.Weather;
 import com.github.eajon.RxHttp;
 import com.github.eajon.exception.ApiException;
@@ -7,16 +11,12 @@ import com.github.eajon.observer.HttpObserver;
 
 import java.util.HashMap;
 
-import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
-
 public class WeatherModule extends ViewModel {
-    private MutableLiveData <Weather> weather;
+    private MutableLiveData<Weather> weather;
 
-    public LiveData <Weather> getWeather() {
+    public LiveData<Weather> getWeather() {
         if (weather == null) {
-            weather = new MutableLiveData <Weather>();
+            weather = new MutableLiveData<Weather>();
             loadWeather();
         }
         return weather;
@@ -30,11 +30,9 @@ public class WeatherModule extends ViewModel {
                 .baseUrl("http://wthrcdn.etouch.cn/")
                 .apiUrl("weather_mini")
                 .addParameter(map)
-                .entity(Weather.class)
                 .tag("weather")
-                .isStick(true)
                 .build()
-                .request(new HttpObserver <Weather>() {
+                .request(new HttpObserver<Weather>() {
                     @Override
                     public void onSuccess(Weather o) {
                         weather.postValue(o);

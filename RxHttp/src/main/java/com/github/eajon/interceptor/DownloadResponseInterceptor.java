@@ -9,13 +9,13 @@ import io.reactivex.Observer;
 import okhttp3.Interceptor;
 import okhttp3.Response;
 
-public class DownloadInterceptor implements Interceptor {
+public class DownloadResponseInterceptor implements Interceptor {
 
 
     DownloadTask downloadTask;
     private Observer observer;
 
-    public DownloadInterceptor(Observer observer, DownloadTask downloadTask) {
+    public DownloadResponseInterceptor(Observer observer, DownloadTask downloadTask) {
         this.observer = observer;
         this.downloadTask = downloadTask;
     }

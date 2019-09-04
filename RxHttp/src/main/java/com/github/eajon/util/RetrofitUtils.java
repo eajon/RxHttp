@@ -1,12 +1,17 @@
 package com.github.eajon.util;
 
+import com.github.eajon.RxConfig;
 import com.github.eajon.RxHttp;
+import com.github.eajon.interceptor.HttpRequestInterceptor;
+import com.github.eajon.model.RequestEntity;
 import com.github.eajon.retrofit.Api;
 
 import okhttp3.Interceptor;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
+import retrofit2.converter.fastjson.FastJsonConverterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.converter.jackson.JacksonConverterFactory;
 
 /**
  * Retrofit工具类
@@ -16,25 +21,9 @@ import retrofit2.converter.gson.GsonConverterFactory;
  */
 public class RetrofitUtils {
 
-    private static RetrofitUtils instance = null;
-    private static Retrofit.Builder retrofit;
-
-
     private RetrofitUtils() {
-        retrofit = new Retrofit.Builder();
+        throw new AssertionError();
     }
-
-    public static RetrofitUtils get() {
-        if (instance == null) {
-            synchronized (RetrofitUtils.class) {
-                if (instance == null) {
-                    instance = new RetrofitUtils();
-                }
-            }
-        }
-        return instance;
-    }
-
 
     /**
      * 获取ApiService
@@ -42,13 +31,25 @@ public class RetrofitUtils {
      * @param baseUrl
      * @return
      */
-    public Api getRetrofit(String baseUrl) {
-        retrofit
-                .client(RxHttp.getConfig().getOkHttpClient())
+    public static Api getRetrofit(String baseUrl, RequestEntity requestEntity) {
+        HttpRequestInterceptor httpRequestInterceptor = OkHttpUtils.getHttpRequestInterceptor();
+        httpRequestInterceptor.setRequestEntity(requestEntity);
+        Retrofit.Builder builder = new Retrofit.Builder().client(RxHttp.getConfig().getOkHttpClient())
                 .baseUrl(baseUrl)
-                .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create());
-        return retrofit.build().create(Api.class);
+        switch (RxConfig.get().getConverterType()) {
+            case JACKSON:
+                builder.addConverterFactory(JacksonConverterFactory.create());
+                break;
+            case FASTJSON:
+                builder.addConverterFactory(FastJsonConverterFactory.create());
+                break;
+            case GSON:
+            default:
+                builder.addConverterFactory(GsonConverterFactory.create());
+                break;
+        }
+        return builder.build().create(Api.class);
     }
 
 
@@ -58,13 +59,25 @@ public class RetrofitUtils {
      * @param baseUrl
      * @return
      */
-    public Api getRetrofit(String baseUrl, Interceptor... interceptorArray) {
-        retrofit
-                .client(OkHttpUtils.getOkHttpClient(interceptorArray))
+    public static Api getRetrofit(String baseUrl, RequestEntity requestEntity, Interceptor... interceptorArray) {
+        HttpRequestInterceptor httpRequestInterceptor = OkHttpUtils.getHttpRequestInterceptor();
+        httpRequestInterceptor.setRequestEntity(requestEntity);
+        Retrofit.Builder builder = new Retrofit.Builder().client(OkHttpUtils.getOkHttpClient(interceptorArray))
                 .baseUrl(baseUrl)
-                .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create());
-        return retrofit.build().create(Api.class);
+        switch (RxConfig.get().getConverterType()) {
+            case JACKSON:
+                builder.addConverterFactory(JacksonConverterFactory.create());
+                break;
+            case FASTJSON:
+                builder.addConverterFactory(FastJsonConverterFactory.create());
+                break;
+            case GSON:
+            default:
+                builder.addConverterFactory(GsonConverterFactory.create());
+                break;
+        }
+        return builder.build().create(Api.class);
     }
 
 

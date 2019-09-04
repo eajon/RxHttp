@@ -19,7 +19,7 @@ public class NetUtils {
     public static NetworkInfo getNetworkInfo(Context context) {
         ConnectivityManager cm;
         try {
-            cm = (ConnectivityManager) context.getApplicationContext()
+            cm = ( ConnectivityManager ) context.getApplicationContext()
                     .getSystemService(Context.CONNECTIVITY_SERVICE);
         } catch (Exception e) {
             return null;
@@ -48,9 +48,11 @@ public class NetUtils {
      * @return
      */
     public static Object getHeaderValueEncoded(Object value) {
-        if (value == null) return "null";
+        if (value == null) {
+            return "null";
+        }
         if (value instanceof String) {
-            String strValue = ((String) value).replace("\n", "");//换行符
+            String strValue = (( String ) value).replace("\n", "");//换行符
             for (int i = 0, length = strValue.length(); i < length; i++) {
                 char c = strValue.charAt(i);
                 if (c <= '\u001f' || c >= '\u007f') {

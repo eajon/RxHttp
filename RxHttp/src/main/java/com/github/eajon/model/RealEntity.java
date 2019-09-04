@@ -14,6 +14,9 @@ public class RealEntity<T> implements Serializable {
     //缓存开始的时间
     private long updateDate;
 
+    public RealEntity() {
+    }
+
     public RealEntity(T data, long cacheTime) {
         this.cacheTime = cacheTime;
         this.data = data;

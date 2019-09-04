@@ -18,7 +18,7 @@ package com.github.eajon.stategy;
 
 
 import com.github.eajon.cache.RxCache;
-import com.github.eajon.model.CacheResult;
+import com.github.eajon.model.CacheEntity;
 import com.github.eajon.util.LoggerUtils;
 
 import java.lang.reflect.Type;
@@ -40,21 +40,21 @@ import io.reactivex.schedulers.Schedulers;
  */
 public abstract class BaseStrategy implements IStrategy {
 
-    <T> Observable<CacheResult<T>> loadCache(final RxCache rxCache, Type type, final String key, final long time, final boolean needEmpty) {
-        Observable<CacheResult<T>> observable = rxCache.<T>load(key, type, time).flatMap(new Function<T, ObservableSource<CacheResult<T>>>() {
+    <T> Observable<CacheEntity<T>> loadCache(final RxCache rxCache, Type type, final String key, final long time, final boolean needEmpty) {
+        Observable<CacheEntity<T>> observable = rxCache.<T>load(key, type, time).flatMap(new Function<T, ObservableSource<CacheEntity<T>>>() {
             @Override
-            public ObservableSource<CacheResult<T>> apply(@NonNull T t) throws Exception {
+            public ObservableSource<CacheEntity<T>> apply(@NonNull T t) throws Exception {
 //                if (t == null) {
 //                    return Observable.error(new NullPointerException("Not find the cache!"));
 //                }
-                return Observable.just(new CacheResult<>(true, t));
+                return Observable.just(new CacheEntity<>(true, t));
             }
         });
         if (needEmpty) {
             observable = observable
-                    .onErrorResumeNext(new Function<Throwable, ObservableSource<? extends CacheResult<T>>>() {
+                    .onErrorResumeNext(new Function<Throwable, ObservableSource<? extends CacheEntity<T>>>() {
                         @Override
-                        public ObservableSource<? extends CacheResult<T>> apply(@NonNull Throwable throwable) throws Exception {
+                        public ObservableSource<? extends CacheEntity<T>> apply(@NonNull Throwable throwable) throws Exception {
                             return Observable.empty();
                         }
                     });
@@ -63,11 +63,11 @@ public abstract class BaseStrategy implements IStrategy {
     }
 
     //请求成功后：异步保存
-    <T> Observable<CacheResult<T>> loadRemote2(final RxCache rxCache, final String key, Observable<T> source, final boolean needEmpty) {
-        Observable<CacheResult<T>> observable = source
-                .map(new Function<T, CacheResult<T>>() {
+    <T> Observable<CacheEntity<T>> loadRemote2(final RxCache rxCache, final String key, Observable<T> source, final boolean needEmpty) {
+        Observable<CacheEntity<T>> observable = source
+                .map(new Function<T, CacheEntity<T>>() {
                     @Override
-                    public CacheResult<T> apply(@NonNull T t) throws Exception {
+                    public CacheEntity<T> apply(@NonNull T t) throws Exception {
                         LoggerUtils.info("loadRemote result=" + t);
                         rxCache.save(key, t).subscribeOn(Schedulers.io())
                                 .subscribe(new Consumer<Boolean>() {
@@ -85,14 +85,14 @@ public abstract class BaseStrategy implements IStrategy {
                                         }
                                     }
                                 });
-                        return new CacheResult<T>(false, t);
+                        return new CacheEntity<T>(false, t);
                     }
                 });
         if (needEmpty) {
             observable = observable
-                    .onErrorResumeNext(new Function<Throwable, ObservableSource<? extends CacheResult<T>>>() {
+                    .onErrorResumeNext(new Function<Throwable, ObservableSource<? extends CacheEntity<T>>>() {
                         @Override
-                        public ObservableSource<? extends CacheResult<T>> apply(@NonNull Throwable throwable) throws Exception {
+                        public ObservableSource<? extends CacheEntity<T>> apply(@NonNull Throwable throwable) throws Exception {
                             return Observable.empty();
                         }
                     });
@@ -101,31 +101,31 @@ public abstract class BaseStrategy implements IStrategy {
     }
 
     //请求成功后：同步保存
-    <T> Observable<CacheResult<T>> loadRemote(final RxCache rxCache, final String key, Observable<T> source, final boolean needEmpty) {
-        Observable<CacheResult<T>> observable = source
-                .flatMap(new Function<T, ObservableSource<CacheResult<T>>>() {
+    <T> Observable<CacheEntity<T>> loadRemote(final RxCache rxCache, final String key, Observable<T> source, final boolean needEmpty) {
+        Observable<CacheEntity<T>> observable = source
+                .flatMap(new Function<T, ObservableSource<CacheEntity<T>>>() {
                     @Override
-                    public ObservableSource<CacheResult<T>> apply(final @NonNull T t) throws Exception {
-                        return  rxCache.save(key, t).map(new Function<Boolean, CacheResult<T>>() {
+                    public ObservableSource<CacheEntity<T>> apply(final @NonNull T t) throws Exception {
+                        return rxCache.save(key, t).map(new Function<Boolean, CacheEntity<T>>() {
                             @Override
-                            public CacheResult<T> apply(@NonNull Boolean aBoolean) throws Exception {
+                            public CacheEntity<T> apply(@NonNull Boolean aBoolean) throws Exception {
                                 LoggerUtils.info("save status => " + aBoolean);
-                                return new CacheResult<T>(false, t);
+                                return new CacheEntity<T>(false, t);
                             }
-                        }).onErrorReturn(new Function<Throwable, CacheResult<T>>() {
+                        }).onErrorReturn(new Function<Throwable, CacheEntity<T>>() {
                             @Override
-                            public CacheResult<T> apply(@NonNull Throwable throwable) throws Exception {
+                            public CacheEntity<T> apply(@NonNull Throwable throwable) throws Exception {
                                 LoggerUtils.info("save status => " + throwable);
-                                return new CacheResult<T>(false, t);
+                                return new CacheEntity<T>(false, t);
                             }
                         });
                     }
                 });
         if (needEmpty) {
             observable = observable
-                    .onErrorResumeNext(new Function<Throwable, ObservableSource<? extends CacheResult<T>>>() {
+                    .onErrorResumeNext(new Function<Throwable, ObservableSource<? extends CacheEntity<T>>>() {
                         @Override
-                        public ObservableSource<? extends CacheResult<T>> apply(@NonNull Throwable throwable) throws Exception {
+                        public ObservableSource<? extends CacheEntity<T>> apply(@NonNull Throwable throwable) throws Exception {
                             return Observable.empty();
                         }
                     });

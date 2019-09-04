@@ -13,27 +13,21 @@ import android.widget.TextView;
 import com.eajon.my.base.BaseActivity;
 import com.eajon.my.model.BaseResponse;
 import com.eajon.my.model.CommonResponse;
-import com.eajon.my.model.Profile;
-import com.eajon.my.model.Weather;
+import com.eajon.my.model.SysLoginModel;
+import com.eajon.my.model.Token2;
 import com.eajon.my.util.PhotoUtils;
 import com.eajon.my.util.ZhihuImagePicker;
-import com.eajon.my.viewModel.WeatherModule2;
 import com.eajon.my.widget.CProgressDialog;
 import com.github.eajon.RxHttp;
-import com.github.eajon.annotation.RxSubscribe;
-import com.github.eajon.enums.EventThread;
 import com.github.eajon.exception.ApiException;
 import com.github.eajon.observer.DownloadObserver;
 import com.github.eajon.observer.HttpObserver;
 import com.github.eajon.observer.UploadObserver;
-import com.github.eajon.rxbus.RxBus;
 import com.github.eajon.task.BaseTask;
 import com.github.eajon.task.DownloadTask;
 import com.github.eajon.task.MultiUploadTask;
 import com.github.eajon.task.UploadTask;
 import com.github.eajon.util.LoggerUtils;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.qingmei2.rximagepicker.core.RxImagePicker;
 import com.qingmei2.rximagepicker.entity.Result;
 import com.qingmei2.rximagepicker_extension.MimeType;
@@ -43,7 +37,6 @@ import com.tbruyelle.rxpermissions2.RxPermissions;
 import com.trello.rxlifecycle3.android.ActivityEvent;
 
 import java.io.File;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -54,8 +47,6 @@ import butterknife.OnClick;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
-import okhttp3.MediaType;
-import okhttp3.RequestBody;
 
 
 public class MainActivity extends BaseActivity {
@@ -91,16 +82,18 @@ public class MainActivity extends BaseActivity {
 
     @Override
     protected void initView() {
-//        官方MVVM
-//        WeatherModule weatherModule = ViewModelProviders.of(this).get(WeatherModule.class);
-//        weatherModule.getWeather().observe(this, new android.arch.lifecycle.Observer<Weather>() {
+
+//        WeatherModule2.getWeather().request(new HttpObserver<Weather>() {
 //            @Override
-//            public void onChanged(@Nullable Weather weather) {
+//            public void onSuccess(Weather weather) {
 //                content.setText(new Gson().toJson(weather));
 //            }
+//
+//            @Override
+//            public void onError(ApiException exception) {
+//
+//            }
 //        });
-//        RxHttp MVVM
-        WeatherModule2.getWeather();
 
     }
 
@@ -116,29 +109,35 @@ public class MainActivity extends BaseActivity {
         //默认下载地址为Download目录
         downloadTask = new DownloadTask();
 
+
     }
 
     @Override
     protected void initLogic() {
-//        doRequest();
-        doRequest2();
+        doRequest();
+//        doRequest2();
     }
 
     private void doRequest() {
-        HashMap map = new HashMap();
-        map.put("id", 4L);
+        HashMap<String, Object> hashMap = new HashMap<>();
+        hashMap.put("username", "admin");
+        hashMap.put("password", "12345678");
+        SysLoginModel sysLoginModel = new SysLoginModel();
+        sysLoginModel.setUsername("admin");
+        sysLoginModel.setPassword("12345678");
         new RxHttp.Builder()
-                .get()
-                .apiUrl("test/wechat/token")
-                .addParameter(map)
+                .post()
+                .apiUrl("user/login")
+                .addTypeParameter(sysLoginModel)
+                .withView(progressbar)
                 .build()
-                .request(new HttpObserver() {
+                .request(new HttpObserver<Token2>() {
                     @Override
-                    public void onSuccess(Object o) {
+                    public void onSuccess(Token2 token) {
                         HashMap<String, Object> header = new HashMap<>();
-                        header.put("Authorization", o.toString());
+                        header.put("Authorization", token.getData());
                         RxHttp.getConfig().baseHeader(header);
-                        content.setText(o.toString());
+                        content.setText(token.getData());
                     }
 
                     @Override
@@ -149,22 +148,14 @@ public class MainActivity extends BaseActivity {
     }
 
     private void doRequest2() {
-        HashMap map = new HashMap();
-        map.put("username", "admin");
-        map.put("password", "12345678");
         new RxHttp.Builder()
                 .post()
-                .apiUrl("user/login")
-                .addParameter(map)
-                .entity(CommonResponse.class)
+                .apiUrl("folder/add")
                 .build()
                 .request(new HttpObserver<CommonResponse>() {
                     @Override
                     public void onSuccess(CommonResponse o) {
-                        HashMap<String, Object> header = new HashMap<>();
-                        header.put("Authorization", o.getData());
-                        RxHttp.getConfig().baseHeader(header);
-                        content.setText(o.getData().toString());
+                        content.setText(o.getResult().toString());
                     }
 
                     @Override
@@ -178,17 +169,20 @@ public class MainActivity extends BaseActivity {
         BaseResponse baseResponse = new BaseResponse();
         baseResponse.setCode(1);
         baseResponse.setMessage("HAHAH");
-        RequestBody body = RequestBody.create(MediaType.parse("application/json"), new Gson().toJson(baseResponse));
+        HashMap<String, Object> hashMap = new HashMap<>();
+        hashMap.put("folderName", "3333");
+//        RequestBody body = RequestBody.create(MediaType.parse("application/json"), new Gson().toJson(baseResponse));
         new RxHttp.Builder()
                 .post()
                 .apiUrl("test/json")
-                .setRequestBody(body)
-                .entity(CommonResponse.class)
+//                .setRequestBody(body)
+                .addParameter(hashMap)
+//                .cacheKey("tets")
                 .build()
-                .request(new HttpObserver<CommonResponse>() {
+                .request(new HttpObserver() {
                     @Override
-                    public void onSuccess(CommonResponse o) {
-                        content.setText(o.getData().toString());
+                    public void onSuccess(Object o) {
+                        content.setText(o.toString() + "");
                     }
 
                     @Override
@@ -199,18 +193,16 @@ public class MainActivity extends BaseActivity {
     }
 
     private void doProfile() {
-        Type type = new TypeToken<CommonResponse<Profile>>() {
-        }.getType();
+//        Type type = new TypeToken<CommonResponse<Profile>>() {
+//        }.getType();
         new RxHttp.Builder()
-                .get()
-                .apiUrl("api/user/profile")
-//                .entity(type)
-                .cacheKey("profile")
+                .post()
+                .apiUrl("test/get")
                 .build()
-                .request(new HttpObserver<CommonResponse<Profile>>() {
+                .request(new HttpObserver<CommonResponse<String>>() {
                     @Override
-                    public void onSuccess(CommonResponse<Profile> profile) {
-                        content.setText(profile.getData().getNickname());
+                    public void onSuccess(CommonResponse<String> profile) {
+                        content.setText(profile.getResult());
                     }
 
                     @Override
@@ -218,35 +210,6 @@ public class MainActivity extends BaseActivity {
                         LoggerUtils.error(t.getBodyMessage());
                     }
                 });
-    }
-
-
-    @RxSubscribe(observeOnThread = EventThread.IO, isSticky = true, tag = "weather")
-    public void weatherCallBack(Weather weather) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                content.setText(new Gson().toJson(weather));
-            }
-        });
-
-    }
-
-
-    @RxSubscribe(observeOnThread = EventThread.MAIN, isSticky = true, tag = "weather")
-    public void weatherCallBack(String weather) {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                content.setText(weather);
-            }
-        });
-
-    }
-
-    @RxSubscribe(observeOnThread = EventThread.MAIN, isSticky = true, tag = "weather")//异常捕获
-    public void weatherCallBack(ApiException e) {
-        content.setText(new Gson().toJson(e));
     }
 
 
@@ -259,6 +222,10 @@ public class MainActivity extends BaseActivity {
 
 
     private void upload(ArrayList<UploadTask> uploadTasks) {
+        BaseResponse baseResponse = new BaseResponse();
+        baseResponse.setCode(1);
+        baseResponse.setMessage("HAHAH");
+//        RequestBody body = RequestBody.create(MediaType.parse("application/json"), new Gson().toJson(baseResponse));
         HashMap<String, Object> params = new HashMap<>();
         params.put("folder", "gallery");
         params.put("host", "gallery");
@@ -272,39 +239,27 @@ public class MainActivity extends BaseActivity {
                 .addParameter(params)
                 .lifecycle(MainActivity.this)
                 .activityEvent(ActivityEvent.PAUSE)
-                .entity(CommonResponse.class)
                 .withDialog(new CProgressDialog(MainActivity.this, R.style.CustomDialog))
                 .build()
-                .request(new UploadObserver<CommonResponse>() {
+                .request(new UploadObserver<BaseResponse>() {
                     @Override
                     public void onCancel() {
-                        content.setText("总进度：" + multiUploadTask.getProgress() + "%" + multiUploadTask.getState().toString() + multiUploadTask.getSpeedFormat() + "平均速度：" + multiUploadTask.getAverageSpeedFormat() + "用时：" + multiUploadTask.getDuration());
-                        if (multiUploadTask.getUploadTasks().size() >= 3) {//假设选择3个
-                            content1.setText("第一个：" + multiUploadTask.getProgress(0) + "%" + multiUploadTask.getState(0).toString() + multiUploadTask.getUploadTasks().get(0).getSpeedFormat());
-                            content2.setText("第二个：" + multiUploadTask.getProgress(1) + "%" + multiUploadTask.getState(1).toString() + multiUploadTask.getUploadTasks().get(1).getSpeedFormat());
-                            content3.setText("第三个：" + multiUploadTask.getProgress(2) + "%" + multiUploadTask.getState(2).toString() + multiUploadTask.getUploadTasks().get(2).getSpeedFormat());
-                        }
+
                     }
 
                     @Override
-                    public void onProgress(BaseTask baseTask) {
+                    public void onProgress(BaseTask uploadTask) {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                content.setText("总进度：" + baseTask.getProgress() + "%" + baseTask.getState().toString() + baseTask.getSpeedFormat() + "平均速度：" + baseTask.getAverageSpeedFormat() + "用时：" + multiUploadTask.getDuration());
-                                if (multiUploadTask.getUploadTasks().size() >= 3) {//假设选择3个
-                                    content1.setText("第一个：" + multiUploadTask.getProgress(0) + "%" + multiUploadTask.getState(0).toString() + multiUploadTask.getUploadTasks().get(0).getSpeedFormat());
-                                    content2.setText("第二个：" + multiUploadTask.getProgress(1) + "%" + multiUploadTask.getState(1).toString() + multiUploadTask.getUploadTasks().get(1).getSpeedFormat());
-                                    content3.setText("第三个：" + multiUploadTask.getProgress(2) + "%" + multiUploadTask.getState(2).toString() + multiUploadTask.getUploadTasks().get(2).getSpeedFormat());
-                                }
+                                content.setText(uploadTask.getProgress() + "");
                             }
                         });
-
                     }
 
                     @Override
-                    public void onSuccess(CommonResponse o) {
-                        content.setText(o.getData().toString());
+                    public void onSuccess(BaseResponse o) {
+                        content.setText(o.getMessage().toString());
                     }
 
                     @Override
@@ -340,6 +295,7 @@ public class MainActivity extends BaseActivity {
                                                 .baseUrl("http://imtt.dd.qq.com/")
                                                 .apiUrl("16891/50CC095EFBE6059601C6FB652547D737.apk")
                                                 .lifecycle(MainActivity.this)
+                                                .tag("download")
                                                 .get()
                                                 .addParameter(map)
 //                                                .withDialog(new CProgressDialog(MainActivity.this, R.style.CustomDialog))
@@ -353,11 +309,11 @@ public class MainActivity extends BaseActivity {
                                                         runOnUiThread(new Runnable() {
                                                             @Override
                                                             public void run() {
-                                                                LoggerUtils.info("download1" + downloadTask.getState().toString() + downloadTask.getProgress() + "%" + downloadTask.getSpeedFormat());
+                                                                LoggerUtils.info("download1", downloadTask.getState().toString() + downloadTask.getProgress() + "%" + downloadTask.getSpeedFormat());
                                                                 download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%" + downloadTask.getSpeedFormat() + "平均速度：" + downloadTask.getAverageSpeedFormat() + "用时：" + downloadTask.getDuration() + "速度：" + downloadTask.getAverageSpeed());
                                                             }
                                                         });
-
+                                                        LoggerUtils.info("onPause", downloadTask.getProgress());
                                                     }
 
                                                     @Override
@@ -365,7 +321,7 @@ public class MainActivity extends BaseActivity {
                                                         runOnUiThread(new Runnable() {
                                                             @Override
                                                             public void run() {
-                                                                LoggerUtils.info("download2" + downloadTask.getState().toString() + downloadTask.getProgress() + "%" + downloadTask.getSpeedFormat());
+                                                                LoggerUtils.info("download1", downloadTask.getState().toString() + downloadTask.getProgress() + "%" + downloadTask.getSpeedFormat());
                                                                 download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%" + downloadTask.getSpeedFormat() + "平均速度：" + downloadTask.getAverageSpeedFormat() + "用时：" + downloadTask.getDuration() + "速度：" + downloadTask.getAverageSpeed());
                                                             }
                                                         });
@@ -374,15 +330,12 @@ public class MainActivity extends BaseActivity {
 
                                                     @Override
                                                     public void onSuccess(DownloadTask downloadTask) {
-                                                        LoggerUtils.info("download3" + downloadTask.getState().toString() + downloadTask.getProgress() + "%" + downloadTask.getSpeedFormat());
-                                                        download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%" + downloadTask.getSpeedFormat() + "平均速度：" + downloadTask.getAverageSpeedFormat() + "用时：" + downloadTask.getDuration() + "速度：" + downloadTask.getAverageSpeed());
+                                                        LoggerUtils.info(downloadTask.getState().name());
                                                     }
 
                                                     @Override
                                                     public void onError(ApiException t) {
-                                                        LoggerUtils.info("download4" + downloadTask.getState().toString() + downloadTask.getProgress() + "%" + downloadTask.getSpeedFormat());
-                                                        download.setText(downloadTask.getState().toString() + downloadTask.getProgress() + "%" + downloadTask.getSpeedFormat() + "平均速度：" + downloadTask.getAverageSpeedFormat() + "用时：" + downloadTask.getDuration() + "速度：" + downloadTask.getAverageSpeed());
-
+                                                        LoggerUtils.error(downloadTask.getState().name());
                                                     }
                                                 });
                                         //加入管理器
@@ -406,13 +359,26 @@ public class MainActivity extends BaseActivity {
                 requestGalleryPermissions();
                 break;
             case R.id.request:
-//                doJsonRequest();
+//                doRequest2();
+                doJsonRequest();
 //                doProfile();
-                WeatherModule2.getWeather();
+//                WeatherModule2.getWeather().request(new HttpObserver<Weather>() {
+//                    @Override
+//                    public void onSuccess(Weather weather) {
+//                        content.setText(new Gson().toJson(weather));
+//                    }
+//
+//                    @Override
+//                    public void onError(ApiException exception) {
+//
+//                    }
+//                });
                 break;
             case R.id.stick:
                 intent = new Intent(this, SecondActivity.class);
                 startActivity(intent);
+                break;
+            default:
                 break;
         }
     }
@@ -470,8 +436,9 @@ public class MainActivity extends BaseActivity {
 
                                         @Override
                                         public void onComplete() {
-                                            if (uploadTasks.size() > 0)
+                                            if (uploadTasks.size() > 0) {
                                                 upload(uploadTasks);
+                                            }
                                         }
                                     });
                         } else if (permission.shouldShowRequestPermissionRationale) {
@@ -490,6 +457,5 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        RxBus.getDefault().reset();
     }
 }

@@ -2,7 +2,7 @@ package com.github.eajon;
 
 import com.github.eajon.cache.RxCache;
 import com.github.eajon.enums.CacheMode;
-import com.github.eajon.util.GsonUtils;
+import com.github.eajon.enums.ConverterType;
 import com.github.eajon.util.LoggerUtils;
 import com.github.eajon.util.OkHttpUtils;
 import com.orhanobut.logger.AndroidLogAdapter;
@@ -16,12 +16,21 @@ import java.util.Map;
 import io.reactivex.functions.Consumer;
 import io.reactivex.plugins.RxJavaPlugins;
 import okhttp3.OkHttpClient;
+import okhttp3.logging.HttpLoggingInterceptor;
 
 
+/**
+ * @author eajon
+ */
 public class RxConfig {
 
 
     private volatile static RxConfig config;
+
+    private RxConfig() {
+        setRxJava2ErrorHandler();
+        addLogAdapter();
+    }
 
     public static RxConfig get() {
         if (config == null) {
@@ -46,6 +55,7 @@ public class RxConfig {
     }
 
     private void addLogAdapter() {
+        Logger.clearLogAdapters();
         FormatStrategy formatStrategy = PrettyFormatStrategy.newBuilder()
                 .tag(logTag)
                 .build();
@@ -53,29 +63,34 @@ public class RxConfig {
     }
 
 
-    /*请求基础路径*/
-    String baseUrl;
-    /*请求参数*/
-    Map<String, Object> parameter;
-    /*header*/
-    Map<String, Object> header;
+    /**
+     * 请求基础路径
+     */
+    private String baseUrl;
+    /**
+     * 请求参数
+     */
+    private Map<String, Object> parameter;
+    /**
+     * header
+     */
+    private Map<String, Object> header;
 
-    OkHttpClient okHttpClient;
+    private OkHttpClient okHttpClient;
 
-    RxCache rxCache;
+    private RxCache rxCache;
 
-    CacheMode cacheMode;
-
-    String logTag = "RxHttp";
-
-
-    private RxConfig() {
-        setRxJava2ErrorHandler();
-        addLogAdapter();
-    }
+    private ConverterType converterType;
 
 
-    /*请求基础路径*/
+    private CacheMode cacheMode;
+
+    private String logTag = "RxHttp";
+
+
+    /**
+     * 请求基础路径
+     */
     public RxConfig baseUrl(String baseUrl) {
         this.baseUrl = baseUrl;
         return this;
@@ -85,42 +100,56 @@ public class RxConfig {
         return baseUrl;
     }
 
-    /*基础参数*/
+
+    /**
+     * 基础参数
+     */
     public RxConfig baseParameter(Map<String, Object> parameter) {
         this.parameter = parameter;
         return this;
     }
 
-    /*基础参数*/
-    public RxConfig baseTypeParameter(Object object) {
-        this.parameter = GsonUtils.objectToMap(object);
-        return this;
-    }
 
     public Map<String, Object> getBaseParameter() {
         return parameter;
     }
 
-    /*基础Header*/
+    /**
+     * 基础Header
+     */
     public RxConfig baseHeader(Map<String, Object> header) {
         this.header = header;
         return this;
     }
 
-    /*基础Header*/
-    public RxConfig baseTypeHeader(Object object) {
-        this.header = GsonUtils.objectToMap(object);
-        return this;
-    }
 
     public Map<String, Object> getBaseHeader() {
         return header;
     }
 
+    /**
+     * 基础Header
+     */
+    public RxConfig converterType(ConverterType type) {
+        this.converterType = type;
+        return this;
+    }
 
-    /*HttpClient*/
-    public RxConfig okHttpClient(OkHttpClient okHttpClient) {
-        this.okHttpClient = okHttpClient;
+    public ConverterType getConverterType() {
+        return converterType != null ? converterType : ConverterType.GSON;
+    }
+
+
+    /**
+     * HttpClient
+     */
+    public RxConfig okHttpClient(OkHttpClient.Builder okHttpClientBuilder) {
+        this.okHttpClient = okHttpClientBuilder.addInterceptor(OkHttpUtils.getHttpRequestInterceptor()).addNetworkInterceptor(new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
+            @Override
+            public void log(String message) {
+                LoggerUtils.info(message);
+            }
+        }).setLevel(HttpLoggingInterceptor.Level.BASIC)).build();
         return this;
     }
 
@@ -133,7 +162,7 @@ public class RxConfig {
     }
 
     public OkHttpClient getOkHttpClient() {
-        return this.okHttpClient == null ? OkHttpUtils.HttpClient : this.okHttpClient;
+        return this.okHttpClient == null ? OkHttpUtils.getOkHttpClient() : this.okHttpClient;
     }
 
     public RxConfig rxCache(File cacheDir) {
@@ -167,7 +196,6 @@ public class RxConfig {
     public RxConfig log(boolean isDebug, String logTag) {
         LoggerUtils.init(isDebug);
         this.logTag = logTag;
-        Logger.clearLogAdapters();
         addLogAdapter();
         return this;
     }

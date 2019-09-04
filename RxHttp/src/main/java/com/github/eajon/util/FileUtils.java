@@ -60,11 +60,11 @@ public class FileUtils {
 
     }
 
-    private static String checkFileName(String saveFileName, String OriginalName) {
+    private static String checkFileName(String saveFileName, String originalName) {
         if (!TextUtils.isEmpty(saveFileName)) {
             return saveFileName;
-        } else if (!TextUtils.isEmpty(OriginalName)) {
-            return OriginalName;
+        } else if (!TextUtils.isEmpty(originalName)) {
+            return originalName;
         } else {
             return System.currentTimeMillis() + ".file";
         }

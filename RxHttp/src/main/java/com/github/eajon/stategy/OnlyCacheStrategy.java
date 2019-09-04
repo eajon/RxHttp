@@ -18,7 +18,7 @@ package com.github.eajon.stategy;
 
 
 import com.github.eajon.cache.RxCache;
-import com.github.eajon.model.CacheResult;
+import com.github.eajon.model.CacheEntity;
 
 import java.lang.reflect.Type;
 
@@ -32,7 +32,7 @@ import io.reactivex.Observable;
  */
 public final class OnlyCacheStrategy extends BaseStrategy {
     @Override
-    public <T> Observable<CacheResult<T>> execute(RxCache rxCache, String key, long time, Observable<T> source, Type type, boolean needCacheCallback) {
+    public <T> Observable<CacheEntity<T>> execute(RxCache rxCache, String key, long time, Observable<T> source, Type type, boolean needCacheCallback) {
         return loadCache(rxCache, type, key, time, false);
     }
 }

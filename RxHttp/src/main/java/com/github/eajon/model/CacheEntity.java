@@ -25,18 +25,18 @@ import java.io.Serializable;
  * 日期： 2016/12/24 10:35<br>
  * 版本： v2.0<br>
  */
-public class CacheResult<T> implements Serializable {
+public class CacheEntity<T> implements Serializable {
     private boolean isFromCache;
     private T data;
 
-    public CacheResult() {
+    public CacheEntity() {
     }
 
-    public CacheResult(boolean isFromCache) {
+    public CacheEntity(boolean isFromCache) {
         this.isFromCache = isFromCache;
     }
 
-    public CacheResult(boolean isFromCache, T data) {
+    public CacheEntity(boolean isFromCache, T data) {
         this.isFromCache = isFromCache;
         this.data = data;
     }
@@ -52,7 +52,7 @@ public class CacheResult<T> implements Serializable {
 
     @Override
     public String toString() {
-        return "CacheResult{" +
+        return "CacheEntity{" +
                 "isCache=" + isFromCache +
                 ", data=" + data +
                 '}';
