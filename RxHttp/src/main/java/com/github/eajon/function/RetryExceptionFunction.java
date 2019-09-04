@@ -31,15 +31,13 @@ import io.reactivex.functions.BiFunction;
 import io.reactivex.functions.Function;
 
 /**
- * <p>描述：网络请求错误重试条件</p>
- * 作者： zhouyou<br>
- * 日期： 2017/4/12 17:52 <br>
- * 版本： v1.0<br>
+ *
+ * @author eajon
  */
 public class RetryExceptionFunction implements Function<Observable<? extends Throwable>, Observable> {
-    /* retry次数*/
+    /** retry次数*/
     private int count;
-    /*延迟*/
+    /** 延迟*/
     private long delay = 500;
 
 
@@ -64,7 +62,7 @@ public class RetryExceptionFunction implements Function<Observable<? extends Thr
                 if ((wrapper.throwable instanceof SocketException
                         || wrapper.throwable instanceof SocketTimeoutException
                         || wrapper.throwable instanceof TimeoutException)
-                        && wrapper.index < count + 1) { //如果超出重试次数也抛出错误，否则默认是会进入onCompleted
+                        && wrapper.index < count + 1) {
                     return Observable.timer(delay, TimeUnit.MILLISECONDS);
                 }
                 return Observable.error(wrapper.throwable);
