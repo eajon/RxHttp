@@ -25,10 +25,7 @@ import java.lang.reflect.Type;
 import io.reactivex.Observable;
 
 /**
- * <p>描述：只读缓存</p>
- * 作者： zhouyou<br>
- * 日期： 2016/12/24 10:35<br>
- * 版本： v2.0<br>
+ * @author eajon
  */
 public final class OnlyCacheStrategy extends BaseStrategy {
     @Override

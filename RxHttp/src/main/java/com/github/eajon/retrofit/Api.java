@@ -8,6 +8,9 @@ import retrofit2.http.Header;
 import retrofit2.http.Streaming;
 import retrofit2.http.Url;
 
+/**
+ * @author eajon
+ */
 public interface Api {
 
     /**

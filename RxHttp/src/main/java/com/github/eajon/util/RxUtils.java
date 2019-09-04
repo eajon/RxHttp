@@ -53,10 +53,7 @@ import io.reactivex.schedulers.Schedulers;
 
 
 /**
- * <p>描述：Rx工具类</p>
- * 作者： wengyijiong<br>
- * 日期：  <br>
- * 版本： v1.0<br>
+ * @author eajon
  */
 public class RxUtils {
 

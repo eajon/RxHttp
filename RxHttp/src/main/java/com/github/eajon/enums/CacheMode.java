@@ -17,10 +17,8 @@
 package com.github.eajon.enums;
 
 /**
- * <p>描述：网络请求策略</p>
- * 作者： zhouyou<br>
- * 日期： 2016/12/24 10:35<br>
- * 版本： v2.0<br>
+ *
+ * @author eajon
  */
 public enum CacheMode {
     /**

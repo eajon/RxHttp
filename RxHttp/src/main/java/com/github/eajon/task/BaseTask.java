@@ -4,9 +4,12 @@ import com.github.eajon.util.SpeedUtils;
 
 import java.util.concurrent.TimeUnit;
 
+
+
+/**
+ * @author eajon
+ */
 public abstract class BaseTask {
-
-
     /**
      * 枚举状态
      */

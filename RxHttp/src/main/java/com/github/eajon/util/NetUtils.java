@@ -7,7 +7,9 @@ import android.net.NetworkInfo;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
-
+/**
+ * @author eajon
+ */
 public class NetUtils {
 
 

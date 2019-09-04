@@ -1,7 +1,9 @@
 package com.github.eajon.util;
 
 import com.orhanobut.logger.Logger;
-
+/**
+ * @author eajon
+ */
 public class LoggerUtils {
 
     private static boolean IS_DEBUG = true;

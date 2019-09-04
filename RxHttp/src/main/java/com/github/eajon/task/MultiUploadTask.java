@@ -4,6 +4,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * @author eajon
+ */
 public class MultiUploadTask extends BaseTask implements Serializable {
 
     private ArrayList<UploadTask> uploadTasks;

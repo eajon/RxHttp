@@ -4,6 +4,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
+/**
+ * @author eajon
+ */
 public class ReflectUtils {
 
     public static Field getDeclaredField(Object object, String fieldName) {

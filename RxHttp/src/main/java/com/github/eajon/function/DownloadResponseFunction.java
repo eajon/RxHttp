@@ -8,16 +8,19 @@ import java.lang.reflect.Field;
 import io.reactivex.functions.Function;
 import okhttp3.ResponseBody;
 
+/**
+ * @author eajon
+ */
 public class DownloadResponseFunction<T> implements Function<ResponseBody, Object> {
 
-
+    @SuppressWarnings(value = "unchecked")
     @Override
-    public Object apply(ResponseBody responseBody) throws Exception {
+    public T apply(ResponseBody responseBody) throws Exception {
         Class c = responseBody.getClass();
         Field field = c.getDeclaredField("delegate");
         field.setAccessible(true);
         DownloadResponseBody downloadResponseBody = ( DownloadResponseBody ) field.get(responseBody);
         FileUtils.write2File(downloadResponseBody);
-        return downloadResponseBody.getDownloadTask();
+        return ( T ) downloadResponseBody.getDownloadTask();
     }
 }

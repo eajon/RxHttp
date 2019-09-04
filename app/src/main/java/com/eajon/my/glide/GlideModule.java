@@ -5,10 +5,18 @@ import android.content.Context;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.GlideBuilder;
 import com.bumptech.glide.Registry;
+import com.bumptech.glide.integration.okhttp3.OkHttpUrlLoader;
 import com.bumptech.glide.load.engine.bitmap_recycle.LruBitmapPool;
 import com.bumptech.glide.load.engine.cache.ExternalPreferredCacheDiskCacheFactory;
+import com.bumptech.glide.load.engine.cache.InternalCacheDiskCacheFactory;
 import com.bumptech.glide.load.engine.cache.LruResourceCache;
+import com.bumptech.glide.load.engine.cache.MemorySizeCalculator;
+import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.module.AppGlideModule;
+import com.bumptech.glide.module.LibraryGlideModule;
+import com.github.eajon.RxConfig;
+
+import java.io.InputStream;
 
 
 /**
@@ -29,11 +37,10 @@ import com.bumptech.glide.module.AppGlideModule;
 public class GlideModule extends AppGlideModule {
     @Override
     public void registerComponents(Context context, Glide glide, Registry registry) {
-        super.registerComponents(context, glide, registry);
-//        registry.replace(GlideUrl.class, InputStream.class, new OkHttpUrlLoader.Factory(GlideProgressListener.getGlideOkHttpClient()));
+        registry.replace(GlideUrl.class, InputStream.class, new OkHttpUrlLoader.Factory(RxConfig.get().getOkHttpClient()));
     }
 
-    //
+
     @Override
     public boolean isManifestParsingEnabled() {
         return false;
@@ -42,11 +49,13 @@ public class GlideModule extends AppGlideModule {
     //自定义缓存设置
     @Override
     public void applyOptions(Context context, GlideBuilder builder) {
-        //配置内存缓存大小 10MB
-        builder.setMemoryCache(new LruResourceCache(1 * 1024 * 1024));
+        MemorySizeCalculator calculator = new MemorySizeCalculator.Builder(context)
+                .setMemoryCacheScreens(3)
+                .build();
+        builder.setMemoryCache(new LruResourceCache(calculator.getMemoryCacheSize()));
         //配置图片池大小   20MB
-        builder.setBitmapPool(new LruBitmapPool(2 * 1024 * 1024));
-        builder.setDiskCache(new ExternalPreferredCacheDiskCacheFactory(context, "wxbCache", 240 * 1024 * 1024));
-//        super.applyOptions(context, builder);
+        builder.setBitmapPool(new LruBitmapPool(calculator.getBitmapPoolSize()));
+        builder.setDiskCache(new ExternalPreferredCacheDiskCacheFactory(context, "GlideCache", 100 * 1024 * 1024));
+
     }
 }

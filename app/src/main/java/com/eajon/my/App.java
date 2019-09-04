@@ -3,6 +3,9 @@ package com.eajon.my;
 import android.app.Application;
 import android.content.Context;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.integration.okhttp3.OkHttpUrlLoader;
+import com.bumptech.glide.load.model.GlideUrl;
 import com.franmontiel.persistentcookiejar.ClearableCookieJar;
 import com.franmontiel.persistentcookiejar.PersistentCookieJar;
 import com.franmontiel.persistentcookiejar.cache.SetCookieCache;
@@ -14,6 +17,7 @@ import com.github.eajon.util.NetUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.Interceptor;
@@ -30,7 +34,6 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         instance = this;
-
         Interceptor netCacheInterceptor = new Interceptor() {
             @Override
             public Response intercept(Chain chain) throws IOException {

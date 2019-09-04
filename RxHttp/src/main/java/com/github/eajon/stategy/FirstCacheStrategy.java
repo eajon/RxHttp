@@ -25,11 +25,8 @@ import io.reactivex.Observable;
 
 
 /**
- * <p>描述：先显示缓存，缓存不存在，再请求网络</p>
- * <p>缓存或网络有一个获取成功就算成功，只有都获取失败才会抛异常(只可能为网络异常)</p>
- * 作者： zhouyou<br>
- * 日期： 2016/12/24 10:35<br>
- * 版本： v2.0<br>
+ *
+ * @author eajon
  */
 final public class FirstCacheStrategy extends BaseStrategy {
     @Override

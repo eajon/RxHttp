@@ -7,7 +7,7 @@ import java.util.Map;
 import okhttp3.RequestBody;
 
 /**
- * Created By eajon on 2019/9/2.
+ * @author eajon
  */
 public class RequestEntity {
 

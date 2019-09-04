@@ -28,10 +28,7 @@ import io.reactivex.functions.Predicate;
 
 
 /**
- * <p>描述：先显示缓存，再请求网络，都成功会回调两次。缓冲获取失败不回调，网络失败抛异常</p>
- * 作者： zhouyou<br>
- * 日期： 2016/12/24 10:35<br>
- * 版本： v2.0<br>
+ * @author eajon
  */
 public final class CacheAndRemoteStrategy extends BaseStrategy {
     @Override

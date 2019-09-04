@@ -26,13 +26,7 @@ import io.reactivex.Observable;
 
 
 /**
- * <p>描述：先请求网络，网络请求失败，再加载缓存</p>
- * <p>缓存或网络有一个获取成功就算成功，只有都获取失败才会抛异常</p>
- * <p>最终抛出的是缓存异常，因为只有网络失败才会读缓存，缓存失败就代表两种方式都失败了</p>
- * <p>如果需要知道是否读取了缓存，只需要判断结果回调中的CacheResult的isFromCache为true即可</p>
- * 作者： zhouyou<br>
- * 日期： 2016/12/24 10:35<br>
- * 版本： v2.0<br>
+ * @author eajon
  */
 public final class FirstRemoteStrategy extends BaseStrategy {
     @Override

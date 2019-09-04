@@ -4,6 +4,9 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * @author eajon
+ */
 public class UploadTask extends BaseTask implements Serializable {
 
 

@@ -28,22 +28,7 @@ import okio.ByteString;
 
 
 /**
- * <p>描述：缓存核心管理类</p>
- * <p>
- * 1.采用LruDiskCache<br>
- * 2.对Key进行MD5加密<br>
- * <p>
- * 以后可以扩展 增加内存缓存，但是内存缓存的时间不好控制，暂未实现，后续可以添加》<br>
- * <p>
- * 作者： zhouyou<br>
- * 日期： 2016/12/24 10:35<br>
- * 版本： v2.0<br>
- * <p>
- * 修改者： zhouyou
- * 日期： 2017/01/06 10:35<br>
- * 1.这里笔者给读者留个提醒，ByteString其实已经很强大了，不需要我们自己再去处理加密了，只要善于发现br>
- * 2.这里为设么把MD5改成ByteString呢？其实改不改无所谓，只是想把ByteString这个好东西介绍给大家。(ok)br>
- * 3.在ByteString中有很多好用的方法包括MD5.sha1 base64  encodeUtf8 等等功能。br>
+ * @author eajon
  */
 public class CacheCore {
     private static final String TAG = "CacheCore";

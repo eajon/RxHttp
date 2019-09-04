@@ -33,10 +33,7 @@ import io.reactivex.schedulers.Schedulers;
 
 
 /**
- * <p>描述：实现缓存策略的基类</p>
- * 作者： zhouyou<br>
- * 日期： 2016/12/24 10:35<br>
- * 版本： v2.0<br>
+ * @author eajon
  */
 public abstract class BaseStrategy implements IStrategy {
 
@@ -44,9 +41,6 @@ public abstract class BaseStrategy implements IStrategy {
         Observable<CacheEntity<T>> observable = rxCache.<T>load(key, type, time).flatMap(new Function<T, ObservableSource<CacheEntity<T>>>() {
             @Override
             public ObservableSource<CacheEntity<T>> apply(@NonNull T t) throws Exception {
-//                if (t == null) {
-//                    return Observable.error(new NullPointerException("Not find the cache!"));
-//                }
                 return Observable.just(new CacheEntity<>(true, t));
             }
         });

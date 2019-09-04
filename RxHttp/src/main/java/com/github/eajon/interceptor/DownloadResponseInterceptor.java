@@ -9,6 +9,9 @@ import io.reactivex.Observer;
 import okhttp3.Interceptor;
 import okhttp3.Response;
 
+/**
+ * @author eajon
+ */
 public class DownloadResponseInterceptor implements Interceptor {
 
 

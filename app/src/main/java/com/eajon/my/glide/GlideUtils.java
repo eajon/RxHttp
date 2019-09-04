@@ -4,9 +4,12 @@ import android.app.Activity;
 import android.net.Uri;
 import android.widget.ImageView;
 
+import com.bumptech.glide.integration.okhttp3.OkHttpUrlLoader;
+import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.request.RequestOptions;
 import com.eajon.my.R;
 
+import java.io.InputStream;
 import java.io.Serializable;
 
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
@@ -17,6 +20,8 @@ import jp.wasabeef.glide.transformations.RoundedCornersTransformation;
  */
 
 public class GlideUtils implements Serializable {
+
+
 
     public static void loadImg(Activity activity, String url, ImageView img) {
         RequestOptions options = new RequestOptions();

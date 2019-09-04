@@ -1,7 +1,8 @@
 package com.github.eajon.exception;
 
 /**
- * Created By eajon on 2019/9/2.
+ *
+ * @author eajon
  */
 public class HttpMethodException extends RuntimeException {
 

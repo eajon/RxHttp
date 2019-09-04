@@ -5,13 +5,15 @@ package com.github.eajon.enums;
  */
 public enum ConverterType {
     /**
-     * gson
+     * GSON
      */
     GSON("GSON"),
-
+    /**
+     * FASTJSON
+     */
     FASTJSON("FASTJSON"),
     /**
-     * gson
+     * JACKSON
      */
     JACKSON("JACKSON");
 

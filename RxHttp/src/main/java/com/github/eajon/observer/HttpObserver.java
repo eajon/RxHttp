@@ -4,6 +4,9 @@ import com.github.eajon.exception.ApiException;
 
 import io.reactivex.observers.DisposableObserver;
 
+/**
+ * @author eajon
+ */
 public abstract class HttpObserver<T> extends DisposableObserver<T> {
 
 

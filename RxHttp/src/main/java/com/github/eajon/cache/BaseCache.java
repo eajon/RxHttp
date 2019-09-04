@@ -25,14 +25,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import io.reactivex.internal.functions.ObjectHelper;
 
 /**
- * <p>描述：缓存的基类</p>
- * 1.所有缓存处理都继承该基类<br>
- * 2.增加了锁机制，防止频繁读取缓存造成的异常。<br>
- * 3.子类直接考虑具体的实现细节就可以了。<br>
- * <p>
- * 作者： zhouyou<br>
- * 日期： 2016/01/07 12:35<br>
- * 版本： v2.0<br>
+ *
+ * @author eajon
  */
 public abstract class BaseCache {
     private final ReadWriteLock mLock = new ReentrantReadWriteLock();

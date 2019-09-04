@@ -52,34 +52,8 @@ import io.reactivex.internal.functions.ObjectHelper;
 
 
 /**
- * <p>描述：缓存统一入口类</p>
- * <p>
- * <p>主要实现技术：Rxjava+DiskLruCache(jakewharton大神开源的LRU库)</p>
- * <p>
- * <p>
- * 主要功能：<br>
- * 1.可以独立使用，单独用RxCache来存储数据<br>
- * 2.采用transformer与网络请求结合，可以实现网络缓存功能,本地硬缓存<br>
- * 3.可以保存缓存 （异步）<br>
- * 4.可以读取缓存（异步）<br>
- * 5.可以判断缓存是否存在<br>
- * 6.根据key删除缓存<br>
- * 7.清空缓存（异步）<br>
- * 8.缓存Key会自动进行MD5加密<br>
- * 9.其它参数设置：缓存磁盘大小、缓存key、缓存时间、缓存存储的转换器、缓存目录、缓存Version<br>
- * <p>
- * <p>
- * 使用说明：<br>
- * RxCache rxCache = new RxCache.Builder(this)<br>
- * .cacheVersion(1)//不设置，默认为1</br>
- * .diskDir(new File(getCacheDir().getPath() + File.separator + "data-cache"))//不设置，默认使用缓存路径<br>
- * .diskConverter(new SerializableDiskConverter())//目前只支持Serializable缓存<br>
- * .diskMax(20*1024*1024)//不设置， 默为认50MB<br>
- * .build();</br>
- * </P>
- * 作者： zhouyou<br>
- * 日期： 2016/12/24 10:35<br>
- * 版本： v2.0<br>
+ *
+ * @author eajon
  */
 public final class RxCache {
 

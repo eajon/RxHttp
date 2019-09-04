@@ -6,7 +6,8 @@ import java.text.DecimalFormat;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 描述：格式化速度
+ *
+ * @author eajon
  */
 public class SpeedUtils {
 

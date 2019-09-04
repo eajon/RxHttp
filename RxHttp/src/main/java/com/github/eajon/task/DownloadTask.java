@@ -5,7 +5,9 @@ import android.os.Environment;
 import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
 
-
+/**
+ * @author eajon
+ */
 public class DownloadTask extends BaseTask implements Serializable {
 
 

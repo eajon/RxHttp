@@ -7,7 +7,9 @@ import java.lang.annotation.Target;
 
 
 /**
- * Created by threshold on 2017/1/16.
+ *
+ * @author eajon
+ * @date 2017/1/16
  */
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)

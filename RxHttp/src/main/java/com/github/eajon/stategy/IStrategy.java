@@ -25,10 +25,8 @@ import java.lang.reflect.Type;
 import io.reactivex.Observable;
 
 /**
- * <p>描述：实现缓存策略的接口，可以自定义缓存实现方式，只要实现该接口就可以了</p>
- * 作者： zhouyou<br>
- * 日期： 2016/12/24 10:35<br>
- * 版本： v2.0<br>
+ *
+ * @author eajon
  */
 public interface IStrategy {
 
