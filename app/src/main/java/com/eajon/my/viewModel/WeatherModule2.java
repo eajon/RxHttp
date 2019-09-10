@@ -31,9 +31,8 @@ public class WeatherModule2 {
 //        HashMap map = new HashMap();
 //        map.put("city", "常熟");
         return new RxHttp.Builder()
-                .get()
                 .baseUrl("http://wthrcdn.etouch.cn/")
-                .apiUrl("weather_mini")
+                .get("weather_mini")
                 .addTypeParameter(testGson)
 //                .withView()//可以使用name注解 过滤不需要的参数
 //                .addParameter(map)

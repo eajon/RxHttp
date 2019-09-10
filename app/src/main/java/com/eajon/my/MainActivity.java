@@ -126,8 +126,7 @@ public class MainActivity extends BaseActivity {
         sysLoginModel.setUsername("admin");
         sysLoginModel.setPassword("12345678");
         new RxHttp.Builder()
-                .post()
-                .apiUrl("user/login")
+                .post("user/login")
                 .addTypeParameter(sysLoginModel)
                 .withView(progressbar)
                 .build()
@@ -149,8 +148,7 @@ public class MainActivity extends BaseActivity {
 
     private void doRequest2() {
         new RxHttp.Builder()
-                .post()
-                .apiUrl("folder/add")
+                .post("folder/add")
                 .build()
                 .request(new HttpObserver<CommonResponse>() {
                     @Override
@@ -173,8 +171,7 @@ public class MainActivity extends BaseActivity {
         hashMap.put("folderName", "3333");
 //        RequestBody body = RequestBody.create(MediaType.parse("application/json"), new Gson().toJson(baseResponse));
         new RxHttp.Builder()
-                .post()
-                .apiUrl("test/json")
+                .post("test/json")
 //                .setRequestBody(body)
                 .addParameter(hashMap)
 //                .cacheKey("tets")
@@ -196,8 +193,7 @@ public class MainActivity extends BaseActivity {
 //        Type type = new TypeToken<CommonResponse<Profile>>() {
 //        }.getType();
         new RxHttp.Builder()
-                .post()
-                .apiUrl("test/get")
+                .post("test/get")
                 .build()
                 .request(new HttpObserver<CommonResponse<String>>() {
                     @Override
@@ -220,12 +216,8 @@ public class MainActivity extends BaseActivity {
         ButterKnife.bind(this);
     }
 
-
+    //multipart表单提交
     private void upload(ArrayList<UploadTask> uploadTasks) {
-        BaseResponse baseResponse = new BaseResponse();
-        baseResponse.setCode(1);
-        baseResponse.setMessage("HAHAH");
-//        RequestBody body = RequestBody.create(MediaType.parse("application/json"), new Gson().toJson(baseResponse));
         HashMap<String, Object> params = new HashMap<>();
         params.put("folder", "gallery");
         params.put("host", "gallery");
@@ -233,8 +225,55 @@ public class MainActivity extends BaseActivity {
         params.put("remark", "androidTest");
         MultiUploadTask multiUploadTask = new MultiUploadTask(uploadTasks);
         new RxHttp.Builder()
-                .apiUrl("image/upload")
+                .post("image/upload")
                 .task(multiUploadTask)
+                .tag("upload")
+                .addParameter(params)
+                .lifecycle(MainActivity.this)
+                .activityEvent(ActivityEvent.PAUSE)
+                .withDialog(new CProgressDialog(MainActivity.this, R.style.CustomDialog))
+                .build()
+                .request(new UploadObserver<BaseResponse>() {
+                    @Override
+                    public void onCancel() {
+
+                    }
+
+                    @Override
+                    public void onProgress(BaseTask uploadTask) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                content.setText(uploadTask.getProgress() + "");
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onSuccess(BaseResponse o) {
+                        content.setText(o.getMessage().toString());
+                    }
+
+                    @Override
+                    public void onError(ApiException t) {
+                        content.setText(t.getBodyMessage());
+                    }
+                });
+
+    }
+
+
+    //oct-stream提交
+    private void upload(UploadTask uploadTask) {
+        HashMap<String, Object> params = new HashMap<>();
+        params.put("folder", "gallery");
+        params.put("host", "gallery");
+        params.put("folderId", 52L);
+        params.put("remark", "androidTest");
+//        MultiUploadTask multiUploadTask = new MultiUploadTask(uploadTasks);
+        new RxHttp.Builder()
+                .post("image/upload2")
+                .task(uploadTask)
                 .tag("upload")
                 .addParameter(params)
                 .lifecycle(MainActivity.this)
@@ -293,7 +332,7 @@ public class MainActivity extends BaseActivity {
                                         map.put("csr", "1bbd");
                                         downloadDisposable = new RxHttp.Builder()
                                                 .baseUrl("http://imtt.dd.qq.com/")
-                                                .apiUrl("16891/50CC095EFBE6059601C6FB652547D737.apk")
+                                                .get("16891/50CC095EFBE6059601C6FB652547D737.apk")
                                                 .lifecycle(MainActivity.this)
                                                 .tag("download")
                                                 .get()
@@ -436,8 +475,11 @@ public class MainActivity extends BaseActivity {
 
                                         @Override
                                         public void onComplete() {
-                                            if (uploadTasks.size() > 0) {
+                                            if (uploadTasks.size() > 1) {
                                                 upload(uploadTasks);
+                                            }else
+                                            {
+                                                upload(uploadTasks.get(0));
                                             }
                                         }
                                     });

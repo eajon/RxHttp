@@ -26,9 +26,8 @@ public class WeatherModule extends ViewModel {
         HashMap map = new HashMap();
         map.put("city", "常熟");
         new RxHttp.Builder()
-                .get()
                 .baseUrl("http://wthrcdn.etouch.cn/")
-                .apiUrl("weather_mini")
+                .get("weather_mini")
                 .addParameter(map)
                 .tag("weather")
                 .build()

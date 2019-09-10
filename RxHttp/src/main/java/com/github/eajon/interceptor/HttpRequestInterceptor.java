@@ -3,7 +3,7 @@ package com.github.eajon.interceptor;
 import com.github.eajon.enums.RequestMethod;
 import com.github.eajon.exception.HttpMethodException;
 import com.github.eajon.model.RequestEntity;
-import com.github.eajon.util.NetUtils;
+import com.github.eajon.util.EncodeUtils;
 
 import java.io.IOException;
 import java.util.Map;
@@ -77,7 +77,7 @@ public class HttpRequestInterceptor implements Interceptor {
                 .url(urlBuilder.build());
         if (header != null && header.keySet().size() > 0) {
             for (String key : header.keySet()) {
-                newRequestBuilder.addHeader(key, NetUtils.getHeaderValueEncoded(header.get(key)).toString());
+                newRequestBuilder.addHeader(key, EncodeUtils.getHeaderValueEncoded(header.get(key)).toString());
             }
         }
         return chain.proceed(newRequestBuilder.build());

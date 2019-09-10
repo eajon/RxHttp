@@ -5,6 +5,8 @@ import java.io.Serializable;
 import java.util.concurrent.TimeUnit;
 
 /**
+ *
+ * OctStream upload
  * @author eajon
  */
 public class UploadTask extends BaseTask implements Serializable {

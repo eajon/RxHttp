@@ -3,9 +3,7 @@ package com.eajon.my;
 import android.app.Application;
 import android.content.Context;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.integration.okhttp3.OkHttpUrlLoader;
-import com.bumptech.glide.load.model.GlideUrl;
+import com.eajon.my.util.NetUtils;
 import com.franmontiel.persistentcookiejar.ClearableCookieJar;
 import com.franmontiel.persistentcookiejar.PersistentCookieJar;
 import com.franmontiel.persistentcookiejar.cache.SetCookieCache;
@@ -13,11 +11,9 @@ import com.franmontiel.persistentcookiejar.persistence.SharedPrefsCookiePersisto
 import com.github.eajon.RxHttp;
 import com.github.eajon.enums.ConverterType;
 import com.github.eajon.util.LoggerUtils;
-import com.github.eajon.util.NetUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.Interceptor;
@@ -102,4 +98,5 @@ public class App extends Application {
     public static App getContext() {
         return instance;
     }
+
 }

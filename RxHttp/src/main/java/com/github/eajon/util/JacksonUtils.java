@@ -13,7 +13,7 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 
 public class JacksonUtils {
 
-    private volatile static ObjectMapper mapper;
+    private final static ObjectMapper OBJECT_MAPPER = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false).configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
 
     private JacksonUtils() {
         throw new AssertionError("");
@@ -21,16 +21,7 @@ public class JacksonUtils {
 
 
     public static ObjectMapper getMapper() {
-        if (mapper == null) {
-            synchronized (JacksonUtils.class) {
-                if (mapper == null) {
-                    mapper = new ObjectMapper();
-                    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-                    mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
-                }
-            }
-        }
-        return mapper;
+        return OBJECT_MAPPER;
     }
 
     public static JsonFactory getFactory() {

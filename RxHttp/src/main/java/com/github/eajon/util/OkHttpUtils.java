@@ -16,44 +16,31 @@ public class OkHttpUtils {
     private OkHttpUtils() {
         throw new AssertionError();
     }
-
-    private static HttpRequestInterceptor httpRequestInterceptor;
-
-    public static HttpRequestInterceptor getHttpRequestInterceptor() {
-        if (httpRequestInterceptor == null) {
-            synchronized (OkHttpUtils.class) {
-                if (httpRequestInterceptor == null) {
-                    httpRequestInterceptor = new HttpRequestInterceptor();
-                }
-            }
-        }
-        return httpRequestInterceptor;
-    }
+    /**
+     * 内置HttpRequestInterceptor
+     */
+    private final static HttpRequestInterceptor HTTP_REQUEST_INTERCEPTOR = new HttpRequestInterceptor();
 
     /**
      * 默认httpclient
      */
-    private static OkHttpClient httpClient;
-
-
-    public static OkHttpClient getOkHttpClient() {
-        if (httpClient == null) {
-            synchronized (OkHttpUtils.class) {
-                if (httpClient == null) {
-                    httpClient = new OkHttpClient.Builder()
-                            .addInterceptor(httpRequestInterceptor)
-                            .addNetworkInterceptor(new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
-                                @Override
-                                public void log(String message) {
-                                    LoggerUtils.info(message);
-                                }
-                            })
-                                    .setLevel(HttpLoggingInterceptor.Level.BASIC))
-                            .build();
+    private final static OkHttpClient HTTP_CLIENT = new OkHttpClient.Builder()
+            .addInterceptor(HTTP_REQUEST_INTERCEPTOR)
+            .addNetworkInterceptor(new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
+                @Override
+                public void log(String message) {
+                    LoggerUtils.info(message);
                 }
-            }
-        }
-        return httpClient;
+            })
+                    .setLevel(HttpLoggingInterceptor.Level.BASIC))
+            .build();
+
+
+    public static HttpRequestInterceptor getHttpRequestInterceptor() {
+        return HTTP_REQUEST_INTERCEPTOR;
+    }
+    public static OkHttpClient getOkHttpClient() {
+        return HTTP_CLIENT;
     }
 
     /**

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * MultiPart upload
  * @author eajon
  */
 public class MultiUploadTask extends BaseTask implements Serializable {
@@ -21,6 +22,11 @@ public class MultiUploadTask extends BaseTask implements Serializable {
 
     public MultiUploadTask(ArrayList<UploadTask> uploadTasks) {
         this.uploadTasks = uploadTasks;
+    }
+
+    public MultiUploadTask(UploadTask uploadTask) {
+        this.uploadTasks = new ArrayList<>();
+        this.uploadTasks.add(uploadTask);
     }
 
     public ArrayList<UploadTask> getUploadTasks() {

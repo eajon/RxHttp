@@ -33,29 +33,22 @@ public class GsonUtils {
         throw new AssertionError("");
     }
 
-    private static Gson gson;
+    private final static Gson GSON = new GsonBuilder().
+            registerTypeAdapter(Double.class, new JsonSerializer<Double>() {
+                @Override
+                public JsonElement serialize(Double src, Type typeOfSrc, JsonSerializationContext context) {
+                    if (src == src.longValue()) {
+                        return new JsonPrimitive(src.longValue());
+                    }
+                    return new JsonPrimitive(src);
+                }
+            }).create();
 
     public static Gson getGson() {
-        if (gson == null) {
-            synchronized (GsonUtils.class) {
-                if (gson == null) {
-                    gson = new GsonBuilder().
-                            registerTypeAdapter(Double.class, new JsonSerializer<Double>() {
-                                @Override
-                                public JsonElement serialize(Double src, Type typeOfSrc, JsonSerializationContext context) {
-                                    if (src == src.longValue()) {
-                                        return new JsonPrimitive(src.longValue());
-                                    }
-                                    return new JsonPrimitive(src);
-                                }
-                            }).create();
-                }
-            }
-        }
-        return gson;
+        return GSON;
     }
 
-    public static Gson buildGson(Object object) {
+    private static Gson buildGson(Object object) {
         return new GsonBuilder()
                 .registerTypeAdapter(
                         new TypeToken<Map<String, String>>() {
@@ -63,13 +56,13 @@ public class GsonUtils {
                         new MapJsonDeserializer(object)).create();
     }
 
-    public static Map<String, Object> objectToMap(Object object) {
+    public static Map<String, Object> object2Map(Object object) {
         Gson gson = buildGson(object);
         return gson.fromJson(gson.toJson(object), new TypeToken<Map<String, String>>() {
         }.getType());
     }
 
-    private static class MapJsonDeserializer implements JsonDeserializer<Map<String, Object>> {
+    private final static class MapJsonDeserializer implements JsonDeserializer<Map<String, Object>> {
 
         private Object object;
 
