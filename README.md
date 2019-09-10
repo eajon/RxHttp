@@ -1,5 +1,5 @@
 # RxHttp
-         本框架 是对 RXJAVA2 + Retrofit + RxBus2 + OkHttp3 + lifecycle的架构的封装
+         本框架 是对 RXJAVA2 + Retrofit + OkHttp3 + lifecycle的架构的封装
          1.采用链式调用一点到底
          2.支持动态配置和自定义Okhttpclient，支持okhttp自定义cookie管理
          3.支持多种方式访问网络GET、POST、PUT、DELETE等请求协议
@@ -111,7 +111,7 @@
                 .requestBody(...)/*retorfit发射对象*/
                 .task(...)/*上传或者下载任务*/
                 .baseUrl(...)/* 按需配置 RxConfig已配置，可不配*/
-                .apiUrl(...)/* 按需配置 具体接口名称*/
+                .api(...)/* 按需配置 具体接口名称*/
                 .addHeader(...)/* 按需配置 */
                 .addParameter(...)/* 按需配置 */
                 .lifecycle(...)/* 关联生命周期,当前Activity需要继承RxAppCompatActivity或者RxBusActivity */
@@ -153,7 +153,7 @@
     Disposable disposeable=  new RxHttp
                 .Builder()
                 .baseUrl("http://imtt.dd.qq.com/")
-                .apiUrl("16891/50CC095EFBE6059601C6FB652547D737.apk?fsname=com.tencent.mm_6.6.7_1321.apk&csr=1bbd")
+                .api("16891/50CC095EFBE6059601C6FB652547D737.apk?fsname=com.tencent.mm_6.6.7_1321.apk&csr=1bbd")
                 .tag("download")
                 .lifecycle(this)
                 .task(downloadTask)
@@ -200,7 +200,7 @@
              UploadTask uploadTask = new UploadTask( new File(path));
              Disposable disposeable = new RxHttp.Builder()
                         .baseUrl("https://shop.cxwos.com/admin/File/")
-                        .apiUrl("UploadFile?tentantId=16")
+                        .api("UploadFile?tentantId=16")
                         .task(uploadTask)/* 单文件必填*/
                         .lifecycle(this)
                         .build()
@@ -237,7 +237,7 @@
               MultiUploadTask multiUploadTask =new MultiUploadTask("muiltTag",uploadTasks);
               Disposable disposeable = new RxHttp.Builder()
                         .baseUrl("https://shop.cxwos.com/admin/File/")
-                        .apiUrl("UploadFile?tentantId=16")
+                        .api("UploadFile?tentantId=16")
                         .task(multiUploadTask)
                         .lifecycle(this)/*上传按需配置lifecycle*/
                         .build()
