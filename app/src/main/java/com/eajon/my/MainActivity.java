@@ -105,8 +105,7 @@ public class MainActivity extends BaseActivity {
 
     @Override
     protected void initData(Bundle savedInstanceState) {
-        rxImagePicker = RxImagePicker.INSTANCE
-                .create(ZhihuImagePicker.class);
+        rxImagePicker = RxImagePicker.create(ZhihuImagePicker.class);
         //默认下载地址为Download目录
         downloadTask = new DownloadTask();
 
@@ -231,8 +230,7 @@ public class MainActivity extends BaseActivity {
                 .task(multiUploadTask)
                 .tag("upload")
                 .addParameter(params)
-                .lifecycle(MainActivity.this)
-                .activityEvent(ActivityEvent.PAUSE)
+                .lifecycle(MainActivity.this,ActivityEvent.PAUSE)
                 .withDialog(new CProgressDialog(MainActivity.this, R.style.CustomDialog))
                 .build()
                 .request(new UploadObserver<BaseResponse>() {
@@ -278,8 +276,7 @@ public class MainActivity extends BaseActivity {
                 .task(uploadTask)
                 .tag("upload")
                 .addParameter(params)
-                .lifecycle(MainActivity.this)
-                .activityEvent(ActivityEvent.PAUSE)
+                .lifecycle(MainActivity.this,ActivityEvent.PAUSE)
                 .withDialog(new CProgressDialog(MainActivity.this, R.style.CustomDialog))
                 .build()
                 .request(new UploadObserver<BaseResponse>() {
@@ -335,13 +332,12 @@ public class MainActivity extends BaseActivity {
                                         downloadDisposable = new RxHttp.Builder()
                                                 .baseUrl("http://imtt.dd.qq.com/")
                                                 .get("16891/50CC095EFBE6059601C6FB652547D737.apk")
-                                                .lifecycle(MainActivity.this)
+                                                .lifecycle(MainActivity.this,ActivityEvent.PAUSE)
                                                 .tag("download")
                                                 .get()
                                                 .addParameter(map)
 //                                                .withDialog(new CProgressDialog(MainActivity.this, R.style.CustomDialog))
                                                 .withView(progressbar)
-                                                .activityEvent(ActivityEvent.PAUSE)
                                                 .task(downloadTask)
                                                 .build()
                                                 .request(new DownloadObserver() {

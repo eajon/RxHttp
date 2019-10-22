@@ -9,6 +9,7 @@ import android.view.View;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.eajon.body.UploadRequestBody;
 import com.github.eajon.enums.RequestMethod;
 import com.github.eajon.enums.RequestType;
@@ -21,9 +22,9 @@ import com.github.eajon.task.BaseTask;
 import com.github.eajon.task.DownloadTask;
 import com.github.eajon.task.MultiUploadTask;
 import com.github.eajon.task.UploadTask;
+import com.github.eajon.util.EncodeUtils;
 import com.github.eajon.util.GsonUtils;
 import com.github.eajon.util.JacksonUtils;
-import com.github.eajon.util.EncodeUtils;
 import com.github.eajon.util.ReflectUtils;
 import com.github.eajon.util.RetrofitUtils;
 import com.github.eajon.util.RxUtils;
@@ -233,12 +234,12 @@ public class RxHttp {
         } else if (task instanceof DownloadTask) {
             this.requestType = RequestType.DOWNLOAD;
             return doDownload();
-        } else if (task instanceof UploadTask ) {
+        } else if (task instanceof UploadTask) {
             this.requestType = RequestType.UPLOAD;
-            return doUpload((UploadTask)task);
-        } else if (task instanceof MultiUploadTask ) {
+            return doUpload(( UploadTask ) task);
+        } else if (task instanceof MultiUploadTask) {
             this.requestType = RequestType.UPLOAD;
-            return doUpload((MultiUploadTask)task);
+            return doUpload(( MultiUploadTask ) task);
         } else {
             throw new NullPointerException("error task!");
         }
@@ -591,42 +592,42 @@ public class RxHttp {
         /*GET*/
         public Builder get(String api) {
             this.requestMethod = RequestMethod.GET;
-            this.api=api;
+            this.api = api;
             return this;
         }
 
         /*POST*/
         public Builder post(String api) {
             this.requestMethod = RequestMethod.POST;
-            this.api=api;
+            this.api = api;
             return this;
         }
 
         /*DELETE*/
         public Builder delete(String api) {
             this.requestMethod = RequestMethod.DELETE;
-            this.api=api;
+            this.api = api;
             return this;
         }
 
         /*PUT*/
         public Builder put(String api) {
             this.requestMethod = RequestMethod.PUT;
-            this.api=api;
+            this.api = api;
             return this;
         }
 
         /*PATCH*/
         public Builder patch(String api) {
             this.requestMethod = RequestMethod.PATCH;
-            this.api=api;
+            this.api = api;
             return this;
         }
 
         /*HEAD*/
         public Builder head(String api) {
             this.requestMethod = RequestMethod.HEAD;
-            this.api=api;
+            this.api = api;
             return this;
         }
 
@@ -753,8 +754,37 @@ public class RxHttp {
 
 
         /* 设置RequestBody*/
-        public Builder setRequestBody(RequestBody requestBody) {
+        public Builder requestBody(RequestBody requestBody) {
             this.requestBody = requestBody;
+            return this;
+        }
+
+        /* 设置RequestBody*/
+        public Builder requestBody(MediaType mediaType, String content) {
+            this.requestBody = RequestBody.create(mediaType, content);
+            return this;
+        }
+
+        /* 设置RequestBody*/
+        public Builder json(Object object) {
+            String jsonString = "";
+            switch (RxConfig.get().getConverterType()) {
+                case JACKSON:
+                    try {
+                        jsonString = JacksonUtils.getMapper().writeValueAsString(object);
+                    } catch (JsonProcessingException e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                case FASTJSON:
+                    jsonString = JSON.toJSONString(object);
+                    break;
+                case GSON:
+                default:
+                    jsonString = GsonUtils.getGson().toJson(object);
+                    break;
+            }
+            this.requestBody = RequestBody.create(MediaType.parse("application/json"), jsonString);
             return this;
         }
 
@@ -764,14 +794,16 @@ public class RxHttp {
             return this;
         }
 
-        /* ActivityEvent*/
-        public Builder activityEvent(ActivityEvent activityEvent) {
+        /* LifecycleProvider*/
+        public Builder lifecycle(LifecycleProvider lifecycle, ActivityEvent activityEvent) {
+            this.lifecycle = lifecycle;
             this.activityEvent = activityEvent;
             return this;
         }
 
-        /* FragmentEvent*/
-        public Builder fragmentEvent(FragmentEvent fragmentEvent) {
+        /* LifecycleProvider*/
+        public Builder lifecycle(LifecycleProvider lifecycle, FragmentEvent fragmentEvent) {
+            this.lifecycle = lifecycle;
             this.fragmentEvent = fragmentEvent;
             return this;
         }
