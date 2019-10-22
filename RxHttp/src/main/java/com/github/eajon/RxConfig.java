@@ -3,6 +3,7 @@ package com.github.eajon;
 import com.github.eajon.cache.RxCache;
 import com.github.eajon.enums.CacheMode;
 import com.github.eajon.enums.ConverterType;
+import com.github.eajon.interceptor.HttpRequestInterceptor;
 import com.github.eajon.util.LoggerUtils;
 import com.github.eajon.util.OkHttpUtils;
 import com.orhanobut.logger.AndroidLogAdapter;
@@ -144,7 +145,7 @@ public class RxConfig {
      * HttpClient
      */
     public RxConfig okHttpClient(OkHttpClient.Builder okHttpClientBuilder) {
-        this.okHttpClient = okHttpClientBuilder.addInterceptor(OkHttpUtils.getHttpRequestInterceptor()).addNetworkInterceptor(new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
+        this.okHttpClient = okHttpClientBuilder.addInterceptor(new HttpRequestInterceptor(null)).addNetworkInterceptor(new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
             @Override
             public void log(String message) {
                 LoggerUtils.info(message);

@@ -5,7 +5,7 @@ android {
     buildToolsVersion "28.0.3"
     defaultConfig {
         applicationId "com.eajon.my"
-        minSdkVersion 17
+        minSdkVersion 16
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
@@ -33,8 +33,8 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.2-alpha01'
 
     implementation project(':RxHttp')
-//    implementation 'com.google.code.gson:gson:2.8.5'
-    implementation 'com.alibaba:fastjson:1.1.52.android'
+    implementation 'com.google.code.gson:gson:2.8.5'
+//    implementation 'com.alibaba:fastjson:1.1.52.android'
 //    implementation 'com.fasterxml.jackson.core:jackson-databind:2.9.8'
     //butterknife
     implementation 'com.jakewharton:butterknife:10.0.0'
@@ -53,6 +53,7 @@ dependencies {
 
 
     implementation 'com.github.franmontiel:PersistentCookieJar:v1.0.1'
+    implementation 'com.jeremyliao:live-event-bus-x:1.5.0'
 
 
 }

@@ -14,6 +14,7 @@ import com.github.eajon.enums.RequestMethod;
 import com.github.eajon.enums.RequestType;
 import com.github.eajon.exception.HttpMethodException;
 import com.github.eajon.interceptor.DownloadResponseInterceptor;
+import com.github.eajon.interceptor.HttpRequestInterceptor;
 import com.github.eajon.model.RequestEntity;
 import com.github.eajon.observer.HttpObserver;
 import com.github.eajon.task.BaseTask;
@@ -320,7 +321,7 @@ public class RxHttp {
         switch (requestMethod) {
             case GET:
             case POST:
-                return RetrofitUtils.getRetrofit(getBaseUrl(), new RequestEntity(requestMethod, parameter, header, requestBody), new DownloadResponseInterceptor(httpObserver, downloadTask)).download(disposeApiUrl(), "bytes=" + downloadTask.getCurrentSize() + "-");
+                return RetrofitUtils.getRetrofit(getBaseUrl(), new HttpRequestInterceptor(new RequestEntity(requestMethod, parameter, header, requestBody)), new DownloadResponseInterceptor(httpObserver, downloadTask)).download(disposeApiUrl(), "bytes=" + downloadTask.getCurrentSize() + "-");
             default:
                 throw new HttpMethodException();
         }

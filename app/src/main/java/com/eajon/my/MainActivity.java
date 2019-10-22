@@ -28,6 +28,7 @@ import com.github.eajon.task.DownloadTask;
 import com.github.eajon.task.MultiUploadTask;
 import com.github.eajon.task.UploadTask;
 import com.github.eajon.util.LoggerUtils;
+import com.github.eajon.util.RxUtils;
 import com.qingmei2.rximagepicker.core.RxImagePicker;
 import com.qingmei2.rximagepicker.entity.Result;
 import com.qingmei2.rximagepicker_extension.MimeType;
@@ -148,7 +149,8 @@ public class MainActivity extends BaseActivity {
 
     private void doRequest2() {
         new RxHttp.Builder()
-                .post("folder/add")
+                .baseUrl("http://photo.renren.com")
+                .post("photo/252750583/album-278460783/private/ajax")
                 .build()
                 .request(new HttpObserver<CommonResponse>() {
                     @Override
@@ -270,7 +272,7 @@ public class MainActivity extends BaseActivity {
         params.put("host", "gallery");
         params.put("folderId", 52L);
         params.put("remark", "androidTest");
-//        MultiUploadTask multiUploadTask = new MultiUploadTask(uploadTasks);
+
         new RxHttp.Builder()
                 .post("image/upload2")
                 .task(uploadTask)
@@ -450,13 +452,14 @@ public class MainActivity extends BaseActivity {
                     public void accept(Permission permission) throws Exception {
                         if (permission.granted) {
                             rxImagePicker.openGallery(MainActivity.this,
-                                    new ZhihuConfigurationBuilder(MimeType.INSTANCE.ofImage(), false)
+                                    new ZhihuConfigurationBuilder(MimeType.INSTANCE.ofAll(), false)
                                             .maxSelectable(9)
                                             .countable(true)
                                             .spanCount(3)
                                             .theme(R.style.Zhihu_Normal)
                                             .build())
-                                    .compose(MainActivity.this.bindUntilEvent(ActivityEvent.DESTROY))
+                                    .compose(RxUtils.lifeCycle(MainActivity.this,ActivityEvent.DESTROY,null))
+                                    .compose(RxUtils.ioMain())
                                     .subscribe(new Observer<Result>() {
                                         @Override
                                         public void onSubscribe(Disposable d) {

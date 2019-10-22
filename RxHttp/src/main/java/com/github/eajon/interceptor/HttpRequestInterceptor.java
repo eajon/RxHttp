@@ -22,17 +22,19 @@ public class HttpRequestInterceptor implements Interceptor {
 
     private RequestEntity requestEntity;
 
-
     public HttpRequestInterceptor() {
     }
 
+    public HttpRequestInterceptor(RequestEntity requestEntity) {
+        this.requestEntity=requestEntity;
+    }
 
     public void setRequestEntity(RequestEntity requestEntity) {
         this.requestEntity = requestEntity;
     }
 
     @Override
-    public Response intercept(Interceptor.Chain chain) throws IOException {
+    public  Response intercept(Interceptor.Chain chain) throws IOException {
         Request oldRequest = chain.request();
         Request.Builder newRequestBuilder;
         HttpUrl.Builder urlBuilder = oldRequest.url().newBuilder();

@@ -121,11 +121,11 @@ public class ApiException extends Exception {
             ex.bodyMessage = "空指针错误";
             return ex;
         } else if (e instanceof ProtocolException) {
-            ex = new ApiException(e, ERROR.ProtocolException);
+            ex = new ApiException(e, ERROR.PROTOCOL_EXCEPTION);
             ex.bodyMessage = "文件流意外关闭";
             return ex;
         } else if (e instanceof SocketException) {
-            ex = new ApiException(e, ERROR.SOCKETCLOSE_ERROR);
+            ex = new ApiException(e, ERROR.SOCKET_CLOSE_ERROR);
             ex.bodyMessage = "文件流被关闭，暂停下载";
             return ex;
         } else if (e instanceof IOException) {
@@ -194,15 +194,15 @@ public class ApiException extends Exception {
         /**
          * 文件流意外关闭
          */
-        public static final int ProtocolException = NULLPOINTER_EXCEPTION + 1;
+        public static final int PROTOCOL_EXCEPTION = NULLPOINTER_EXCEPTION + 1;
 
         /**
          * 文件流被关闭，暂停下载
          */
-        public static final int SOCKETCLOSE_ERROR = ProtocolException + 1;
+        public static final int SOCKET_CLOSE_ERROR = PROTOCOL_EXCEPTION + 1;
         /**
          * 流错误
          */
-        public static final int IO_ERROR = SOCKETCLOSE_ERROR + 1;
+        public static final int IO_ERROR = SOCKET_CLOSE_ERROR + 1;
     }
 }

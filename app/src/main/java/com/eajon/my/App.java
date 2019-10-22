@@ -79,9 +79,9 @@ public class App extends Application {
 
         RxHttp
                 .getConfig()
-                .baseUrl("http://172.17.12.42:8088/")
+                .baseUrl("http://172.17.12.42:8088")
                 .okHttpClient(httpClientBuilder)
-                .converterType(ConverterType.FASTJSON)
+                .converterType(ConverterType.GSON)
                 .rxCache(new File(getExternalCacheDir(), "rxcache"))
                 .log(true, "RxLog");
 

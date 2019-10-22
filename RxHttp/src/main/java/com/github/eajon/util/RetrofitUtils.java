@@ -6,7 +6,10 @@ import com.github.eajon.interceptor.HttpRequestInterceptor;
 import com.github.eajon.model.RequestEntity;
 import com.github.eajon.retrofit.Api;
 
+import java.util.List;
+
 import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.fastjson.FastJsonConverterFactory;
@@ -32,9 +35,14 @@ public class RetrofitUtils {
      * @return
      */
     public static Api getRetrofit(String baseUrl, RequestEntity requestEntity) {
-        HttpRequestInterceptor httpRequestInterceptor = OkHttpUtils.getHttpRequestInterceptor();
-        httpRequestInterceptor.setRequestEntity(requestEntity);
-        Retrofit.Builder builder = new Retrofit.Builder().client(RxHttp.getConfig().getOkHttpClient())
+        OkHttpClient okHttpClient = RxHttp.getConfig().getOkHttpClient();
+        List<Interceptor> interceptorList = okHttpClient.interceptors();
+        for (int i = 0; i < interceptorList.size(); i++) {
+            if (interceptorList.get(i) instanceof HttpRequestInterceptor) {
+                (( HttpRequestInterceptor ) interceptorList.get(i)).setRequestEntity(requestEntity);
+            }
+        }
+        Retrofit.Builder builder = new Retrofit.Builder().client(okHttpClient)
                 .baseUrl(baseUrl)
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create());
         switch (RxConfig.get().getConverterType()) {
@@ -59,9 +67,7 @@ public class RetrofitUtils {
      * @param baseUrl
      * @return
      */
-    public static Api getRetrofit(String baseUrl, RequestEntity requestEntity, Interceptor... interceptorArray) {
-        HttpRequestInterceptor httpRequestInterceptor = OkHttpUtils.getHttpRequestInterceptor();
-        httpRequestInterceptor.setRequestEntity(requestEntity);
+    public static Api getRetrofit(String baseUrl, Interceptor... interceptorArray) {
         Retrofit.Builder builder = new Retrofit.Builder().client(OkHttpUtils.getOkHttpClient(interceptorArray))
                 .baseUrl(baseUrl)
                 .addCallAdapterFactory(RxJava2CallAdapterFactory.create());

@@ -196,12 +196,12 @@
 
  ## 上传例子
 
- ####  单文件
+ ####  OCT-STREAM 上传 只支持单文件
              UploadTask uploadTask = new UploadTask( new File(path));
              Disposable disposeable = new RxHttp.Builder()
                         .baseUrl("https://shop.cxwos.com/admin/File/")
                         .api("UploadFile?tentantId=16")
-                        .task(uploadTask)/* 单文件必填*/
+                        .task(uploadTask)/* OCT-STREAM方式上传类型为UploadTask*/
                         .lifecycle(this)
                         .build()
                         .request(new HttpObserver() {
@@ -227,7 +227,7 @@
 
                         });
 
- ####  多文件
+ ####  Multipart 表单多文件
 
               ArrayList <UploadTask> uploadTasks = new ArrayList <>();
               UploadTask uploadTask = new UploadTask( new File(path));
@@ -238,7 +238,7 @@
               Disposable disposeable = new RxHttp.Builder()
                         .baseUrl("https://shop.cxwos.com/admin/File/")
                         .api("UploadFile?tentantId=16")
-                        .task(multiUploadTask)
+                        .task(multiUploadTask)/* Multipart/form-data方式上传类型为MultiUploadTask*/
                         .lifecycle(this)/*上传按需配置lifecycle*/
                         .build()
                         .request(new UploadObserver() {

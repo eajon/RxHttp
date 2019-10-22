@@ -4,6 +4,8 @@ package com.github.eajon.util;
 import com.github.eajon.RxConfig;
 import com.github.eajon.interceptor.HttpRequestInterceptor;
 
+import java.util.concurrent.TimeUnit;
+
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
@@ -17,15 +19,10 @@ public class OkHttpUtils {
         throw new AssertionError();
     }
     /**
-     * 内置HttpRequestInterceptor
-     */
-    private final static HttpRequestInterceptor HTTP_REQUEST_INTERCEPTOR = new HttpRequestInterceptor();
-
-    /**
      * 默认httpclient
      */
     private final static OkHttpClient HTTP_CLIENT = new OkHttpClient.Builder()
-            .addInterceptor(HTTP_REQUEST_INTERCEPTOR)
+            .addInterceptor(new HttpRequestInterceptor())
             .addNetworkInterceptor(new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
                 @Override
                 public void log(String message) {
@@ -35,10 +32,6 @@ public class OkHttpUtils {
                     .setLevel(HttpLoggingInterceptor.Level.BASIC))
             .build();
 
-
-    public static HttpRequestInterceptor getHttpRequestInterceptor() {
-        return HTTP_REQUEST_INTERCEPTOR;
-    }
     public static OkHttpClient getOkHttpClient() {
         return HTTP_CLIENT;
     }
@@ -51,7 +44,10 @@ public class OkHttpUtils {
      * @return
      */
     public static OkHttpClient getOkHttpClient(Interceptor... interceptorArray) {
-        OkHttpClient.Builder okHttpClientBuilder = RxConfig.get().getOkHttpClient().newBuilder();
+        OkHttpClient.Builder okHttpClientBuilder = new OkHttpClient.Builder();
+        okHttpClientBuilder.readTimeout(10, TimeUnit.MINUTES);
+        okHttpClientBuilder.writeTimeout(10, TimeUnit.MINUTES);
+        okHttpClientBuilder.connectTimeout(10,TimeUnit.MINUTES);
         //Interceptor设置
         if (interceptorArray != null) {
             for (Interceptor interceptor : interceptorArray) {
