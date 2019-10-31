@@ -74,7 +74,7 @@
 #### Step 2. Add the dependency
 
  	dependencies {
-	        implementation 'com.github.eajon:RxHttp:2.2.1'
+	        implementation 'com.github.eajon:RxHttp:2.2.3'
 	        选择你需要的JSON解析器 并设置converterType 为该类型 converterType不配置 默认为GSON 需添加GSON依赖
 	        implementation 'com.google.code.gson:gson:2.8.5'
             implementation 'com.alibaba:fastjson:1.1.52.android'
@@ -108,15 +108,13 @@
              new RxHttp
                 .Builder()
                 .get()/*post() put() delete() 按需配置默认POST*/
-                .requestBody(...)/*retorfit发射对象*/
+                .requestBody(...)/*body对象*/
+		.json(...)/*同body对象,contentType 自动设置成JSON*/
                 .task(...)/*上传或者下载任务*/
                 .baseUrl(...)/* 按需配置 RxConfig已配置，可不配*/
-                .api(...)/* 按需配置 具体接口名称*/
                 .addHeader(...)/* 按需配置 */
                 .addParameter(...)/* 按需配置 */
-                .lifecycle(...)/* 关联生命周期,当前Activity需要继承RxAppCompatActivity或者RxBusActivity */
-                .activityEvent(...)/*具体指定生命周期的动作*
-                .isStick(...)/*是否是粘性消息，默认每种类型只保存最后一个*/
+                .lifecycle(...)/* 关联生命周期,当前Activity需要继承RxAppCompatActivity */
                 .withDialog(...)/*是否加入阻塞对话框，可以自定义diolog*/
                 .tag(...)/*发射的id*/
                 .cacheKey(...)/*缓存Key*/
@@ -152,8 +150,8 @@
 
     Disposable disposeable=  new RxHttp
                 .Builder()
+		.get("16891/50CC095EFBE6059601C6FB652547D737.apk?fsname=com.tencent.mm_6.6.7_1321.apk&csr=1bbd")
                 .baseUrl("http://imtt.dd.qq.com/")
-                .api("16891/50CC095EFBE6059601C6FB652547D737.apk?fsname=com.tencent.mm_6.6.7_1321.apk&csr=1bbd")
                 .tag("download")
                 .lifecycle(this)
                 .task(downloadTask)
@@ -199,8 +197,8 @@
  ####  OCT-STREAM 上传 只支持单文件
              UploadTask uploadTask = new UploadTask( new File(path));
              Disposable disposeable = new RxHttp.Builder()
+	                .post("UploadFile?tentantId=16")
                         .baseUrl("https://shop.cxwos.com/admin/File/")
-                        .api("UploadFile?tentantId=16")
                         .task(uploadTask)/* OCT-STREAM方式上传类型为UploadTask*/
                         .lifecycle(this)
                         .build()
@@ -227,7 +225,7 @@
 
                         });
 
- ####  Multipart 表单多文件
+ ####  Multipart 表单提交 支持多文件
 
               ArrayList <UploadTask> uploadTasks = new ArrayList <>();
               UploadTask uploadTask = new UploadTask( new File(path));
