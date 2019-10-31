@@ -1,4 +1,9 @@
-# RxHttp
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/fcd683b1e966409f920c61901c9e7c0d)](https://www.codacy.com/manual/eajon/RxHttp?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=eajon/RxHttp&amp;utm_campaign=Badge_Grade)
+
+# RxHttp 
+
+
          本框架 是对 RXJAVA2 + Retrofit + OkHttp3 + lifecycle的架构的封装
          1.采用链式调用一点到底
          2.支持动态配置和自定义Okhttpclient，支持okhttp自定义cookie管理
