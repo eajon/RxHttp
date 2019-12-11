@@ -211,10 +211,10 @@ public class RxHttp {
         switch (requestType) {
             case DOWNLOAD:
                 return doDownload();
+            case UPLOAD:
+                return doUpload();
             case STREAM_UPLOAD:
                 return doStreamUpload();
-            case FORM_UPLOAD:
-                return doFormUpload();
             default:
                 return doRequest();
 
@@ -259,7 +259,7 @@ public class RxHttp {
     /**
      * 执行文件上传MultiPart
      */
-    private Observable doFormUpload() {
+    private Observable doUpload() {
         /*请求方式处理*/
         if (requestMethod == null) {
             requestMethod = RequestMethod.POST;
@@ -808,15 +808,15 @@ public class RxHttp {
         }
 
         /*FORM上传任务*/
-        public Builder uploadByForm(UploadTask baseTask) {
-            this.requestType = RequestType.FORM_UPLOAD;
+        public Builder upload(UploadTask baseTask) {
+            this.requestType = RequestType.UPLOAD;
             this.task = baseTask;
             return this;
         }
 
         /* FORM上传多个任务*/
-        public Builder uploadByForm(MultiUploadTask baseTask) {
-            this.requestType = RequestType.FORM_UPLOAD;
+        public Builder upload(MultiUploadTask baseTask) {
+            this.requestType = RequestType.UPLOAD;
             this.task = baseTask;
             return this;
         }

@@ -227,7 +227,7 @@ public class MainActivity extends BaseActivity {
         MultiUploadTask multiUploadTask = new MultiUploadTask(uploadTasks);
         new RxHttp.Builder()
                 .post("image/upload")
-                .uploadByForm(multiUploadTask)
+                .upload(multiUploadTask)
                 .tag("upload")
                 .addParameter(params)
                 .lifecycle(MainActivity.this,ActivityEvent.PAUSE)

@@ -19,7 +19,7 @@ public enum RequestType {
     /**
      * 上传
      */
-    FORM_UPLOAD,
+    UPLOAD,
     /**
      * 下载
      */
