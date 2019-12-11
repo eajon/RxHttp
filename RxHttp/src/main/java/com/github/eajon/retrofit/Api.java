@@ -34,5 +34,4 @@ public interface Api {
     @Streaming
     @GET
     Observable<ResponseBody> download(@Url String url, @Header("RANGE") String range);
-
 }

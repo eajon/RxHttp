@@ -227,7 +227,7 @@ public class MainActivity extends BaseActivity {
         MultiUploadTask multiUploadTask = new MultiUploadTask(uploadTasks);
         new RxHttp.Builder()
                 .post("image/upload")
-                .task(multiUploadTask)
+                .uploadByForm(multiUploadTask)
                 .tag("upload")
                 .addParameter(params)
                 .lifecycle(MainActivity.this,ActivityEvent.PAUSE)
@@ -273,7 +273,7 @@ public class MainActivity extends BaseActivity {
 
         new RxHttp.Builder()
                 .post("image/upload2")
-                .task(uploadTask)
+                .uploadByStream(uploadTask)
                 .tag("upload")
                 .addParameter(params)
                 .lifecycle(MainActivity.this,ActivityEvent.PAUSE)
@@ -338,7 +338,7 @@ public class MainActivity extends BaseActivity {
                                                 .addParameter(map)
 //                                                .withDialog(new CProgressDialog(MainActivity.this, R.style.CustomDialog))
                                                 .withView(progressbar)
-                                                .task(downloadTask)
+                                                .download(downloadTask)
                                                 .build()
                                                 .request(new DownloadObserver() {
                                                     @Override

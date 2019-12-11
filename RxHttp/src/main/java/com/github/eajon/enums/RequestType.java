@@ -15,7 +15,11 @@ public enum RequestType {
     /**
      * 上传
      */
-    UPLOAD,
+    STREAM_UPLOAD,
+    /**
+     * 上传
+     */
+    FORM_UPLOAD,
     /**
      * 下载
      */

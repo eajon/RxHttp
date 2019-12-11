@@ -21,17 +21,17 @@ android {
 dependencies {
 
     //retrofit
-    api 'com.squareup.retrofit2:retrofit:2.6.1'
-    api('com.squareup.retrofit2:converter-gson:2.6.1') {
+    api 'com.squareup.retrofit2:retrofit:2.7.0'
+    api('com.squareup.retrofit2:converter-gson:2.7.0') {
         exclude group: 'com.google.code.gson'
     }
-    api('com.squareup.retrofit2:converter-jackson:2.6.1') {
+    api('com.squareup.retrofit2:converter-jackson:2.7.0') {
         exclude group: 'com.fasterxml.jackson.core'
     }
     api('org.ligboy.retrofit2:converter-fastjson-android:2.1.0'){
         exclude group:'com.alibaba'
     }
-    api 'com.squareup.retrofit2:adapter-rxjava2:2.6.1'
+    api 'com.squareup.retrofit2:adapter-rxjava2:2.7.0'
 
     compileOnly 'com.google.code.gson:gson:2.8.5'
     compileOnly 'com.alibaba:fastjson:1.1.52.android'

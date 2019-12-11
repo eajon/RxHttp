@@ -161,6 +161,7 @@ public class RxHttp {
         this.view = builder.view;
         this.cacheKey = builder.cacheKey;
         this.retryTime = builder.retryTime;
+        this.requestType = builder.requestType == null ? RequestType.REQUEST : builder.requestType;
     }
 
     public String getTag() {
@@ -169,26 +170,6 @@ public class RxHttp {
 
     public RequestType getRequestType() {
         return requestType;
-    }
-
-    public HttpObserver getHttpObserver() {
-        return httpObserver;
-    }
-
-    /**
-     * 构建Http请求
-     */
-    public Observable getRequest() {
-        /*header处理*/
-        disposeHeader();
-        /*Parameter处理*/
-        disposeParameter();
-        if (task == null) {
-            this.requestType = RequestType.REQUEST;
-            return doRequest();
-        } else {
-            throw new NullPointerException("not support task!");
-        }
     }
 
     /**
@@ -214,34 +195,29 @@ public class RxHttp {
             this.httpObserver = httpObserver;
             /*处理泛型type*/
             type = ReflectUtils.getParameterizedType(httpObserver);
-            return subscribe(createRequest());
+            return subscribe(buildRequest());
         }
     }
-
 
     /**
      * 构建Http请求
      */
-    private Observable createRequest() {
+    private Observable buildRequest() {
         /*header处理*/
         disposeHeader();
         /*Parameter处理*/
         disposeParameter();
 
-        if (task == null) {
-            this.requestType = RequestType.REQUEST;
-            return doRequest();
-        } else if (task instanceof DownloadTask) {
-            this.requestType = RequestType.DOWNLOAD;
-            return doDownload();
-        } else if (task instanceof UploadTask) {
-            this.requestType = RequestType.UPLOAD;
-            return doUpload(( UploadTask ) task);
-        } else if (task instanceof MultiUploadTask) {
-            this.requestType = RequestType.UPLOAD;
-            return doUpload(( MultiUploadTask ) task);
-        } else {
-            throw new NullPointerException("error task!");
+        switch (requestType) {
+            case DOWNLOAD:
+                return doDownload();
+            case STREAM_UPLOAD:
+                return doStreamUpload();
+            case FORM_UPLOAD:
+                return doFormUpload();
+            default:
+                return doRequest();
+
         }
     }
 
@@ -260,7 +236,7 @@ public class RxHttp {
     /**
      * 执行文件上传OCT-STREAM
      */
-    private Observable doUpload(UploadTask uploadTask) {
+    private Observable doStreamUpload() {
         /*请求方式处理*/
         if (requestMethod == null) {
             requestMethod = RequestMethod.POST;
@@ -269,7 +245,7 @@ public class RxHttp {
         if (requestBody != null) {
             throw new IllegalArgumentException("requestBody is not allow here,please use task");
         }
-        requestBody = new UploadRequestBody(RequestBody.create(MediaType.parse("application/octet-stream;charset=utf-8"), uploadTask.getFile()), httpObserver, uploadTask);
+        requestBody = new UploadRequestBody(RequestBody.create(MediaType.parse("application/octet-stream;charset=utf-8"), (( UploadTask ) task).getFile()), httpObserver, (( UploadTask ) task));
         switch (requestMethod) {
             case POST:
             case PUT:
@@ -283,7 +259,7 @@ public class RxHttp {
     /**
      * 执行文件上传MultiPart
      */
-    private Observable doUpload(MultiUploadTask multiUploadTask) {
+    private Observable doFormUpload() {
         /*请求方式处理*/
         if (requestMethod == null) {
             requestMethod = RequestMethod.POST;
@@ -291,8 +267,13 @@ public class RxHttp {
         MultipartBody.Builder builder = new MultipartBody.Builder();
         /*处理文件*/
         builder.setType(MultipartBody.FORM);
-        for (UploadTask uploadTask : multiUploadTask.getUploadTasks()) {
-            addFilePart(builder, uploadTask);
+        if (task instanceof MultiUploadTask) {
+            MultiUploadTask multiUploadTask = ( MultiUploadTask ) task;
+            for (UploadTask uploadTask : multiUploadTask.getUploadTasks()) {
+                addFilePart(builder, uploadTask);
+            }
+        } else {
+            addFilePart(builder, ( UploadTask ) task);
         }
         /*处理参数*/
         for (String key : parameter.keySet()) {
@@ -528,6 +509,10 @@ public class RxHttp {
         String cacheKey;
         /*重试次数，仅针对部分http连接问题进行重试，默认每隔0.5秒*/
         int retryTime;
+        /**
+         * 请求类型
+         */
+        private RequestType requestType;
 
 
         public Builder() {
@@ -808,8 +793,30 @@ public class RxHttp {
             return this;
         }
 
-        /* 下载上传任务*/
-        public Builder task(BaseTask baseTask) {
+        /* 下载任务*/
+        public Builder download(DownloadTask baseTask) {
+            this.requestType = RequestType.DOWNLOAD;
+            this.task = baseTask;
+            return this;
+        }
+
+        /* STREAM上传任务*/
+        public Builder uploadByStream(UploadTask baseTask) {
+            this.requestType = RequestType.STREAM_UPLOAD;
+            this.task = baseTask;
+            return this;
+        }
+
+        /*FORM上传任务*/
+        public Builder uploadByForm(UploadTask baseTask) {
+            this.requestType = RequestType.FORM_UPLOAD;
+            this.task = baseTask;
+            return this;
+        }
+
+        /* FORM上传多个任务*/
+        public Builder uploadByForm(MultiUploadTask baseTask) {
+            this.requestType = RequestType.FORM_UPLOAD;
             this.task = baseTask;
             return this;
         }
